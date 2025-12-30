@@ -83,7 +83,7 @@ public final class DateUtil {
         if (date == null) {
             return null;
         }
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("Date pattern cannot be null or empty");
         }
 
@@ -127,7 +127,7 @@ public final class DateUtil {
         if (localDateTime == null) {
             return null;
         }
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("Date pattern cannot be null or empty");
         }
 
@@ -151,7 +151,7 @@ public final class DateUtil {
         if (localDate == null) {
             return null;
         }
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("Date pattern cannot be null or empty");
         }
 
@@ -175,10 +175,10 @@ public final class DateUtil {
      * @throws IllegalArgumentException 如果解析失败
      */
     public static Date parseDate(String dateStr, String pattern) {
-        if (!(dateStr != null && !dateStr.isEmpty())) {
+        if (dateStr == null || dateStr.isEmpty()) {
             return null;
         }
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("Date pattern cannot be null or empty");
         }
 
@@ -199,7 +199,7 @@ public final class DateUtil {
      * @throws IllegalArgumentException 如果无法解析
      */
     public static Date parseSmartDate(String dateStr) {
-        if (!(dateStr != null && !dateStr.isEmpty())) {
+        if (dateStr == null || dateStr.isEmpty()) {
             return null;
         }
 
@@ -236,10 +236,10 @@ public final class DateUtil {
      * @return 解析后的LocalDateTime对象
      */
     public static LocalDateTime parseLocalDateTime(String dateStr, String pattern) {
-        if (!(dateStr != null && !dateStr.isEmpty())) {
+        if (dateStr == null || dateStr.isEmpty()) {
             return null;
         }
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("Date pattern cannot be null or empty");
         }
 
@@ -341,7 +341,7 @@ public final class DateUtil {
      * @return 如果在范围内返回true，否则返回false
      */
     public static boolean isBetweenDates(Date date, String startDate, String endDate) {
-        if (date == null || !(startDate != null && !startDate.isEmpty()) || !(endDate != null && !endDate.isEmpty())) {
+        if (date == null || startDate == null || startDate.isEmpty() || endDate == null || endDate.isEmpty()) {
             return false;
         }
         try {
@@ -498,7 +498,7 @@ public final class DateUtil {
      * @return 格式化后的当前时间字符串
      */
     public static String getCurrentDateTime(String pattern) {
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             pattern = DEFAULT_DATETIME_FORMAT;
         }
         return formatLocalDateTime(LocalDateTime.now(), pattern);
@@ -546,7 +546,7 @@ public final class DateUtil {
      * @throws IllegalArgumentException 如果输入格式不正确
      */
     public static String parseCompactDateTime(String compactDateTime) {
-        if (!(compactDateTime != null && !compactDateTime.isEmpty())) {
+        if (compactDateTime == null || compactDateTime.isEmpty()) {
             return "";
         }
 
@@ -586,7 +586,7 @@ public final class DateUtil {
             return "";
         }
 
-        if (!(pattern != null && !pattern.isEmpty())) {
+        if (pattern == null || pattern.isEmpty()) {
             pattern = DEFAULT_DATETIME_FORMAT;
         }
 
@@ -749,7 +749,7 @@ public final class DateUtil {
      * @return 调整后的fmt格式时间
      */
     public static String stringTimeToAdjust(String date, String fmt, Integer num) {
-        if (!(date != null && !date.isEmpty())) {
+        if (date == null || date.isEmpty()) {
             return date;
         }
         SimpleDateFormat sdf = new SimpleDateFormat(fmt);

@@ -47,7 +47,7 @@ public class BaseDataController {
             @RequestParam String startTime,
             @Parameter(description = "终止日", example = "60")
             @RequestParam(defaultValue = "20250614") String endTime) {
-        log.info("设置交易日历|Set_trade_date_list,startTime={},endTime={}", startTime, endTime);
+        log.info("设置交易日历|Set_trade_date,startTime={},endTime={}", startTime, endTime);
         return baseDataService.setTradeDateList(startTime, endTime);
     }
 
