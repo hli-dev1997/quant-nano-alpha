@@ -24,7 +24,7 @@ public class DataProducerRunner implements CommandLineRunner {
     private static final int BATCH_SIZE = 1000; // 每批发送条数，可根据实际情况调整
 
     /**
-     * 详细思路说明
+     * todo 详细思路说明
      *
      * Topic 统一
      *
@@ -70,13 +70,13 @@ public class DataProducerRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String topic = KafkaTopics.QUOTATION.code(); // Kafka 统一 topic
 
-        List<HistoryTrendDTO> historyTrendDataByDate = quotationService.getHistoryTrendDataByDate("20250801", null);
-        if (historyTrendDataByDate == null || historyTrendDataByDate.isEmpty()) {
-            log.warn("没有获取到历史行情数据，topic={}", topic);
-            return;
-        }
-
-        log.info("开始发送历史行情数据到_Kafka_topic={}，总条数={}", topic, historyTrendDataByDate.size());
+//        List<HistoryTrendDTO> historyTrendDataByDate = quotationService.getHistoryTrendDataByDate("20250801", null);
+//        if (historyTrendDataByDate == null || historyTrendDataByDate.isEmpty()) {
+//            log.warn("没有获取到历史行情数据，topic={}", topic);
+//            return;
+//        }
+//
+//        log.info("开始发送历史行情数据到_Kafka_topic={}，总条数={}", topic, historyTrendDataByDate.size());
 
         // ---------------- 批量发送逻辑 ----------------
 //        while (true){
