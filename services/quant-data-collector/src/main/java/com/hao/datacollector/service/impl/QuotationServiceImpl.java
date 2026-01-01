@@ -568,7 +568,9 @@ public class QuotationServiceImpl implements QuotationService {
         if (!StringUtils.hasLength(endDate)) {
             endDate = DateUtil.getCurrentDateTimeByStr(DateTimeFormatConstants.COMPACT_DATE_FORMAT);
         }
-        return quotationMapper.getHistoryTrendDataByDate(startDate, endDate);
+        // 对 endDate 追加当天最后一秒，确保查询覆盖当天所有数据
+        String endDateWithTime = DateUtil.appendEndOfDayTime(endDate);
+        return quotationMapper.getHistoryTrendDataByDate(startDate, endDateWithTime);
     }
 
     /**
