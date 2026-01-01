@@ -1,13 +1,3 @@
-当然可以，小李 👍
-我将为你生成一份可直接放入你的学习笔记或 Git 仓库的 Markdown 文件：
-
-> 📘 **《quant-stock-list 模块落地与面试讲解手册》**
-> ✅ 格式：`quant-stock-list-handbook.md`
-> ✅ 内容包括：模块结构、架构图、技术要点、常见问答、面试讲解模板
-
----
-
-```markdown
 # 📘 quant-stock-list 模块落地与面试讲解手册
 
 > 作者：李昊  
@@ -32,25 +22,27 @@
 
 ## 🧱 2. 模块架构概览
 
-```
+```mermaid
+graph TD
+    Client --> StablePicksController[Controller: 参数校验 + 限流]
+    StablePicksController --> StablePicksService[Service: 核心业务]
+    
+    subgraph StablePicksService
+        direction LR
+        BloomFilter[布隆过滤器<br/>(防穿透)]
+        Caffeine[Caffeine<br/>(L1 缓存)]
+        Redis[Redis<br/>(L2 缓存)]
+        DB[DB回源<br/>(分布式锁防击穿)]
+    end
 
-Client
-│
-▼
-StablePicksController
-│ 参数校验 + 限流 + 幂等控制
-▼
-StablePicksService
-│
-├─ BloomFilter (防穿透)
-├─ Caffeine (L1缓存)
-├─ Redis (L2缓存)
-└─ DB回源 + 分布式锁防击穿
-▼
-MySQL (按月分区表)
-│
-└─ Kafka (异步缓存刷新 + 日志追踪)
-
+    StablePicksService --> BloomFilter
+    StablePicksService --> Caffeine
+    StablePicksService --> Redis
+    StablePicksService --> DB
+    
+    DB --> MySQL[(MySQL<br/>按月分区表)]
+    MySQL --> Kafka[Kafka: strategy.result.completed<br/>(异步缓存刷新)]
+    Kafka --> StablePicksService
 ```
 
 ---
@@ -73,7 +65,6 @@ MySQL (按月分区表)
 ## ⚙️ 4. 系统分层结构
 
 ```
-
 com.hao.strategyengine.module.stablepicks
 ├── application
 │   └── StablePicksController.java     # REST API 层
@@ -91,7 +82,6 @@ com.hao.strategyengine.module.stablepicks
 └── resources
 ├── mapper/StablePicksMapper.xml
 └── db/schema.sql
-
 ```
 
 ---
@@ -101,10 +91,8 @@ com.hao.strategyengine.module.stablepicks
 ### (1) 多级缓存查询流程
 
 ```
-
 请求进入 → BloomFilter过滤 → 查Caffeine → 查Redis → 拿锁防击穿 → 回源DB → 异步刷新
-
-````
+```
 
 | 层级 | 技术 | 缓存时间 | 特点 |
 |------|------|-----------|------|
@@ -197,7 +185,7 @@ flowchart TD
     E --> F[CacheRefresher -> Redis + Caffeine]
     C --> G[Prometheus Metrics Exporter]
     G --> H[Grafana Dashboard]
-````
+```
 
 ---
 
@@ -218,24 +206,3 @@ flowchart TD
 >
 > 它能在大厂面试中成为“**你能讲透的系统设计题**”，
 > 并通过真实代码、架构图与性能验证支撑你的思路。
-
----
-
-**建议保存路径：**
-
-```
-docs/architecture/quant-stock-list-handbook.md
-```
-
-**推荐搭配复盘方式：**
-
-1. 打开 `docs/` 复盘架构图；
-2. 每天背一组问答；
-3. 模拟口述 3 分钟项目讲解。
-
-```
-
----
-
-是否希望我接着帮你生成这份 `.md` 文件直接可下载（含目录和图表格式优化版本）？
-```
