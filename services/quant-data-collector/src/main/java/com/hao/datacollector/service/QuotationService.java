@@ -1,6 +1,7 @@
 package com.hao.datacollector.service;
 
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
+import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 
 import java.util.List;
 
@@ -61,4 +62,14 @@ public interface QuotationService {
      * @return 历史分时数据
      */
     List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList);
+
+    /**
+     * 根据时间区间获取指定指标列表的历史分时数据
+     *
+     * @param startDate  起始日期（格式 yyyyMMdd）
+     * @param endDate    结束日期（格式 yyyyMMdd）
+     * @param indexList  指标代码列表（为空时查询所有指标）
+     * @return 指标历史分时数据
+     */
+    List<HistoryTrendIndexDTO> getIndexHistoryTrendDataByIndexList(String startDate, String endDate, List<String> indexList);
 }

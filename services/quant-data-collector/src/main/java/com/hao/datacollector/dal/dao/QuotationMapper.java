@@ -87,4 +87,18 @@ public interface QuotationMapper {
             @Param("endDate") String endDate,
             @Param("windCodeList") List<String> stockList
     );
+
+    /**
+     * 查询指标历史分时数据
+     *
+     * @param startDate     开始日期
+     * @param endDate       结束日期
+     * @param indexCodeList 指标代码集合（为空时查询所有指标）
+     * @return 指标历史分时数据
+     */
+    List<HistoryTrendIndexDTO> selectIndexByWindCodeListAndDate(
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("indexCodeList") List<String> indexCodeList
+    );
 }

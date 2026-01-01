@@ -641,4 +641,46 @@ public class QuotationServiceImpl implements QuotationService {
         // 默认返回空列表
         return Collections.emptyList();
     }
+
+    /**
+     * 根据时间区间获取指定指标列表的历史分时数据
+     * <p>
+     * 指标表不分冷热，直接查询 tb_quotation_index_history_trend 表
+     *
+     * @param startDate 起始日期（格式 yyyyMMdd）
+     * @param endDate   结束日期（格式 yyyyMMdd）
+     * @param indexList 指标代码列表（为空时查询所有指标）
+     * @return 指标历史分时数据
+     */
+    @Override
+    public List<HistoryTrendIndexDTO> getIndexHistoryTrendDataByIndexList(String startDate, String endDate, List<String> indexList) {
+        // 参数校验
+        if (!StringUtils.hasLength(startDate)) {
+            log.warn("指标查询起始日期为空|Index_query_startDate_empty");
+            return Collections.emptyList();
+        }
+
+        // endDate 默认值处理
+        if (!StringUtils.hasLength(endDate)) {
+            endDate = DateUtil.getCurrentDateTimeByStr(DateTimeFormatConstants.COMPACT_DATE_FORMAT);
+        }
+
+        // 对 endDate 追加当天最后一秒，确保查询覆盖当天所有数据
+        String endDateWithTime = DateUtil.appendEndOfDayTime(endDate);
+        // 对 startDate 追加当天第一秒
+        String startDateWithTime = DateUtil.appendStartOfDayTime(startDate);
+
+        log.info("查询指标历史分时数据|Query_index_history_trend,range={}-{},indexCount={}",
+                startDateWithTime, endDateWithTime, indexList == null ? "all" : indexList.size());
+
+        List<HistoryTrendIndexDTO> result = quotationMapper.selectIndexByWindCodeListAndDate(
+                startDateWithTime,
+                endDateWithTime,
+                indexList == null ? Collections.emptyList() : indexList
+        );
+
+        log.info("指标历史分时数据查询完成|Index_history_trend_query_done,resultCount={}", result.size());
+        return result;
+    }
 }
+

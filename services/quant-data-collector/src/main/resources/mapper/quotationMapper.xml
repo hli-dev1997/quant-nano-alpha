@@ -135,4 +135,33 @@
         </if>
         ORDER BY trade_date ASC
     </select>
+
+    <!-- 指标历史分时数据查询 ResultMap -->
+    <resultMap id="HistoryTrendIndexDataMap" type="com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO">
+        <result property="windCode" column="wind_code"/>
+        <result property="tradeDate" column="trade_date"/>
+        <result property="latestPrice" column="latest_price"/>
+        <result property="totalVolume" column="total_volume"/>
+        <result property="totalAmount" column="total_amount"/>
+    </resultMap>
+
+    <!-- 查询指标历史分时数据 -->
+    <select id="selectIndexByWindCodeListAndDate" resultMap="HistoryTrendIndexDataMap">
+        SELECT
+            wind_code,
+            trade_date,
+            latest_price,
+            total_volume,
+            total_amount
+        FROM tb_quotation_index_history_trend
+        WHERE trade_date <![CDATA[>=]]> #{startDate}
+          AND trade_date <![CDATA[<=]]> #{endDate}
+        <if test="indexCodeList != null and indexCodeList.size() > 0">
+            AND wind_code IN
+            <foreach collection="indexCodeList" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        ORDER BY trade_date ASC
+    </select>
 </mapper>

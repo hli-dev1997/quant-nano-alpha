@@ -1,6 +1,7 @@
 package com.hao.datacollector.web.controller;
 
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
+import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.service.QuotationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,5 +83,18 @@ public class QuotationController {
             @RequestParam List<String> stockList
     ) {
         return quotationService.getHistoryTrendDataByStockList(startDate, endDate, stockList);
+    }
+
+    @Operation(summary = "获取指定指标列表历史分时数据", description = "根据时间区间获取指定指标列表的历史分时数据")
+    @GetMapping("/get_index_trend")
+    public List<HistoryTrendIndexDTO> getIndexHistoryTrendDataByIndexList(
+            @Parameter(description = "起始日期，格式yyyyMMdd", required = true)
+            @RequestParam String startDate,
+            @Parameter(description = "结束日期，格式yyyyMMdd", required = true)
+            @RequestParam String endDate,
+            @Parameter(description = "指标代码列表（为空时查询所有指标）", required = false)
+            @RequestParam(required = false) List<String> indexList
+    ) {
+        return quotationService.getIndexHistoryTrendDataByIndexList(startDate, endDate, indexList);
     }
 }
