@@ -30,3 +30,6 @@ application*.yml
 /config/
 secrets/
 !services/quant-stock-list/src/main/resources/application.yml
+
+# 忽略特定文档目录
+common/src/main/java/docs/quant-strategy-engine/strategy/
