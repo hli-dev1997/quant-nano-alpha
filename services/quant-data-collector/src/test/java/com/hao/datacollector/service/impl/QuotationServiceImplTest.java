@@ -44,8 +44,8 @@ class QuotationServiceImplTest {
     @Test
     @DisplayName("集成测试_查询热数据_2024年")
     void testGetHistoryTrend_OnlyHotData() {
-        String startDate = "2024-01-04"; // 2024年首个交易日附近
-        String endDate = "2024-01-05";
+        String startDate = "20240104"; // 2024年首个交易日附近
+        String endDate = "20240105";
         List<String> stockList = Collections.singletonList(STOCK_CODE);
 
         log.info("开始测试：仅查询热数据，范围 {} 至 {}", startDate, endDate);
@@ -70,8 +70,8 @@ class QuotationServiceImplTest {
     @Test
     @DisplayName("集成测试_查询温数据_2023年")
     void testGetHistoryTrend_OnlyWarmData() {
-        String startDate = "2023-12-28"; // 2023年年末
-        String endDate = "2023-12-29";
+        String startDate = "20231228"; // 2023年年末
+        String endDate = "20231229";
         List<String> stockList = Collections.singletonList(STOCK_CODE);
 
         log.info("开始测试：仅查询温数据，范围 {} 至 {}", startDate, endDate);
@@ -96,8 +96,8 @@ class QuotationServiceImplTest {
     @Test
     @DisplayName("集成测试_跨冷热表并行查询_2023跨2024")
     void testGetHistoryTrend_AcrossHotAndWarmData_Parallel() {
-        String startDate = "2023-12-28";
-        String endDate = "2024-01-05";
+        String startDate = "20231228";
+        String endDate = "20240105";
         List<String> stockList = Collections.singletonList(STOCK_CODE);
 
         log.info("开始测试：跨冷热表并行查询，范围 {} 至 {}", startDate, endDate);
