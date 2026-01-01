@@ -1,7 +1,6 @@
 package com.hao.datacollector.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.hao.datacollector.common.enums.quotation.TableRangeEnum;
 import com.hao.datacollector.common.utils.HttpUtil;
 import com.hao.datacollector.dal.dao.QuotationMapper;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
@@ -12,6 +11,7 @@ import com.hao.datacollector.service.QuotationService;
 import constants.DataSourceConstants;
 import constants.DateTimeFormatConstants;
 import enums.SpeedIndicatorEnum;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * 行情数据同步实现，涵盖基础行情与分时走势的抓取、解析与落库。
@@ -68,16 +70,22 @@ public class QuotationServiceImpl implements QuotationService {
     @Autowired
     private QuotationMapper quotationMapper;
 
+    @Resource(name = "ioTaskExecutor")
+    private Executor ioTaskExecutor; // 注入IO密集型线程池
+
     /**
      * 请求成功标识
      */
     private static final String SUCCESS_FLAG = "200 OK";
 
     /**
-     * 多表查询
+     * 温热数据分界线：2024-01-01
+     * 2024年及以后的数据在热表 (tb_quotation_history_hot)
+     * 2024年以前的数据在温表 (tb_quotation_history_warm)
      */
-    private static final String oldVersion = "1.0";
-    private static final String newVersion = "2.0";
+    private static final LocalDate HOT_DATA_START_DATE = LocalDate.of(2024, 1, 1);
+    private static final String TABLE_HOT = "tb_quotation_history_hot";
+    private static final String TABLE_WARM = "tb_quotation_history_warm";
 
     /**
      * 获取基础行情数据
@@ -561,58 +569,63 @@ public class QuotationServiceImpl implements QuotationService {
      * @param startDate 起始日期
      * @param endDate   结束日期
      * @param stockList 股票列表
-     * @param version   版本号:多表查询:1.0(默认),改良冷热表查询:2.0
      * @return 历史分时数据
      */
     @Override
-    public List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList, String version) {
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.COMPACT_DATE_FORMAT);
+    public List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList) {
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         LocalDate start = LocalDate.parse(startDate, pattern);
         LocalDate end = LocalDate.parse(endDate, pattern);
-        List<HistoryTrendDTO> result = new ArrayList<>();
-        //多表查询
-        if (oldVersion.equals(version)) {
-            // 遍历所有跨越的月份
-            LocalDate current = LocalDate.of(start.getYear(), start.getMonth(), 1);
-            LocalDate endMonth = LocalDate.of(end.getYear(), end.getMonth(), 1);
-            while (!current.isAfter(endMonth)) {
-                String tableName = String.format("tb_quotation_history_trend_%d%02d", current.getYear(), current.getMonthValue());
-                // 该月的起始和结束日期
-                LocalDate monthStart = current.withDayOfMonth(1);
-                LocalDate monthEnd = current.withDayOfMonth(current.lengthOfMonth());
-                // 限制在 start/end 范围内
-                String queryStart = (current.equals(start.withDayOfMonth(1)) ? start : monthStart).format(pattern);
-                //处理精度问题
-                String queryEnd = (current.equals(endMonth) ? end : monthEnd).format(pattern);
-//                queryEnd = DateUtil.stringTimeToAdjust(queryEnd, DateTimeFormatConstants.COMPACT_DATE_FORMAT, 1);
-                // 调试日志
-                log.info("日志记录|Log_message,Query_table={},_range_{}_~_{},_stockList={}", tableName, queryStart, queryEnd, stockList);
-                List<HistoryTrendDTO> part = quotationMapper.selectByWindCodeListAndDate(
-                        tableName, queryStart, queryEnd, stockList
-                );
-                result.addAll(part);
-                current = current.plusMonths(1);
+        // 判断查询范围
+        boolean queryWarm = start.isBefore(HOT_DATA_START_DATE);
+        boolean queryHot = end.isAfter(HOT_DATA_START_DATE) || end.isEqual(HOT_DATA_START_DATE);
+        // 1. 仅查询热表
+        if (queryHot && !queryWarm) {
+            log.info("查询热数据表|Query_hot_table,range={}-{},stocks={}", startDate, endDate, stockList.size());
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, startDate, endDate, stockList);
+        }
+        // 2. 仅查询温表
+        if (queryWarm && !queryHot) {
+            log.info("查询温数据表|Query_warm_table,range={}-{},stocks={}", startDate, endDate, stockList.size());
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startDate, endDate, stockList);
+        }
+        // 3. 跨冷热表查询，使用CompletableFuture并行执行
+        if (queryWarm && queryHot) {
+            log.info("并行查询冷热数据表|Parallel_query_hot_warm_tables,range={}-{},stocks={}", startDate, endDate, stockList.size());
+            // 定义温表查询范围
+            LocalDate warmEnd = HOT_DATA_START_DATE.minusDays(1);
+            String warmEndDateStr = warmEnd.format(pattern);
+            // 定义热表查询范围
+            String hotStartDateStr = HOT_DATA_START_DATE.format(pattern);
+            // 异步查询温表
+            CompletableFuture<List<HistoryTrendDTO>> warmFuture = CompletableFuture.supplyAsync(() -> {
+                log.info("异步查询温表开始|Async_query_warm_start,range={}-{}", startDate, warmEndDateStr);
+                return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startDate, warmEndDateStr, stockList);
+            }, ioTaskExecutor);
+            // 异步查询热表
+            CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() -> {
+                log.info("异步查询热表开始|Async_query_hot_start,range={}-{}", hotStartDateStr, endDate);
+                return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endDate, stockList);
+            }, ioTaskExecutor);
+            // 等待两个查询都完成
+            CompletableFuture.allOf(warmFuture, hotFuture).join();
+            try {
+                List<HistoryTrendDTO> warmData = warmFuture.get();
+                List<HistoryTrendDTO> hotData = hotFuture.get();
+
+                // 创建一个足够大的列表并按顺序合并结果，保证时间连续性
+                List<HistoryTrendDTO> combinedResult = new ArrayList<>(warmData.size() + hotData.size());
+                combinedResult.addAll(warmData); // 温数据（旧）在前
+                combinedResult.addAll(hotData);  // 热数据（新）在后
+                log.info("冷热数据合并完成|Merge_hot_warm_data_done,warmCount={},hotCount={},totalCount={}", warmData.size(), hotData.size(), combinedResult.size());
+                return combinedResult;
+            } catch (Exception e) {
+                log.error("并行查询冷热数据失败|Parallel_query_failed", e);
+                Thread.currentThread().interrupt(); // 恢复中断状态
+                return Collections.emptyList();
             }
         }
-        //判断当前传入startDate和endDate所属年份
-        //跨越冷热双表则使用多线程查询结果后合并(暂未使用多线程)
-        /**todo 待优化
-         *  未来做“区间裁剪器”
-         *  加入排序保证结果稳定
-         *  大量数据时使用 CompletableFuture 并行查询
-         *  mapper SQL 确保范围条件严格走索引
-         */
-        else if (newVersion.equals(version)) {
-            //tb_quotation_history_warm [2020, 2023]
-            //tb_quotation_history_hot [2024, 2025]
-            List<String> tableNames = TableRangeEnum.resolveTables(startDate, endDate, DateTimeFormatConstants.COMPACT_DATE_FORMAT);
-            for (String tableName : tableNames) {
-                List<HistoryTrendDTO> part = quotationMapper.selectByWindCodeListAndDate(
-                        tableName, startDate, endDate, stockList
-                );
-                result.addAll(part);
-            }
-        }
-        return result;
+        // 默认返回空列表
+        return Collections.emptyList();
     }
 }

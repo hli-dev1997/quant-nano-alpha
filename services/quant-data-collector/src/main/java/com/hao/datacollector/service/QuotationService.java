@@ -58,8 +58,7 @@ public interface QuotationService {
      * @param startDate 起始日期
      * @param endDate   结束日期
      * @param stockList 股票列表
-     * @param version   版本号:多表查询:1.0(默认),改良冷热表查询:2.0
      * @return 历史分时数据
      */
-    List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList, String version);
+    List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList);
 }

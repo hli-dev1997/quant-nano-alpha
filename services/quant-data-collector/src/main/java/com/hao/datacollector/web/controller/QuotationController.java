@@ -74,15 +74,13 @@ public class QuotationController {
     @Operation(summary = "获取指定股票列表当日分时数据", description = "根据交易日获取指定股票列表当日分时数据")
     @GetMapping("/get_date_trend")
     public List<HistoryTrendDTO> getHistoryTrendDataByStockList(
-            @Parameter(description = "起始日期，格式yyyy-MM-dd", required = true)
+            @Parameter(description = "起始日期，格式yyyyMMdd", required = true)
             @RequestParam String startDate,
-            @Parameter(description = "结束日期，格式yyyy-MM-dd", required = true)
+            @Parameter(description = "结束日期，格式yyyyMMdd", required = true)
             @RequestParam String endDate,
             @Parameter(description = "股票列表", required = true)
-            @RequestParam List<String> stockList,
-            @Parameter(description = "版本号:多表查询:1.0(默认),改良冷热表查询:2.0", required = false)
-            @RequestHeader(required = false, defaultValue = "1.0") String version
+            @RequestParam List<String> stockList
     ) {
-        return quotationService.getHistoryTrendDataByStockList(startDate, endDate, stockList, version);
+        return quotationService.getHistoryTrendDataByStockList(startDate, endDate, stockList);
     }
 }
