@@ -1,8 +1,9 @@
-<!-- kafka-appender.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- kafka-appender.xml - Kafka日志追加器配置 -->
 <included>
-    <!-- 在included文件中定义springProperty和property -->
-    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="data-collector"/>
-    <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-data-collector"/>
+    <!-- 从Spring配置读取属性 -->
+    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="strategy-engine"/>
+    <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-strategy-engine"/>
     <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
     <springProperty scope="context" name="bootstrapServers" source="spring.kafka.bootstrap-servers"
                     defaultValue="192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092"/>
@@ -18,9 +19,8 @@
             <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
                 <!--
                     自定义JSON格式模式
-                    注意：timestamp格式需与 DateTimeFormatConstants.ISO_DATETIME_UTC_FORMAT 保持一致
-                    格式：yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-                    主机信息将在 KafkaLogbackConfig 中通过重启 Appender 更新
+                    注意：使用 %property{...} 动态引用，确保运行时获取最新值
+                    timestamp格式需与 DateTimeFormatConstants.ISO_DATETIME_UTC_FORMAT 保持一致
                 -->
                 <pattern>
                     <pattern>
@@ -50,7 +50,7 @@
         <!-- 传递策略：异步发送日志到Kafka -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
 
-        <!-- Kafka生产者配置 - 与Nacos配置保持一致 -->
+        <!-- Kafka生产者配置 -->
         <producerConfig>bootstrap.servers=${bootstrapServers}</producerConfig>
         <producerConfig>acks=all</producerConfig>
         <producerConfig>retries=2147483647</producerConfig>

@@ -60,6 +60,19 @@
             <artifactId>spring-kafka</artifactId>
             <version>3.3.6</version> <!-- 对应 Spring Boot 3.x -->
         </dependency>
+        
+        <!-- Kafka 日志输出 -->
+        <dependency>
+            <groupId>com.github.danielwegener</groupId>
+            <artifactId>logback-kafka-appender</artifactId>
+            <version>0.2.0-RC2</version>
+        </dependency>
+        <!-- 日志 JSON 格式化 -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
 
         <!-- ======================== 文档与工具 ======================== -->
         <!--负载均衡-->

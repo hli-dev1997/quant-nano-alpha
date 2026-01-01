@@ -18,7 +18,7 @@ import com.hao.strategyengine.common.model.core.StrategyContext;
 import com.hao.strategyengine.common.model.request.StrategyRequest;
 import com.hao.strategyengine.common.model.response.StrategyResultBundle;
 import com.hao.strategyengine.core.facade.StrategyEngineFacade;
-import com.hao.strategyengine.integration.kafka.KafkaConsumerConfig;
+import com.hao.strategyengine.integration.kafka.KafkaResultPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -80,9 +80,9 @@ public class StrategyController {
     private final StrategyEngineFacade engine;
 
     /**
-     * Kafka 发布配置类，用于异步广播计算结果
+     * Kafka 结果发布器，用于异步广播计算结果
      */
-    private final KafkaConsumerConfig kafkaPublisher;
+    private final KafkaResultPublisher kafkaPublisher;
 
     /**
      * ===============================================================

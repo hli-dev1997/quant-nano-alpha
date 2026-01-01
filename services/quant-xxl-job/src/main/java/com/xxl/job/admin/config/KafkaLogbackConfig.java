@@ -1,15 +1,16 @@
-package com.hao.datacollector.web.config;
+package com.xxl.job.admin.config;
 
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.github.danielwegener.logback.kafka.KafkaAppender;
 import integration.kafka.KafkaConstants;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.lang.NonNull;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -17,58 +18,35 @@ import java.util.Enumeration;
 
 /**
  * Kafka Logback 配置热更新器
- *
- * <p>问题背景：
- * - logback 在 Spring 容器启动之前就初始化，此时 Nacos 配置还未加载
- * - 导致 logback-spring.xml 中无法获取到正确的 Kafka 集群地址和主机信息
- * - 最终使用默认值导致主机信息缺失（hostname=unknown, ip=unknown）
- *
- * <p>解决方案：
- * - 在应用完全启动后（ApplicationReadyEvent），重新配置 Kafka Appender
- * - 此时 Nacos 配置已加载，可以获取到正确的配置信息
- * - 动态更新 KafkaAppender 的所有配置参数，包括 bootstrap.servers、主机信息等
- * - 设置系统属性供 kafka-appender.xml 使用，确保字段完整性
- *
- * <p>设计思路（大厂面试官视角）：
- * - 生命周期管理：利用 Spring 事件机制在合适时机更新配置
- * - 配置热更新：支持 @RefreshScope 实现配置动态刷新
- * - 完整配置：不仅更新 Kafka 地址，还包括主机信息、主题等
- * - 容错处理：配置更新失败时不影响应用正常运行
- * - 日志可见：详细记录配置更新过程，便于问题排查
- *
- * @author quant-team
- * @since 2025-10-21
  */
-@Slf4j
 @Component
-@RefreshScope
 public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyEvent> {
 
-    @Value("${spring.kafka.bootstrap-servers}")
+    private static final Logger log = LoggerFactory.getLogger(KafkaLogbackConfig.class);
+
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String kafkaBootstrap;
 
-    @Value("${spring.profiles.active}")
+    @Value("${spring.profiles.active:dev}")
     private String env;
 
     @Value("${server.port:8080}")
     private String serverPort;
 
-    @Value("${spring.application.name:data-collector}")
+    @Value("${spring.application.name:xxl-job}")
     private String serviceName;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
         log.info("应用启动完成开始更新Kafka配置|App_ready_update_kafka_logback");
         updateKafkaConfig();
     }
 
     public void updateKafkaConfig() {
         try {
-            // 获取主机信息用于日志标识
             String hostName = getHostName();
             String hostIp = getBestHostIp();
             
-            // 设置系统属性（兼容其他可能依赖系统属性的组件）
             System.setProperty("HOST_IP", hostIp);
             System.setProperty("server.port", serverPort);
             System.setProperty("spring.application.name", serviceName);
@@ -77,9 +55,6 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
             
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             
-            // 关键修复：使用 LoggerContext.putProperty() 设置属性
-            // System.setProperty() 设置的是 JVM 系统属性，Logback 的 ${} 变量语法无法识别
-            // 必须使用 loggerContext.putProperty() 才能让 Logback Encoder 正确解析这些变量
             loggerContext.putProperty("HOST_IP", hostIp);
             loggerContext.putProperty(KafkaConstants.LOGBACK_PROP_HOST_NAME, hostName);
             loggerContext.putProperty(KafkaConstants.LOGBACK_PROP_HOST_IP, hostIp);
@@ -88,16 +63,12 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
             loggerContext.putProperty(KafkaConstants.LOGBACK_PROP_ENV, env);
             loggerContext.putProperty(KafkaConstants.LOGBACK_PROP_TOPIC, KafkaConstants.LOG_TOPIC_PREFIX + serviceName);
             
-            KafkaAppender kafkaAppender = (KafkaAppender) loggerContext.getLogger("ROOT")
+            KafkaAppender<ILoggingEvent> kafkaAppender = (KafkaAppender<ILoggingEvent>) loggerContext.getLogger("ROOT")
                     .getAppender(KafkaConstants.KAFKA_APPENDER_NAME);
 
             if (kafkaAppender != null) {
                 log.info("找到KafkaAppender开始更新配置|Kafka_appender_found_update_start");
-                
-                // 停止 appender
                 kafkaAppender.stop();
-                
-                // 更新 Kafka 配置（使用与 Nacos 配置一致的参数）
                 kafkaAppender.addProducerConfig("bootstrap.servers=" + kafkaBootstrap);
                 kafkaAppender.addProducerConfig("acks=all");
                 kafkaAppender.addProducerConfig("retries=2147483647");
@@ -111,66 +82,37 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
                 // 更新 encoder 的 pattern，注入实际的主机信息
                 updateEncoderPattern(kafkaAppender, loggerContext, hostName, hostIp, serverPort, serviceName, env);
                 
-                // 重新启动 appender
                 kafkaAppender.start();
                 
                 log.info("Kafka配置更新成功|Kafka_logback_update_done");
-                log.info("Kafka集群|Kafka_bootstrap,bootstrap={}", kafkaBootstrap);
-                log.info("主机名|Host_name,name={}", hostName);
                 log.info("主机IP|Host_ip,ip={}", hostIp);
-                log.info("服务端口|Service_port,port={}", serverPort);
                 log.info("服务名|Service_name,name={}", serviceName);
-                log.info("运行环境|Active_profile,profile={}", env);
-                log.info("日志主题|Log_topic,topic=log-{}", serviceName);
                 log.info("实例ID|Instance_id,instanceId={}-{}-{}", serviceName, hostIp, serverPort);
-                log.info("Kafka日志推送恢复|Kafka_log_push_recovered");
-                
             } else {
-                log.warn("未找到KafkaAppender|Kafka_appender_not_found,appenderName={}", KafkaConstants.KAFKA_APPENDER_NAME);
-                
-                // 列出所有可用的 Appender
-                log.info("当前可用Appender列表|Available_appender_list");
-                loggerContext.getLoggerList().forEach(logger -> {
-                    logger.iteratorForAppenders().forEachRemaining(appender -> {
-                        log.info("Appender信息|Appender_info,logger={},appender={},type={}",
-                            logger.getName(), appender.getName(), appender.getClass().getSimpleName());
-                    });
-                });
+                log.warn("未找到KafkaAppender|Kafka_appender_not_found");
             }
-            
         } catch (Exception e) {
             log.error("更新Kafka配置失败|Kafka_logback_update_failed,error={}", e.getMessage(), e);
-            log.warn("Kafka日志推送异常|Kafka_log_push_unstable");
         }
     }
 
-    /**
-     * 更新 Encoder 的 Pattern，注入实际的主机信息
-     * 
-     * <p>由于 LogstashEncoder 的 JSON pattern 中 ${} 变量在 XML 加载时就被静态解析了，
-     * 我们需要创建新的 encoder 来替换旧的，从而实现动态更新主机信息。
-     */
     @SuppressWarnings("unchecked")
-    private void updateEncoderPattern(KafkaAppender kafkaAppender, LoggerContext loggerContext,
+    private void updateEncoderPattern(KafkaAppender<ILoggingEvent> kafkaAppender, LoggerContext loggerContext,
                                        String hostName, String hostIp, String port, 
                                        String service, String env) {
         try {
-            // 创建新的 encoder
             net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder newEncoder = 
                 new net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder();
             newEncoder.setContext(loggerContext);
             
-            // 创建 providers
             net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders providers = 
                 new net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders();
             providers.setContext(loggerContext);
             
-            // 创建 pattern provider
             net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider patternProvider = 
                 new net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider();
             patternProvider.setContext(loggerContext);
             
-            // 使用实际值替换占位符构建 JSON pattern
             String pattern = String.format("""
                 {
                 "env": "%s",
@@ -192,41 +134,27 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
             newEncoder.setProviders(providers);
             newEncoder.start();
             
-            // 替换旧的 encoder
             kafkaAppender.setEncoder(newEncoder);
-            
             log.debug("Encoder pattern 更新成功|Encoder_pattern_updated");
         } catch (Exception e) {
-            log.warn("更新 Encoder pattern 失败，使用默认配置|Encoder_pattern_update_failed,error={}", e.getMessage());
+            log.warn("更新 Encoder pattern 失败|Encoder_pattern_update_failed,error={}", e.getMessage());
         }
     }
 
-    /**
-     * 获取主机名
-     */
     private String getHostName() {
         try {
-            // 优先使用环境变量
             String envHostName = System.getenv("HOSTNAME");
             if (envHostName != null && !envHostName.trim().isEmpty()) {
                 return envHostName.trim();
             }
-            
-            // 使用 Java API 获取
             return InetAddress.getLocalHost().getHostName();
-            
         } catch (Exception e) {
-            log.debug("获取主机名失败|Host_name_load_failed,error={}", e.getMessage());
             return "unknown";
         }
     }
 
-    /**
-     * 获取最佳主机 IP 地址
-     */
     private String getBestHostIp() {
         try {
-            // 优先使用环境变量
             String envHostIp = System.getenv("HOST_IP");
             if (envHostIp != null && !envHostIp.trim().isEmpty()) {
                 return envHostIp.trim();
@@ -238,88 +166,36 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
-                
-                // 跳过非活动和回环接口
-                if (!networkInterface.isUp() || networkInterface.isLoopback()) {
-                    continue;
-                }
+                if (!networkInterface.isUp() || networkInterface.isLoopback()) continue;
                 
                 Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress address = addresses.nextElement();
-                    
-                    // 跳过回环地址和 IPv6
-                    if (address.isLoopbackAddress() || !address.isSiteLocalAddress()) {
-                        continue;
-                    }
+                    if (address.isLoopbackAddress() || !address.isSiteLocalAddress()) continue;
                     
                     String ip = address.getHostAddress();
                     int score = calculateIpScore(ip, networkInterface.getName());
-                    
                     if (score > bestScore) {
                         bestScore = score;
                         bestIp = ip;
                     }
                 }
             }
-            
-            if (bestIp != null) {
-                return bestIp;
-            }
-            
-            // 兜底方案
-            return InetAddress.getLocalHost().getHostAddress();
-            
+            return bestIp != null ? bestIp : InetAddress.getLocalHost().getHostAddress();
         } catch (Exception e) {
-            log.debug("获取主机IP失败|Host_ip_load_failed,error={}", e.getMessage());
             return "unknown";
         }
     }
 
-    /**
-     * 计算 IP 地址评分（分数越高越优）
-     */
     private int calculateIpScore(String ip, String interfaceName) {
         int score = 0;
+        if (ip.contains(".")) score += 10;
+        if (ip.startsWith("192.168.")) score += 30;
+        else if (ip.startsWith("10.")) score += 20;
         
-        // IPv4 优于 IPv6
-        if (ip.contains(".")) {
-            score += 10;
-        }
-        
-        // 私有网段优先级：192.168.x.x > 10.x.x.x > 172.16-31.x.x
-        if (ip.startsWith("192.168.")) {
-            score += 30;
-        } else if (ip.startsWith("10.")) {
-            score += 20;
-        } else if (ip.matches("172\\.(1[6-9]|2[0-9]|3[0-1])\\..*")) {
-            score += 15;
-        }
-        
-        // 物理网卡优于虚拟网卡
         String lowerName = interfaceName.toLowerCase();
-        if (lowerName.startsWith("eth") || lowerName.startsWith("en")) {
-            score += 20;
-        } else if (lowerName.contains("docker") || lowerName.contains("veth") || 
-                   lowerName.contains("br-") || lowerName.contains("virbr")) {
-            score -= 10; // 虚拟网卡降分
-        }
-        
+        if (lowerName.startsWith("eth") || lowerName.startsWith("en")) score += 20;
+        else if (lowerName.contains("docker") || lowerName.contains("veth")) score -= 10;
         return score;
-    }
-
-    /**
-     * 手动刷新配置（支持配置中心动态更新）
-     */
-    public void refreshKafkaConfig() {
-        log.info("手动刷新Kafka配置|Manual_refresh_kafka_logback");
-        updateKafkaConfig();
-    }
-
-    /**
-     * 获取当前 Kafka 配置信息
-     */
-    public String getCurrentKafkaConfig() {
-        return kafkaBootstrap;
     }
 }

@@ -24,6 +24,7 @@ public final class KafkaConstants {
     public static final String TOPIC_LOG_QUANT_DATA_COLLECTOR = "log-quant-data-collector";
     public static final String TOPIC_LOG_QUANT_STRATEGY_ENGINE = "log-quant-strategy-engine";
     public static final String TOPIC_LOG_QUANT_RISK_CONTROL = "log-quant-risk-control";
+    public static final String TOPIC_LOG_QUANT_STOCK_LIST = "log-quant-stock-list"; // 新增：股票列表服务日志
     public static final String TOPIC_LOG_QUANT_DATA_ARCHIVE = "log-quant-data-archive";
 
     // 消费组（示例：审计服务）
@@ -32,6 +33,31 @@ public final class KafkaConstants {
 
     // Bean 名称
     public static final String LISTENER_CONTAINER_FACTORY = "kafkaListenerContainerFactory";
+
+    // ======================== Logback Kafka Appender 常量 ========================
+    /** 日志主题前缀（各服务日志主题名 = LOG_TOPIC_PREFIX + 服务名） */
+    public static final String LOG_TOPIC_PREFIX = "log-";
+    
+    /** Kafka Appender 名称（用于动态配置更新） */
+    public static final String KAFKA_APPENDER_NAME = "kafkaAppender";
+    
+    /** Logback 属性名：主机IP */
+    public static final String LOGBACK_PROP_HOST_IP = "hostIp";
+    
+    /** Logback 属性名：主机名 */
+    public static final String LOGBACK_PROP_HOST_NAME = "HOST_NAME";
+    
+    /** Logback 属性名：服务端口 */
+    public static final String LOGBACK_PROP_HOST_PORT = "hostPort";
+    
+    /** Logback 属性名：服务名 */
+    public static final String LOGBACK_PROP_SERVICE = "service";
+    
+    /** Logback 属性名：环境 */
+    public static final String LOGBACK_PROP_ENV = "env";
+    
+    /** Logback 属性名：主题 */
+    public static final String LOGBACK_PROP_TOPIC = "topic";
 
     // ======================== 运行期元数据（展示/治理） ========================
     /** 主题元数据对象：封装 code/name/desc/category 等信息 */
@@ -98,6 +124,12 @@ public final class KafkaConstants {
                 TOPIC_LOG_QUANT_RISK_CONTROL,
                 "风控服务日志",
                 "quant-risk-control 服务运行日志与风控事件",
+                KafkaTopics.Category.BOTH
+        ));
+        m.put(TOPIC_LOG_QUANT_STOCK_LIST, new TopicMeta(
+                TOPIC_LOG_QUANT_STOCK_LIST,
+                "股票列表服务日志",
+                "quant-stock-list 服务运行日志与列表管理事件",
                 KafkaTopics.Category.BOTH
         ));
         m.put(TOPIC_LOG_QUANT_DATA_ARCHIVE, new TopicMeta(

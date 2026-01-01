@@ -2,6 +2,7 @@ package com.quant.data.archive.integration.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import constants.DateTimeFormatConstants;
 import integration.kafka.KafkaConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -57,9 +58,9 @@ public class LogConsumerService {
     /** 错误计数器 */
     private final AtomicLong errorCounter = new AtomicLong(0);
 
-    /** 时间格式化器 */
+    /** 时间格式化器（使用公共常量定义的UTC格式） */
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = 
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+            DateTimeFormatter.ofPattern(DateTimeFormatConstants.ISO_DATETIME_UTC_FORMAT);
 
     @KafkaListener(
             topics = {
@@ -68,6 +69,7 @@ public class LogConsumerService {
                     KafkaConstants.TOPIC_LOG_QUANT_DATA_COLLECTOR,
                     KafkaConstants.TOPIC_LOG_QUANT_STRATEGY_ENGINE,
                     KafkaConstants.TOPIC_LOG_QUANT_RISK_CONTROL,
+                    KafkaConstants.TOPIC_LOG_QUANT_STOCK_LIST, // 新增：股票列表服务日志
                     KafkaConstants.TOPIC_LOG_QUANT_DATA_ARCHIVE
             },
             groupId = KafkaConstants.GROUP_DATA_ARCHIVE,
@@ -279,17 +281,19 @@ public class LogConsumerService {
                     truncateMessage(logMessage.getException(), 500));
         }
         
-        // 待办：这里可以扩展更多处理逻辑
-        // 1. 存储到数据库
-        // 2. 推送到 Elasticsearch
-        // 3. 触发告警规则
-        // 4. 生成监控指标
-        
-        // 示例：存储到数据库（需要实现对应的 Service 和 Entity）
-        // auditLogService.saveLog(logMessage);
-        
-        // 示例：推送到 ES（需要实现对应的 ES 客户端）
+        // TODO: [ES接入] 在此处实现将日志批量写入 Elasticsearch 的逻辑
+        // 建议：
+        // 1. 使用 BulkProcessor 或批量接口提高写入性能
+        // 2. 按天或按月分索引存储（如 log-2025.07.22）
+        // 3. 确保 logMessage 实体字段与 ES Mapping 兼容
+        // 示例代码：
         // elasticsearchService.indexLog(logMessage);
+        
+        // TODO: [告警接入] 在此处实现基于日志级别的实时告警
+        // 建议：
+        // 1. 过滤 ERROR 级别日志
+        // 2. 对接钉钉/飞书/邮件通知
+        // 3. 实现告警抑制（防止刷屏）
     }
 
     /**

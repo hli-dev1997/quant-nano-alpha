@@ -59,6 +59,12 @@ public class DateTimeFormatConstants {
     public static final String ISO_DATETIME_WITH_MILLIS_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     /**
+     * ISO 8601 UTC 日期时间格式（带毫秒和Z后缀）
+     * 用于Kafka日志、ES索引等需要UTC时间戳的场景
+     */
+    public static final String ISO_DATETIME_UTC_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    /**
      * 中文日期格式
      */
     public static final String CHINESE_DATE_FORMAT = "yyyy年MM月dd日";

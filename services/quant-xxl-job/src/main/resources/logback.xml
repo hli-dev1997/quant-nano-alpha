@@ -4,6 +4,9 @@
     <contextName>logback</contextName>
     <property name="log.dir" value="./logs"/>
 
+    <!-- 引入Kafka Appender配置 -->
+    <include resource="kafka-appender.xml"/>
+
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -37,10 +40,15 @@
         </encoder>
     </appender>
 
+    <!-- 降低 Kafka 相关日志级别，避免日志循环 -->
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="com.alibaba.nacos" level="WARN"/>
+
     <root level="info">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
         <appender-ref ref="FILE_NACOS"/>
+        <appender-ref ref="kafkaAppender"/>
     </root>
 
 </configuration>
