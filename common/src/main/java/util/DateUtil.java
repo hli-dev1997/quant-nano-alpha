@@ -788,4 +788,67 @@ public final class DateUtil {
         sdf.setTimeZone(TimeZone.getTimeZone(DateTimeFormatConstants.SHANG_HAI)); // 设置为北京时间
         return sdf.format(date);
     }
+
+    // ==================== 日期边界处理方法 ====================
+
+    /**
+     * 将日期字符串追加当天最后一秒的时间 " 23:59:59"
+     * 用于确保 SQL 条件 trade_date <= 'YYYY-MM-DD 23:59:59' 能完整覆盖当天所有数据
+     * <p>
+     * 自动检测日期格式并转换为 MySQL 兼容的 DATETIME 格式：
+     * - "20231229" → "2023-12-29 23:59:59"
+     * - "2023-12-29" → "2023-12-29 23:59:59"
+     *
+     * @param dateStr 日期字符串（支持 yyyyMMdd 或 yyyy-MM-dd 格式）
+     * @return MySQL 兼容的日期时间字符串，如果输入为空则返回原值
+     */
+    public static String appendEndOfDayTime(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return dateStr;
+        }
+        String formattedDate = normalizeToStandardDateFormat(dateStr);
+        return formattedDate + " 23:59:59";
+    }
+
+    /**
+     * 将日期字符串追加当天第一秒的时间 " 00:00:00"
+     * 用于确保 SQL 条件 trade_date >= 'YYYY-MM-DD 00:00:00' 能从当天零点开始查询
+     * <p>
+     * 自动检测日期格式并转换为 MySQL 兼容的 DATETIME 格式：
+     * - "20231229" → "2023-12-29 00:00:00"
+     * - "2023-12-29" → "2023-12-29 00:00:00"
+     *
+     * @param dateStr 日期字符串（支持 yyyyMMdd 或 yyyy-MM-dd 格式）
+     * @return MySQL 兼容的日期时间字符串，如果输入为空则返回原值
+     */
+    public static String appendStartOfDayTime(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return dateStr;
+        }
+        String formattedDate = normalizeToStandardDateFormat(dateStr);
+        return formattedDate + " 00:00:00";
+    }
+
+    /**
+     * 将日期字符串规范化为标准格式 yyyy-MM-dd
+     * 支持将紧凑格式 yyyyMMdd 转换为标准格式
+     *
+     * @param dateStr 日期字符串
+     * @return 标准格式的日期字符串 yyyy-MM-dd
+     */
+    private static String normalizeToStandardDateFormat(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return dateStr;
+        }
+        // 如果已经是标准格式（包含-），直接返回
+        if (dateStr.contains("-")) {
+            return dateStr;
+        }
+        // 紧凑格式 yyyyMMdd 转换为 yyyy-MM-dd
+        if (dateStr.length() == 8) {
+            return dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
+        }
+        // 其他情况直接返回原值
+        return dateStr;
+    }
 }

@@ -54,6 +54,14 @@ import java.util.concurrent.Executor;
  * 2. 将原始 JSON/数组结构映射为业务 DTO，并进行必要的格式转换（时间、价格精度等）。
  * 3. 利用 Mapper 层提供的批量写入能力，将数据持久化，同时暴露查询与统计接口供外部调用。
  */
+
+/**
+ * 实现思路：
+ * <p>
+ * 1. 通过配置化 URL 和认证信息调用 Wind 行情接口，获取基础与分时原始数据。
+ * 2. 将原始 JSON/数组结构映射为业务 DTO，并进行必要的格式转换（时间、价格精度等）。
+ * 3. 利用 Mapper 层提供的批量写入能力，将数据持久化，同时暴露查询与统计接口供外部调用。
+ */
 @Slf4j
 @Service
 public class QuotationServiceImpl implements QuotationService {
@@ -579,22 +587,26 @@ public class QuotationServiceImpl implements QuotationService {
         // 判断查询范围
         boolean queryWarm = start.isBefore(HOT_DATA_START_DATE);
         boolean queryHot = end.isAfter(HOT_DATA_START_DATE) || end.isEqual(HOT_DATA_START_DATE);
+
+        // 对 endDate 追加当天最后一秒，确保查询覆盖当天所有数据
+        String endDateWithTime = DateUtil.appendEndOfDayTime(endDate);
+
         // 1. 仅查询热表
         if (queryHot && !queryWarm) {
-            log.info("查询热数据表|Query_hot_table,range={}-{},stocks={}", startDate, endDate, stockList.size());
-            return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, startDate, endDate, stockList);
+            log.info("查询热数据表|Query_hot_table,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, startDate, endDateWithTime, stockList);
         }
         // 2. 仅查询温表
         if (queryWarm && !queryHot) {
-            log.info("查询温数据表|Query_warm_table,range={}-{},stocks={}", startDate, endDate, stockList.size());
-            return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startDate, endDate, stockList);
+            log.info("查询温数据表|Query_warm_table,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startDate, endDateWithTime, stockList);
         }
         // 3. 跨冷热表查询，使用CompletableFuture并行执行
         if (queryWarm && queryHot) {
-            log.info("并行查询冷热数据表|Parallel_query_hot_warm_tables,range={}-{},stocks={}", startDate, endDate, stockList.size());
-            // 定义温表查询范围
+            log.info("并行查询冷热数据表|Parallel_query_hot_warm_tables,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            // 定义温表查询范围（温表的 endDate 也需要追加时间）
             LocalDate warmEnd = HOT_DATA_START_DATE.minusDays(1);
-            String warmEndDateStr = warmEnd.format(pattern);
+            String warmEndDateStr = DateUtil.appendEndOfDayTime(warmEnd.format(pattern));
             // 定义热表查询范围
             String hotStartDateStr = HOT_DATA_START_DATE.format(pattern);
             // 异步查询温表
@@ -602,10 +614,10 @@ public class QuotationServiceImpl implements QuotationService {
                 log.info("异步查询温表开始|Async_query_warm_start,range={}-{}", startDate, warmEndDateStr);
                 return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startDate, warmEndDateStr, stockList);
             }, ioTaskExecutor);
-            // 异步查询热表
+            // 异步查询热表（使用追加时间后的 endDate）
             CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() -> {
-                log.info("异步查询热表开始|Async_query_hot_start,range={}-{}", hotStartDateStr, endDate);
-                return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endDate, stockList);
+                log.info("异步查询热表开始|Async_query_hot_start,range={}-{}", hotStartDateStr, endDateWithTime);
+                return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endDateWithTime, stockList);
             }, ioTaskExecutor);
             // 等待两个查询都完成
             CompletableFuture.allOf(warmFuture, hotFuture).join();
