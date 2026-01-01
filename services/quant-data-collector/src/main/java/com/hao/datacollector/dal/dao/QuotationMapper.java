@@ -73,15 +73,6 @@ public interface QuotationMapper {
     List<String> getCompletedIndexCodes(String maxEndDate);
 
     /**
-     * 获取指定时间段内的股票历史分时数据
-     *
-     * @param startDate 开始时间
-     * @param endDate   结束时间
-     * @return 股票历史分时数据列表
-     */
-    List<HistoryTrendDTO> getHistoryTrendDataByDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
-
-    /**
      * 查询指定表内的历史分时数据
      *
      * @param tableName 表名（动态拼接）

@@ -135,9 +135,4 @@
         </if>
         ORDER BY trade_date ASC
     </select>
-
-    <select id="getHistoryTrendDataByDate" resultMap="HistoryTrendDataMap">
-        SELECT `wind_code`, `trade_date`, `latest_price`, `total_volume`, `average_price`
-        FROM `tb_quotation_history_hot` WHERE `wind_code` = '600519.SH' AND `trade_date` > '2024-01-01' AND `trade_date` <![CDATA[<]]> '2026-01-01'
-    </select>
 </mapper>
