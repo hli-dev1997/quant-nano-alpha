@@ -1,40 +1,41 @@
 package com.hao.strategyengine;
 
-import com.alibaba.cloud.nacos.NacosConfigManager;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.Listener;
 import lombok.extern.slf4j.Slf4j;
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 
 /**
- * 策略引擎服务启动类
+ * 策略引擎服务启动类（极简版）
  *
  * 设计目的：
- * 1. 启动策略引擎服务并加载Spring上下文。
- * 2. 注册Nacos配置监听，感知配置变更。
+ * 1. 启动流式计算引擎服务。
+ * 2. 自动装配Kafka消费者和Redis连接。
  *
  * 为什么需要该类：
- * - 作为服务入口统一承载启动与配置治理流程。
+ * - 作为Spring Boot服务入口，承载启动流程。
  *
  * 核心实现思路：
- * - 通过ApplicationRunner注册配置监听器并记录变更日志。
+ * - Kafka消费者自动启动并开始消费消息
+ * - StreamComputeEngine通过@PostConstruct初始化Worker线程池
+ * - 整个流程由Spring容器自动管理生命周期
+ *
+ * 极简架构说明：
+ * - 不再依赖数据库（排除DataSource自动配置）
+ * - 不再依赖MyBatis（无Mapper扫描）
+ * - 仅保留Kafka和Redis核心依赖
+ *
+ * @author hli
+ * @date 2026-01-02
  */
 @Slf4j
-@MapperScan("com.hao.strategyengine.integration.db.mapper")
-@EnableFeignClients//开启Feign远程调用功能
-@EnableDiscoveryClient//开启服务发现功能
-@EnableScheduling//开启定时任务功能
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        // 中文：排除数据源自动配置，极简模式不需要MySQL
+        // English: Exclude DataSource auto-config, bare metal mode doesn't need MySQL
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class
+})
 public class StrategyEngineApplication {
 
     /**
@@ -42,52 +43,19 @@ public class StrategyEngineApplication {
      *
      * 实现逻辑：
      * 1. 启动Spring应用上下文。
+     * 2. 自动装配并启动：
+     *    - KafkaConsumerService（消费行情消息）
+     *    - StreamDispatchEngine（消息解析分发）
+     *    - StreamComputeEngine（Worker线程池）
+     *    - RedisStrategyRepository（结果存储）
      *
      * @param args 启动参数
      */
     public static void main(String[] args) {
         // 实现思路：
         // 1. 交由SpringApplication启动上下文。
+        // 2. 所有组件通过@Component自动注入。
         SpringApplication.run(StrategyEngineApplication.class, args);
-    }
-
-    // 实现思路：
-    // 1. 项目启动后监听配置文件变化。
-    // 2. 发生变化后记录日志并预留通知入口。
-    @Bean
-    ApplicationRunner applicationRunner(NacosConfigManager nacosConfigManager) {
-        /**
-         * 注册配置监听器
-         *
-         * 实现逻辑：
-         * 1. 获取Nacos配置服务并注册监听器。
-         * 2. 输出配置变更日志，便于运维排查。
-         *
-         * @param nacosConfigManager Nacos配置管理器
-         * @return ApplicationRunner回调
-         */
-        return args -> {
-            // 实现思路：
-            // 1. 获取配置服务并注册监听器。
-            ConfigService configService = nacosConfigManager.getConfigService();
-            configService.addListener("application-dev.yml", "quant-strategy-engine", new Listener() {
-                @Override
-                public Executor getExecutor() {
-                    // 实现思路：
-                    // 1. 使用独立线程池处理配置回调。
-                    return Executors.newFixedThreadPool(2);
-                }
-
-                @Override
-                public void receiveConfigInfo(String configInfo) {
-                    // 实现思路：
-                    // 1. 输出配置变更内容。
-                    // 2. 预留告警通知入口。
-                    log.info("配置监听变更|Config_listener_change,configInfo={}", configInfo);
-                    log.info("发送告警邮件|Send_alert_email");
-                }
-            });
-            log.info("启动配置监听|Start_config_listener");
-        };
+        log.info("策略引擎服务启动完成|Strategy_engine_service_started");
     }
 }
