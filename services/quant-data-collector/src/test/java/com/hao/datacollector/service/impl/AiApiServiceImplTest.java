@@ -197,7 +197,7 @@ public class AiApiServiceImplTest {
         log.info("开始真实测试Gemini带图对话|Start_real_testing_Gemini_image_chat");
         
         // 请确保此路径下有真实的图片文件，否则测试会跳过
-        String imagePath = "e:\\project\\quant-nano-alpha\\docs\\1.png";
+        String imagePath = "e:\\project\\quant-nano-alpha\\docs\\1.jpg";
         
         if (!Files.exists(Paths.get(imagePath))) {
             log.warn("测试跳过_未找到图片文件|Test_skipped_image_not_found,path={}", imagePath);

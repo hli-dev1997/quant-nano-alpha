@@ -679,6 +679,12 @@ public class QuotationServiceImpl implements QuotationService {
                 indexList == null ? Collections.emptyList() : indexList
         );
 
+        // Null safety: mapper may return null in some edge cases
+        if (result == null) {
+            log.warn("Mapper返回null，返回空列表|Mapper_returns_null,returning_empty_list");
+            return Collections.emptyList();
+        }
+
         log.info("指标历史分时数据查询完成|Index_history_trend_query_done,resultCount={}", result.size());
         return result;
     }
