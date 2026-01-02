@@ -187,54 +187,78 @@ public class AiApiServiceImpl implements AiApiService {
     public String geminiChatWithImage(String prompt, String imageBase64, String mimeType) {
         // 实现思路：
         // 1. 组装Gemini多模态请求体（Text + Inline Data）。
-        // 2. 调用API并处理响应。
+        // 2. 调用API并处理响应，带重试机制。
         // 3. 异常兜底处理。
-        try {
-            String model = geminiConfig.getDefaultImageModel();
-            log.info("调用Gemini带图聊天接口|Calling_Gemini_chat_with_image,model={},prompt={}", model, prompt);
+        
+        String model = geminiConfig.getDefaultImageModel();
+        log.info("调用Gemini带图聊天接口|Calling_Gemini_chat_with_image,model={},prompt={}", model, prompt);
 
-            String url = String.format("%s/models/%s:generateContent?key=%s",
-                    geminiConfig.getBaseUrl(),
-                    model,
-                    geminiConfig.getApiKey());
+        String url = String.format("%s/models/%s:generateContent?key=%s",
+                geminiConfig.getBaseUrl(),
+                model,
+                geminiConfig.getApiKey());
 
-            // Build request with inline data (Base64 image)
-            Map<String, Object> inlineData = new HashMap<>();
-            inlineData.put("mime_type", mimeType);
-            inlineData.put("data", imageBase64);
+        // Build request with inline data (Base64 image)
+        Map<String, Object> inlineData = new HashMap<>();
+        inlineData.put("mime_type", mimeType);
+        inlineData.put("data", imageBase64);
 
-            Map<String, Object> imagePart = new HashMap<>();
-            imagePart.put("inline_data", inlineData);
+        Map<String, Object> imagePart = new HashMap<>();
+        imagePart.put("inline_data", inlineData);
 
-            Map<String, Object> textPart = new HashMap<>();
-            textPart.put("text", prompt);
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("text", prompt);
 
-            Map<String, Object> content = new HashMap<>();
-            content.put("parts", List.of(textPart, imagePart));
+        Map<String, Object> content = new HashMap<>();
+        content.put("parts", List.of(textPart, imagePart));
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("contents", List.of(content));
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("contents", List.of(content));
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<String> response = geminiRestTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    entity,
-                    String.class
-            );
+        // 重试机制：最多重试3次
+        int maxRetries = 3;
+        Exception lastException = null;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                log.debug("图片请求尝试|Image_request_attempt={}/{}", attempt, maxRetries);
+                
+                ResponseEntity<String> response = geminiRestTemplate.exchange(
+                        url,
+                        HttpMethod.POST,
+                        entity,
+                        String.class
+                );
 
-            String result = parseGeminiResponse(response.getBody());
-            log.info("Gemini带图调用成功|Gemini_image_chat_success,output={}", result);
-            return result;
-
-        } catch (Exception e) {
-            log.error("Gemini带图请求失败|Gemini_image_request_failed", e);
-            return "Error while contacting Gemini with image: " + e.getMessage();
+                String result = parseGeminiResponse(response.getBody());
+                log.info("Gemini带图调用成功|Gemini_image_chat_success,attempt={},output={}", attempt, result);
+                return result;
+                
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Gemini带图请求失败(尝试{}/{})|Gemini_image_request_failed,attempt={},error={}", 
+                        attempt, maxRetries, attempt, e.getMessage());
+                
+                if (attempt < maxRetries) {
+                    try {
+                        // 重试前等待1秒
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
+        
+        log.error("Gemini带图请求最终失败|Gemini_image_request_finally_failed", lastException);
+        return "Error while contacting Gemini with image: " + 
+                (lastException != null ? lastException.getMessage() : "Unknown error");
     }
 
     /**

@@ -54,7 +54,7 @@ public class GeminiConfig {
     @Value("${ai.gemini.model:gemma-3-1b-it}")
     private String defaultModel;
 
-    @Value("${ai.gemini.model:gemma-3-12b-it}")
+    @Value("${ai.gemini.image-model:gemma-3-12b-it}")
     private String defaultImageModel;
 
     @Value("${ai.gemini.base-url:https://generativelanguage.googleapis.com/v1beta}")
