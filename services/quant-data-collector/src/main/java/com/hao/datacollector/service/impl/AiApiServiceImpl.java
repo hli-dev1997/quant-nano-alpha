@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -316,5 +317,314 @@ public class AiApiServiceImpl implements AiApiService {
             log.error("解析Gemini响应失败|Failed_to_parse_Gemini_response", e);
             return responseBody;
         }
+    }
+
+    /**
+     * 调用 Gemini 音频理解接口
+     *
+     * 实现逻辑：
+     * 1. 使用 gemma-3n-e4b-it 模型配置。
+     * 2. 构建符合 Gemini 多模态协议的 JSON 请求体（包含文本与内联音频数据）。
+     * 3. 设置 HTTP 头信息（Content-Type: application/json）。
+     * 4. 使用 RestTemplate 发送 POST 请求，带重试机制。
+     * 5. 解析响应 JSON，提取模型生成的文本内容。
+     *
+     * @param prompt      用户提示词
+     * @param audioBase64 音频Base64字符串
+     * @param mimeType    音频类型，如 audio/wav, audio/mp3, audio/mpeg
+     * @return 模型回复
+     */
+    @Override
+    public String geminiChatWithAudio(String prompt, String audioBase64, String mimeType) {
+        // 实现思路：
+        // 1. 先通过 Files API 上传音频文件获取 file URI。
+        // 2. 使用 file_data 引用上传的文件（而非 inline_data）。
+        // 3. 调用 generateContent API 进行音频理解。
+        // 4. 带重试机制进行异常兜底处理。
+
+        String model = geminiConfig.getDefaultAudioVideoModel();
+        log.info("调用Gemini音频理解接口|Calling_Gemini_audio_chat,model={},prompt={}", model, prompt);
+
+        // 重试机制：最多重试3次
+        int maxRetries = 3;
+        Exception lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                log.debug("音频请求尝试|Audio_request_attempt={}/{}", attempt, maxRetries);
+
+                // 步骤1：上传音频文件到 Files API
+                String fileUri = uploadFileToGemini(audioBase64, mimeType, "audio");
+                if (fileUri == null || fileUri.startsWith("Error")) {
+                    log.warn("音频文件上传失败|Audio_file_upload_failed,response={}", fileUri);
+                    // 如果上传失败，回退到 inline_data 方式尝试
+                    return callWithInlineData(prompt, audioBase64, mimeType, model, "audio");
+                }
+
+                // 步骤2：使用 file_data 引用方式调用 generateContent
+                String url = String.format("%s/models/%s:generateContent?key=%s",
+                        geminiConfig.getBaseUrl(),
+                        model,
+                        geminiConfig.getApiKey());
+
+                // 构建请求体，使用 file_data 引用上传的文件
+                Map<String, Object> fileData = new HashMap<>();
+                fileData.put("file_uri", fileUri);
+                fileData.put("mime_type", mimeType);
+
+                Map<String, Object> audioPart = new HashMap<>();
+                audioPart.put("file_data", fileData);
+
+                Map<String, Object> textPart = new HashMap<>();
+                textPart.put("text", prompt);
+
+                Map<String, Object> content = new HashMap<>();
+                content.put("parts", List.of(textPart, audioPart));
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("contents", List.of(content));
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+                ResponseEntity<String> response = geminiRestTemplate.exchange(
+                        url,
+                        HttpMethod.POST,
+                        entity,
+                        String.class
+                );
+
+                String result = parseGeminiResponse(response.getBody());
+                log.info("Gemini音频理解调用成功|Gemini_audio_chat_success,attempt={},output={}", attempt, result);
+                return result;
+
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Gemini音频请求失败(尝试{}/{})|Gemini_audio_request_failed,attempt={},error={}",
+                        attempt, maxRetries, attempt, e.getMessage());
+
+                if (attempt < maxRetries) {
+                    try {
+                        // 重试前等待1秒
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }
+
+        log.error("Gemini音频请求最终失败|Gemini_audio_request_finally_failed", lastException);
+        return "Error while contacting Gemini with audio: " +
+                (lastException != null ? lastException.getMessage() : "Unknown error");
+    }
+
+    /**
+     * 上传文件到 Google Files API
+     *
+     * 实现逻辑：
+     * 1. 调用 media.upload 端点上传 Base64 解码后的文件数据。
+     * 2. 返回文件的 URI 供后续 generateContent 使用。
+     *
+     * @param dataBase64 文件 Base64 编码数据
+     * @param mimeType   文件 MIME 类型
+     * @param fileType   文件类型描述（用于日志）
+     * @return 上传后的文件 URI，失败返回错误信息
+     */
+    private String uploadFileToGemini(String dataBase64, String mimeType, String fileType) {
+        try {
+            // Google Files API 上传端点
+            String uploadUrl = String.format("%s/files?key=%s",
+                    geminiConfig.getBaseUrl().replace("/v1beta", "/upload/v1beta"),
+                    geminiConfig.getApiKey());
+
+            // 解码 Base64 数据
+            byte[] fileBytes = Base64.getDecoder().decode(dataBase64);
+
+            // 构建 multipart 请求
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.valueOf(mimeType));
+            headers.set("X-Goog-Upload-Protocol", "raw");
+
+            HttpEntity<byte[]> entity = new HttpEntity<>(fileBytes, headers);
+
+            ResponseEntity<String> response = geminiRestTemplate.exchange(
+                    uploadUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            // 解析响应获取文件 URI
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode root = objectMapper.readTree(response.getBody());
+                JsonNode fileNode = root.path("file");
+                String fileUri = fileNode.path("uri").asText();
+                log.info("文件上传成功|File_upload_success,type={},uri={}", fileType, fileUri);
+                return fileUri;
+            }
+            return "Error: Upload failed with status " + response.getStatusCode();
+
+        } catch (Exception e) {
+            log.warn("文件上传异常|File_upload_exception,type={},error={}", fileType, e.getMessage());
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 使用 inline_data 方式调用（作为 file_data 方式的回退）
+     *
+     * @param prompt     用户提示词
+     * @param dataBase64 文件 Base64 数据
+     * @param mimeType   MIME 类型
+     * @param model      模型名称
+     * @param dataType   数据类型（audio/video）
+     * @return API 响应
+     */
+    private String callWithInlineData(String prompt, String dataBase64, String mimeType, String model, String dataType) {
+        try {
+            String url = String.format("%s/models/%s:generateContent?key=%s",
+                    geminiConfig.getBaseUrl(),
+                    model,
+                    geminiConfig.getApiKey());
+
+            Map<String, Object> inlineData = new HashMap<>();
+            inlineData.put("mime_type", mimeType);
+            inlineData.put("data", dataBase64);
+
+            Map<String, Object> dataPart = new HashMap<>();
+            dataPart.put("inline_data", inlineData);
+
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("text", prompt);
+
+            Map<String, Object> content = new HashMap<>();
+            content.put("parts", List.of(textPart, dataPart));
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("contents", List.of(content));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = geminiRestTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            return parseGeminiResponse(response.getBody());
+
+        } catch (Exception e) {
+            log.error("inline_data方式调用失败|Inline_data_call_failed,type={},error={}", dataType, e.getMessage());
+            return "Error with inline data: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 调用 Gemini 视频理解接口
+     *
+     * 实现逻辑：
+     * 1. 先通过 Files API 上传视频文件获取 file URI。
+     * 2. 使用 file_data 引用上传的文件（而非 inline_data）。
+     * 3. 调用 generateContent API 进行视频理解。
+     * 4. 带重试机制进行异常兜底处理。
+     *
+     * @param prompt      用户提示词
+     * @param videoBase64 视频Base64字符串
+     * @param mimeType    视频类型，如 video/mp4, video/webm
+     * @return 模型回复
+     */
+    @Override
+    public String geminiChatWithVideo(String prompt, String videoBase64, String mimeType) {
+        // 实现思路：
+        // 1. 先上传视频到 Files API。
+        // 2. 使用 file_data 引用方式调用 generateContent。
+        // 3. 带重试机制进行异常兜底处理。
+
+        String model = geminiConfig.getDefaultAudioVideoModel();
+        log.info("调用Gemini视频理解接口|Calling_Gemini_video_chat,model={},prompt={}", model, prompt);
+
+        // 重试机制：最多重试3次（视频文件较大，网络抖动更常见）
+        int maxRetries = 3;
+        Exception lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                log.debug("视频请求尝试|Video_request_attempt={}/{}", attempt, maxRetries);
+
+                // 步骤1：上传视频文件到 Files API
+                String fileUri = uploadFileToGemini(videoBase64, mimeType, "video");
+                if (fileUri == null || fileUri.startsWith("Error")) {
+                    log.warn("视频文件上传失败|Video_file_upload_failed,response={}", fileUri);
+                    // 如果上传失败，回退到 inline_data 方式尝试
+                    return callWithInlineData(prompt, videoBase64, mimeType, model, "video");
+                }
+
+                // 步骤2：使用 file_data 引用方式调用 generateContent
+                String url = String.format("%s/models/%s:generateContent?key=%s",
+                        geminiConfig.getBaseUrl(),
+                        model,
+                        geminiConfig.getApiKey());
+
+                // 构建请求体，使用 file_data 引用上传的文件
+                Map<String, Object> fileData = new HashMap<>();
+                fileData.put("file_uri", fileUri);
+                fileData.put("mime_type", mimeType);
+
+                Map<String, Object> videoPart = new HashMap<>();
+                videoPart.put("file_data", fileData);
+
+                Map<String, Object> textPart = new HashMap<>();
+                textPart.put("text", prompt);
+
+                Map<String, Object> content = new HashMap<>();
+                content.put("parts", List.of(textPart, videoPart));
+
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("contents", List.of(content));
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+                ResponseEntity<String> response = geminiRestTemplate.exchange(
+                        url,
+                        HttpMethod.POST,
+                        entity,
+                        String.class
+                );
+
+                String result = parseGeminiResponse(response.getBody());
+                log.info("Gemini视频理解调用成功|Gemini_video_chat_success,attempt={},output={}", attempt, result);
+                return result;
+
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Gemini视频请求失败(尝试{}/{})|Gemini_video_request_failed,attempt={},error={}",
+                        attempt, maxRetries, attempt, e.getMessage());
+
+                if (attempt < maxRetries) {
+                    try {
+                        // 重试前等待1.5秒（视频处理时间较长）
+                        Thread.sleep(1500);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }
+
+        log.error("Gemini视频请求最终失败|Gemini_video_request_finally_failed", lastException);
+        return "Error while contacting Gemini with video: " +
+                (lastException != null ? lastException.getMessage() : "Unknown error");
     }
 }

@@ -57,6 +57,13 @@ public class GeminiConfig {
     @Value("${ai.gemini.image-model:gemma-3-27b-it}")
     private String defaultImageModel;
 
+    /**
+     * 音视频理解模型配置
+     * gemma-3n-e4b-it 支持视频和音频输入，边缘计算优化
+     */
+    @Value("${ai.gemini.audio-video-model:gemma-3n-e4b-it}")
+    private String defaultAudioVideoModel;
+
     @Value("${ai.gemini.base-url:https://generativelanguage.googleapis.com/v1beta}")
     private String baseUrl;
     
