@@ -50,11 +50,11 @@ public class GeminiConfig {
 
     @Value("${ai.gemini.api-key:}")
     private String apiKey;
-
+    //gemma-3-12b-it, gemma-3-1b-it, gemma-3-27b-it, gemma-3-4b-it, gemma-3n-e4b-it
     @Value("${ai.gemini.model:gemma-3-1b-it}")
     private String defaultModel;
 
-    @Value("${ai.gemini.image-model:gemma-3-12b-it}")
+    @Value("${ai.gemini.image-model:gemma-3-27b-it}")
     private String defaultImageModel;
 
     @Value("${ai.gemini.base-url:https://generativelanguage.googleapis.com/v1beta}")
