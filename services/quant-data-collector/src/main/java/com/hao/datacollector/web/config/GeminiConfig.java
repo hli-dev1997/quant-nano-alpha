@@ -67,7 +67,7 @@ public class GeminiConfig {
     private int proxyPort;
 
     /** HTTP 超时时间（毫秒） */
-    private static final int HTTP_TIMEOUT_MS = 300000;
+    private static final int HTTP_TIMEOUT_MS = 30000000;
 
     /** JSON 解析器（线程安全，可复用） */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

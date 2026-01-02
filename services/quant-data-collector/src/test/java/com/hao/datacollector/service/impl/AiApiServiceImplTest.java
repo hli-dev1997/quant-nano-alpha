@@ -20,7 +20,14 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -227,6 +234,144 @@ public class AiApiServiceImplTest {
             log.error("读取图片文件失败|Failed_to_read_image_file", e);
             Assumptions.assumeTrue(false, "Skipping test: Failed to read image file");
         }
+    }
+
+    /**
+     * 验证并展示所有可用的 Gemini 模型
+     *
+     * 此测试将列出当前 API Key 有权限访问的所有模型，
+     * 并检查配置文件中指定的默认模型是否在可用列表中。
+     */
+    @Test
+    @Order(6)
+    @DisplayName("验证_展示所有可用模型")
+    public void testVerifyAllAvailableModels() {
+        log.info("开始验证所有可用模型|Start_verifying_all_available_models");
+
+        // 1. 触发列表加载
+        String rawJson = aiApiService.listGeminiModels();
+        assertNotNull(rawJson, "模型列表响应不应为空");
+
+        // 2. 获取解析后的模型集合
+        Set<String> availableModels = geminiConfig.getAvailableModels();
+
+        log.info("当前可用模型总数|Total_available_models={}", availableModels.size());
+        log.info("可用模型列表如下|Available_models_list:");
+        availableModels.stream()
+                .sorted()
+                .forEach(model -> log.info(" - {}", model));
+
+        // 3. 验证配置的默认模型是否可用
+        String defaultModel = geminiConfig.getDefaultModel();
+        String defaultImageModel = geminiConfig.getDefaultImageModel();
+
+        boolean isDefaultModelAvailable = geminiConfig.isModelAvailable(defaultModel);
+        boolean isDefaultImageModelAvailable = geminiConfig.isModelAvailable(defaultImageModel);
+
+        log.info("配置模型可用性检查|Configured_models_check:");
+        log.info(" - 默认文本模型 [{}]: {}", defaultModel, isDefaultModelAvailable ? "可用 (Available)" : "不可用 (Not Available)");
+        log.info(" - 默认图片模型 [{}]: {}", defaultImageModel, isDefaultImageModelAvailable ? "可用 (Available)" : "不可用 (Not Available)");
+
+        // 断言至少有一些模型可用
+        assertFalse(availableModels.isEmpty(), "可用模型列表不应为空");
+
+        log.info("验证所有可用模型测试通过|Verify_all_available_models_test_passed");
+    }
+
+    /**
+     * 实际调用所有可用模型，验证哪些模型可以真正工作
+     * 
+     * 注意：此测试可能会比较耗时，因为它会遍历所有模型。
+     */
+    @Test
+    @Order(7)
+    @DisplayName("压力测试_实际调用所有可用模型")
+    public void testInvokeAllAvailableModels() {
+        log.info("开始实际调用所有可用模型|Start_invoking_all_available_models");
+
+        // 1. 确保模型列表已加载
+        if (geminiConfig.getAvailableModels().isEmpty()) {
+            aiApiService.listGeminiModels();
+        }
+        
+        Set<String> allModels = geminiConfig.getAvailableModels();
+        // 过滤模型：
+        // 1. 排除包含 "embedding" 的模型（通常不支持 generateContent）
+        // 2. 排除以 "models/" 开头的名称（避免重复测试，且 URL 拼接可能出错）
+        // 3. 排除 "aqa" (Attributed Question Answering) 模型，通常需要特殊输入
+        List<String> modelsToTest = allModels.stream()
+                .filter(m -> !m.startsWith("models/"))
+                .filter(m -> !m.contains("embedding"))
+                .filter(m -> !m.contains("aqa"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        log.info("计划测试的模型数量|Models_to_test_count={}", modelsToTest.size());
+
+        String originalDefaultModel = geminiConfig.getDefaultModel();
+        Map<String, String> results = new HashMap<>();
+        List<String> successModels = new ArrayList<>();
+        List<String> failedModels = new ArrayList<>();
+
+        try {
+            for (String model : modelsToTest) {
+                log.info("正在测试模型: {} ...", model);
+                
+                // 动态切换默认模型
+                geminiConfig.setDefaultModel(model);
+                
+                try {
+                    // 发送简单请求
+                    long start = System.currentTimeMillis();
+                    String response = aiApiService.geminiChat("Hello! Just testing connectivity. Reply 'OK'.");
+                    long duration = System.currentTimeMillis() - start;
+                    
+                    if (response != null && !response.contains("Error") && !response.contains("Exception")) {
+                        results.put(model, "SUCCESS (" + duration + "ms): " + response.substring(0, Math.min(response.length(), 50)).replace("\n", " "));
+                        successModels.add(model);
+                        log.info(" -> 模型 [{}] 调用成功", model);
+                    } else {
+                        results.put(model, "FAILED: Response contained error - " + response);
+                        failedModels.add(model);
+                        log.warn(" -> 模型 [{}] 调用返回错误", model);
+                    }
+                } catch (Exception e) {
+                    results.put(model, "EXCEPTION: " + e.getMessage());
+                    failedModels.add(model);
+                    log.error(" -> 模型 [{}] 调用异常", model, e);
+                }
+                
+                // 避免触发限流，稍微停顿
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            // 恢复原始配置
+            geminiConfig.setDefaultModel(originalDefaultModel);
+        }
+
+        // 输出汇总报告
+        log.info("==================================================");
+        log.info("模型调用测试汇总报告|Model_Invocation_Summary_Report");
+        log.info("==================================================");
+        log.info("测试总数: {}", modelsToTest.size());
+        log.info("成功数量: {}", successModels.size());
+        log.info("失败数量: {}", failedModels.size());
+        
+        log.info("--- 成功模型列表 (可直接复制使用) ---");
+        // 打印一个干净的列表，方便复制
+        List<String> cleanSuccessList = new ArrayList<>(successModels);
+        log.info("SUCCESS_MODELS = {}", cleanSuccessList);
+
+        successModels.forEach(m -> log.info("[SUCCESS] {} -> {}", m, results.get(m)));
+        
+        log.info("--- 失败模型列表 ---");
+        failedModels.forEach(m -> log.info("[FAILED]  {} -> {}", m, results.get(m)));
+        log.info("==================================================");
+        
+        // 只要有一个模型成功，就认为测试通过（因为有些模型可能确实无法处理简单文本，或者权限受限）
+        assertFalse(successModels.isEmpty(), "没有一个模型能成功调用，请检查 API Key 或网络");
     }
 
     /**
