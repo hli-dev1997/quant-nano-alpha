@@ -851,4 +851,44 @@ public final class DateUtil {
         // 其他情况直接返回原值
         return dateStr;
     }
+
+    // ==================== 交易日期解析方法 ====================
+
+    /**
+     * 智能解析交易日期字符串
+     *
+     * 实现逻辑：
+     * 1. 参数为空返回今天。
+     * 2. 支持两种格式：yyyyMMdd 和 yyyy-MM-dd。
+     *
+     * 使用场景：
+     * - 策略数据预热接口的日期参数解析
+     * - 任何需要灵活解析交易日期的场景
+     *
+     * @param tradeDate 日期字符串，支持 yyyyMMdd 或 yyyy-MM-dd 格式
+     * @return LocalDate对象，参数为空时返回今天
+     * @throws IllegalArgumentException 格式不正确时抛出
+     */
+    public static LocalDate parseTradeDate(String tradeDate) {
+        if (tradeDate == null || tradeDate.trim().isEmpty()) {
+            // 中文：默认使用今天
+            // English: Default to today
+            return LocalDate.now();
+        }
+
+        try {
+            // 中文：尝试解析 yyyyMMdd 格式
+            // English: Try parsing yyyyMMdd format
+            if (tradeDate.length() == 8 && !tradeDate.contains("-")) {
+                return LocalDate.parse(tradeDate, COMPACT_DATE_FORMATTER);
+            }
+            // 中文：尝试解析 yyyy-MM-dd 格式
+            // English: Try parsing yyyy-MM-dd format
+            return LocalDate.parse(tradeDate, STANDARD_DATE_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(
+                    String.format("日期格式错误|Invalid_date_format,input=%s,expected=yyyyMMdd_or_yyyy-MM-dd", tradeDate));
+        }
+    }
 }
+

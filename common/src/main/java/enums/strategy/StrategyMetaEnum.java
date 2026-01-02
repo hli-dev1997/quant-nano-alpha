@@ -21,6 +21,8 @@ public enum StrategyMetaEnum {
     SIG_RSI("SIG_RSI", "RSI策略", StrategyType.SIGNAL, "基于相对强弱指数的超买超卖策略", 35, 150),
     SIG_MACD("SIG_MACD", "MACD策略", StrategyType.SIGNAL, "基于MACD金叉死叉的趋势策略", 42, 170),
     SIG_VWAP("SIG_VWAP", "VWAP策略", StrategyType.SIGNAL, "基于成交量加权平均价的机构动向策略", 38, 140),
+    SIG_NINE_TURN("NINE_TURN", "九转序列策略", StrategyType.SIGNAL, "Tom DeMark九转序列，连续9天收盘价低于4天前触发买入信号", 100, 500),
+
 
     // ===================== 信息型（Information） =====================
     INFO_HOT_TOPIC("INFO_TOPIC", "热点题材策略", StrategyType.INFORMATION, "根据题材热点筛选关联股票集合", 20, 100),

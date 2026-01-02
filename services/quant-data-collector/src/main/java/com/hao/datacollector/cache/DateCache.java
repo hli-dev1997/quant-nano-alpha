@@ -65,6 +65,11 @@ public class DateCache {
      */
     public static List<LocalDate> Year2024TradeDateList;
 
+    /**
+     * 2025年的交易日历
+     */
+    public static List<LocalDate> Year2025TradeDateList;
+
 
     @Autowired
     private BaseDataService baseDataService;
@@ -98,6 +103,10 @@ public class DateCache {
         Year2023TradeDateList = baseDataService.getTradeDateListByTime(DateUtil.getFirstDayOfYear(2023, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT), DateUtil.getLastDayOfYear(2023, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
         //2024年的交易日历
         Year2024TradeDateList = baseDataService.getTradeDateListByTime(DateUtil.getFirstDayOfYear(2024, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT), DateUtil.getLastDayOfYear(2024, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        //2025年的交易日历
+        Year2025TradeDateList = baseDataService.getTradeDateListByTime(DateUtil.getFirstDayOfYear(2025, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT), DateUtil.getLastDayOfYear(2025, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+
+
         log.info("交易日历缓存完成|Trade_date_cache_loaded,thisYearSize={},currentYearSize={},year2022Size={},year2023Size={},year2024Size={}",
                 ThisYearTradeDateList.size(), CurrentYearTradeDateList.size(), Year2022TradeDateList.size(),
                 Year2023TradeDateList.size(), Year2024TradeDateList.size());
