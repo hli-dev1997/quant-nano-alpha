@@ -1,6 +1,7 @@
 package com.hao.datacollector.service.impl;
 
 import com.hao.datacollector.cache.DateCache;
+import com.hao.datacollector.cache.StockCache;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.QuotationService;
 import com.hao.datacollector.service.StrategyPreparationService;
@@ -20,11 +21,11 @@ import java.util.stream.Collectors;
 
 /**
  * 策略数据预处理服务实现类
- *
+ * <p>
  * 设计目的：
  * 1. 为九转序列策略预热历史收盘价数据。
  * 2. 将数据按策略规范组织并存入Redis，供策略引擎消费。
- *
+ * <p>
  * 核心实现思路：
  * ┌─────────────────────────────────────────────────────────────┐
  * │  数据流转：                                                  │
@@ -35,12 +36,12 @@ import java.util.stream.Collectors;
  * │                     Field: windCode                         │
  * │                     Value: [price0, price1, ...]            │
  * └─────────────────────────────────────────────────────────────┘
- *
+ * <p>
  * Redis数据结构：
  * - Key: NINE_TURN:PREHEAT:20260102
  * - Hash Field: 600519.SH
  * - Hash Value: "[1800.5, 1795.0, 1802.3, ...]" (JSON数组)
- *
+ * <p>
  * 设计原因：
  * - 使用Hash结构，单个Key存储所有股票，减少Redis Key数量。
  * - 收盘价按时间倒序排列（0=昨日），与策略引擎RingBuffer设计一致。
@@ -63,7 +64,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
     /**
      * 预热九转序列策略所需的历史数据
-     *
+     * <p>
      * 实现逻辑：
      * 1. 校验tradeDate是否在CurrentYearTradeDateList中。
      * 2. 从交易日历中获取前N个交易日（N由枚举配置）。
@@ -79,31 +80,24 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
         // 实现思路：
         // Step 1: 校验交易日有效性
         validateTradeDate(tradeDate);
-
         // 实现思路：
         // Step 2: 获取前N个交易日列表（N由枚举配置）
         List<LocalDate> tradeDates = getLastNTradeDates(tradeDate, NINE_TURN_CONFIG.getHistoryDays());
         log.info("九转预热_获取交易日列表|Nine_turn_preheat_get_trade_dates,tradeDate={},dateCount={}",
                 tradeDate, tradeDates.size());
-
         // 实现思路：
         // Step 3: 查询历史分时数据
-        String startDate = tradeDates.get(tradeDates.size() - 1)
-                .format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.DEFAULT_DATE_FORMAT));
-        String endDate = tradeDates.get(0)
-                .format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.DEFAULT_DATE_FORMAT));
-
-        List<HistoryTrendDTO> historyData = quotationService.getHistoryTrendDataByDate(startDate, endDate);
-        log.info("九转预热_查询历史数据|Nine_turn_preheat_query_history,startDate={},endDate={},recordCount={}",
-                startDate, endDate, historyData.size());
-
+        String startDate = tradeDates.getLast().format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        String endDate = tradeDates.getFirst().format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        List<HistoryTrendDTO> historyData = quotationService.getHistoryTrendDataByStockList(startDate, endDate, StockCache.allWindCode);
+        log.info("九转预热_查询历史数据|Nine_turn_preheat_query_history,startDate={},endDate={},recordCount={}", startDate, endDate, historyData.size());
         if (historyData.isEmpty()) {
             log.warn("九转预热_历史数据为空|Nine_turn_preheat_no_data,startDate={},endDate={}", startDate, endDate);
             return 0;
         }
 
         // 实现思路：
-        // Step 4: 按股票代码分组，提取每日收盘价
+        // Step 4: 按股票代码分组，提取每日收盘价,0号位数值是上一个交易日收盘价
         Map<String, List<Double>> stockClosePrices = extractClosingPrices(historyData, tradeDates);
 
         // 实现思路：
@@ -118,7 +112,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
     /**
      * 校验交易日有效性
-     *
+     * <p>
      * 实现逻辑：
      * 1. 检查tradeDate是否在CurrentYearTradeDateList中。
      * 2. 不在则抛出异常（可能是非交易日或跨年）。
@@ -142,13 +136,13 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
     /**
      * 获取前N个交易日列表
-     *
+     * <p>
      * 实现逻辑：
      * 1. 从交易日历中找到tradeDate的位置。
      * 2. 向前取N个交易日（不包括当天）。
      *
-     * @param tradeDate    当前交易日
-     * @param historyDays  需要的历史天数
+     * @param tradeDate   当前交易日
+     * @param historyDays 需要的历史天数
      * @return 前N个交易日列表（按时间倒序，0=昨日）
      */
     private List<LocalDate> getLastNTradeDates(LocalDate tradeDate, int historyDays) {
@@ -180,7 +174,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
     /**
      * 从历史分时数据中提取每日收盘价
-     *
+     * <p>
      * 实现逻辑：
      * 1. 按股票代码分组。
      * 2. 对每只股票，按交易日再分组。
@@ -189,7 +183,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
      *
      * @param historyData 历史分时数据
      * @param tradeDates  交易日列表（按时间倒序）
-     * @return Map<windCode, List<Double>>
+     * @return Map<windCode, List < Double>>
      */
     private Map<String, List<Double>> extractClosingPrices(
             List<HistoryTrendDTO> historyData,
@@ -244,7 +238,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
     /**
      * 保存数据到Redis Hash
-     *
+     * <p>
      * 实现逻辑：
      * 1. 使用枚举构建Redis Key
      * 2. 遍历stockClosePrices，将每只股票的收盘价列表序列化为JSON。

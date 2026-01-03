@@ -75,6 +75,10 @@ public class StockCache {
         // 1. 批量读取股票基础数据。
         // 2. 构建多维映射结构。
         allWindCode = baseDataMapper.getAllAStockCode();
+        // 初始化补充列表
+        initSupplementWindCode();
+        //添加补充股票代码
+        allWindCode.addAll(supplementWindCode);
         log.info("股票代码缓存完成|Stock_code_cache_loaded,totalSize={}", allWindCode.size());
         List<StockBaseDTO> allWindBaseInfo = baseDataMapper.getAllStockBaseInfo();
         windCodeToNameMap = allWindBaseInfo.stream()
@@ -88,9 +92,6 @@ public class StockCache {
             stockIdToWindCodeMap.putIfAbsent(prefix, windCode);
         }
         log.info("股票ID映射缓存完成|Stock_id_mapping_cache_loaded,mapSize={}", stockIdToWindCodeMap.size());
-
-        // 初始化补充列表
-        initSupplementWindCode();
     }
 
     /**

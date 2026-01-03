@@ -37,7 +37,7 @@ public enum StrategyRedisKeyEnum {
     NINE_TURN_PREHEAT(
             "NINE_TURN",
             "PREHEAT",
-            48,        // TTL: 48小时
+            24,        // TTL: 24小时
             20         // 历史天数: 20天
     );
 

@@ -67,7 +67,8 @@ class StrategyPreparationServiceImplTest {
         List<LocalDate> tradeDates = DateCache.Year2025TradeDateList;
         if (tradeDates != null && tradeDates.size() > 25) {
             // 选择第25个交易日，确保前面有20天可查
-            testTradeDate = tradeDates.get(24);
+//            testTradeDate = tradeDates.get(24);
+            testTradeDate = DateCache.Year2025TradeDateList.getLast();
         } else {
             // 回退到使用2026年的某个交易日
             testTradeDate = LocalDate.of(2026, 2, 10);
@@ -107,8 +108,8 @@ class StrategyPreparationServiceImplTest {
     @DisplayName("集成测试_正常预热流程_验证Redis数据写入")
     void testPrepareNineTurnData_Success() {
         // 前置检查：确保交易日历已初始化
-        assertNotNull(DateCache.CurrentYearTradeDateList, "交易日历应已初始化");
-        assertTrue(DateCache.CurrentYearTradeDateList.size() > 20, "交易日历应有足够数据");
+        assertNotNull(DateCache.Year2025TradeDateList, "交易日历应已初始化");
+        assertTrue(DateCache.Year2025TradeDateList.size() > 20, "交易日历应有足够数据");
 
         log.info("开始测试：正常预热流程，交易日={}", testTradeDate);
 

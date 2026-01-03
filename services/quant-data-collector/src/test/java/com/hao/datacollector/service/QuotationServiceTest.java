@@ -44,7 +44,7 @@ class QuotationServiceTest {
     @Test
     void transferQuotationHistoryTrend() {
         List<String> allWindCodeList = new ArrayList<>(StockCache.allWindCode);
-        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.Year2025TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         //从当年已转档的最大日期(包含),并且剔除最大日期已经转档过的windCode,继续开始转档
         String maxEndDate = quotationMapper.getMaxHistoryTrendEndDate();
         //maxEndDate = "20251225";
@@ -77,7 +77,7 @@ class QuotationServiceTest {
             return;
         }
         // 获取2024年至今的交易日历
-        List<String> year2024TradeDateList = DateUtil.formatLocalDateList(DateCache.Year2024TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        List<String> year2024TradeDateList = DateUtil.formatLocalDateList(DateCache.Year2025TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         List<String> currentYearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         List<String> allTradeDateList = new ArrayList<>();
         allTradeDateList.addAll(year2024TradeDateList);
