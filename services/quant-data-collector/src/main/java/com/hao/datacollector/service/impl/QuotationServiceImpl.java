@@ -688,5 +688,76 @@ public class QuotationServiceImpl implements QuotationService {
         log.info("指标历史分时数据查询完成|Index_history_trend_query_done,resultCount={}", result.size());
         return result;
     }
-}
 
+    /**
+     * 获取指定时间区间内每只股票每日的收盘价（最后一条分时数据）
+     * <p>
+     * 专为策略预热优化，仅返回 windCode, tradeDate, latestPrice 字段。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return 包含每日收盘价的历史数据列表
+     */
+    @Override
+    public List<HistoryTrendDTO> getDailyClosePriceByStockList(String startDate, String endDate, List<String> stockList) {
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        LocalDate start = LocalDate.parse(startDate, pattern);
+        LocalDate end = LocalDate.parse(endDate, pattern);
+        // 判断查询范围
+        boolean queryWarm = start.isBefore(HOT_DATA_START_DATE);
+        boolean queryHot = end.isAfter(HOT_DATA_START_DATE) || end.isEqual(HOT_DATA_START_DATE);
+
+        // 对 endDate 追加当天最后一秒，确保查询覆盖当天所有数据
+        String endDateWithTime = DateUtil.appendEndOfDayTime(endDate);
+
+        // 1. 仅查询热表
+        if (queryHot && !queryWarm) {
+            log.info("查询热数据表(收盘价)|Query_hot_table_close_price,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            return quotationMapper.selectDailyClosePriceByWindCodeListAndDate(TABLE_HOT, startDate, endDateWithTime, stockList);
+        }
+        // 2. 仅查询温表
+        if (queryWarm && !queryHot) {
+            log.info("查询温数据表(收盘价)|Query_warm_table_close_price,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            return quotationMapper.selectDailyClosePriceByWindCodeListAndDate(TABLE_WARM, startDate, endDateWithTime, stockList);
+        }
+        // 3. 跨冷热表查询，使用CompletableFuture并行执行
+        if (queryWarm && queryHot) {
+            log.info("并行查询冷热数据表(收盘价)|Parallel_query_hot_warm_tables_close_price,range={}-{},stocks={}", startDate, endDateWithTime, stockList.size());
+            // 定义温表查询范围（温表的 endDate 也需要追加时间）
+            LocalDate warmEnd = HOT_DATA_START_DATE.minusDays(1);
+            String warmEndDateStr = DateUtil.appendEndOfDayTime(warmEnd.format(pattern));
+            // 定义热表查询范围
+            String hotStartDateStr = HOT_DATA_START_DATE.format(pattern);
+            // 异步查询温表
+            CompletableFuture<List<HistoryTrendDTO>> warmFuture = CompletableFuture.supplyAsync(() -> {
+                log.info("异步查询温表开始(收盘价)|Async_query_warm_start_close_price,range={}-{}", startDate, warmEndDateStr);
+                return quotationMapper.selectDailyClosePriceByWindCodeListAndDate(TABLE_WARM, startDate, warmEndDateStr, stockList);
+            }, ioTaskExecutor);
+            // 异步查询热表（使用追加时间后的 endDate）
+            CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() -> {
+                log.info("异步查询热表开始(收盘价)|Async_query_hot_start_close_price,range={}-{}", hotStartDateStr, endDateWithTime);
+                return quotationMapper.selectDailyClosePriceByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endDateWithTime, stockList);
+            }, ioTaskExecutor);
+            // 等待两个查询都完成
+            CompletableFuture.allOf(warmFuture, hotFuture).join();
+            try {
+                List<HistoryTrendDTO> warmData = warmFuture.get();
+                List<HistoryTrendDTO> hotData = hotFuture.get();
+
+                // 创建一个足够大的列表并按顺序合并结果，保证时间连续性
+                List<HistoryTrendDTO> combinedResult = new ArrayList<>(warmData.size() + hotData.size());
+                combinedResult.addAll(warmData); // 温数据（旧）在前
+                combinedResult.addAll(hotData);  // 热数据（新）在后
+                log.info("冷热数据合并完成(收盘价)|Merge_hot_warm_data_done_close_price,warmCount={},hotCount={},totalCount={}", warmData.size(), hotData.size(), combinedResult.size());
+                return combinedResult;
+            } catch (Exception e) {
+                log.error("并行查询冷热数据失败(收盘价)|Parallel_query_failed_close_price", e);
+                Thread.currentThread().interrupt(); // 恢复中断状态
+                return Collections.emptyList();
+            }
+        }
+        // 默认返回空列表
+        return Collections.emptyList();
+    }
+}

@@ -89,6 +89,22 @@ public interface QuotationMapper {
     );
 
     /**
+     * 查询指定表内的每日收盘价（最后一条分时数据）
+     *
+     * @param tableName 表名（动态拼接）
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param stockList 股票代码集合
+     * @return 历史数据（仅包含 wind_code, trade_date, latest_price）
+     */
+    List<HistoryTrendDTO> selectDailyClosePriceByWindCodeListAndDate(
+            @Param("tableName") String tableName,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("windCodeList") List<String> stockList
+    );
+
+    /**
      * 查询指标历史分时数据
      *
      * @param startDate     开始日期

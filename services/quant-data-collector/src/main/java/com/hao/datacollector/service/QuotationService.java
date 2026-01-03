@@ -72,4 +72,16 @@ public interface QuotationService {
      * @return 指标历史分时数据
      */
     List<HistoryTrendIndexDTO> getIndexHistoryTrendDataByIndexList(String startDate, String endDate, List<String> indexList);
+
+    /**
+     * 获取指定时间区间内每只股票每日的收盘价（最后一条分时数据）
+     * <p>
+     * 专为策略预热优化，仅返回 windCode, tradeDate, latestPrice 字段。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return 包含每日收盘价的历史数据列表
+     */
+    List<HistoryTrendDTO> getDailyClosePriceByStockList(String startDate, String endDate, List<String> stockList);
 }

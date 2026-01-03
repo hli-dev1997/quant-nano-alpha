@@ -88,8 +88,12 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
         // 实现思路：
         // Step 3: 查询历史分时数据
         String startDate = tradeDates.getLast().format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
-        String endDate = tradeDates.getFirst().format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
-        List<HistoryTrendDTO> historyData = quotationService.getHistoryTrendDataByStockList(startDate, endDate, StockCache.allWindCode);
+        // Fix: 使用当前tradeDate作为结束日期，确保覆盖到tradeDates中的最近一天（昨日）。
+        String endDate = tradeDate.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        
+        // 优化：使用专门的轻量级查询接口，只获取每日收盘价
+        List<HistoryTrendDTO> historyData = quotationService.getDailyClosePriceByStockList(startDate, endDate, StockCache.allWindCode);
+        
         log.info("九转预热_查询历史数据|Nine_turn_preheat_query_history,startDate={},endDate={},recordCount={}", startDate, endDate, historyData.size());
         if (historyData.isEmpty()) {
             log.warn("九转预热_历史数据为空|Nine_turn_preheat_no_data,startDate={},endDate={}", startDate, endDate);
@@ -222,6 +226,12 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
                     // 中文：缺失数据用NaN填充
                     // English: Fill missing data with NaN
                     closePrices.add(Double.NaN);
+                    
+                    // 调试日志：如果发现缺失数据，打印警告（仅打印一次或少量）
+                    if (log.isDebugEnabled() && Math.random() < 0.0001) {
+                         log.debug("数据缺失警告|Missing_data_warning,code={},date={},availableDates={}", 
+                                 windCode, date, dailyClosePrices.keySet());
+                    }
                 }
             }
 

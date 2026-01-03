@@ -136,6 +136,40 @@
         ORDER BY trade_date ASC
     </select>
 
+    <!-- 优化查询：仅获取每日收盘价（最后一条分时数据） -->
+    <!-- 方案一：业务逻辑剪枝优化 -->
+    <!-- 通过增加 TIME(trade_date) >= '14:50:00' 过滤条件，大幅减少参与窗口函数计算和排序的数据量 -->
+    <!-- 适用于 A 股市场，收盘价通常产生在 14:50 之后 -->
+    <select id="selectDailyClosePriceByWindCodeListAndDate" resultMap="HistoryTrendDataMap">
+        WITH RankedData AS (
+            SELECT
+                wind_code,
+                trade_date,
+                latest_price,
+                ROW_NUMBER() OVER (PARTITION BY wind_code, DATE(trade_date) ORDER BY trade_date DESC) as rn
+            FROM ${tableName}
+            WHERE trade_date <![CDATA[>=]]> #{startDate}
+              AND trade_date <![CDATA[<=]]> #{endDate}
+
+              <!-- 核心优化：只处理 14:50 之后的数据，过滤掉 95% 的无效数据 -->
+              AND TIME(trade_date) >= '14:50:00'
+
+            <if test="windCodeList != null and windCodeList.size() > 0">
+                AND wind_code IN
+                <foreach collection="windCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+        )
+        SELECT
+            wind_code,
+            trade_date,
+            latest_price
+        FROM RankedData
+        WHERE rn = 1
+        ORDER BY trade_date ASC
+    </select>
+
     <!-- 指标历史分时数据查询 ResultMap -->
     <resultMap id="HistoryTrendIndexDataMap" type="com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO">
         <result property="windCode" column="wind_code"/>
