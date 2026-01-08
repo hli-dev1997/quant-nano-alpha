@@ -44,10 +44,10 @@ class QuotationServiceTest {
     @Test
     void transferQuotationHistoryTrend() {
         List<String> allWindCodeList = new ArrayList<>(StockCache.allWindCode);
-        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.Year2025TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         //从当年已转档的最大日期(包含),并且剔除最大日期已经转档过的windCode,继续开始转档
         String maxEndDate = quotationMapper.getMaxHistoryTrendEndDate();
-        //maxEndDate = "20251225";
+//        String maxEndDate = "20260105";
         List<String> completedWindCodes = quotationMapper.getCompletedWindCodes(maxEndDate);
         int tradeDateIndexOf = yearTradeDateList.indexOf(maxEndDate);
         int batchSize = 100;
@@ -77,15 +77,13 @@ class QuotationServiceTest {
             return;
         }
         // 获取2024年至今的交易日历
-        List<String> year2024TradeDateList = DateUtil.formatLocalDateList(DateCache.Year2025TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         List<String> currentYearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         List<String> allTradeDateList = new ArrayList<>();
-        allTradeDateList.addAll(year2024TradeDateList);
         allTradeDateList.addAll(currentYearTradeDateList);
         // 去重并排序
         allTradeDateList = allTradeDateList.stream().distinct().sorted().collect(Collectors.toList());
         // startDate从2024年开始Year2024TradeDateList的第一个元素
-        String startDate = "20251228";
+        String startDate = "20260105";
         // 过滤出startDate之后的日期
         List<String> targetTradeDateList = allTradeDateList.stream()
                 .filter(date -> date.compareTo(startDate) >= 0)
@@ -119,8 +117,8 @@ class QuotationServiceTest {
                 RiskMarketIndexEnum.SSE_50.getCode()));
         List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         //从当年已转档的最大日期(包含),并且剔除最大日期已经转档过的windCode,继续开始转档
-        String maxEndDate = quotationMapper.getMaxHistoryIndexTrendEndDate("2025");
-//        String maxEndDate = "20250102";
+        String maxEndDate = quotationMapper.getMaxHistoryIndexTrendEndDate("2026");
+//        String maxEndDate = "20260105";
         List<String> completedWindCodes = quotationMapper.getCompletedIndexCodes(maxEndDate);
         int tradeDateIndexOf = yearTradeDateList.indexOf(maxEndDate);
         int batchSize = 100;
@@ -143,9 +141,9 @@ class QuotationServiceTest {
     private void transferOneDayMarketIndex(List<String> yearTradeDateList, List<String> windCodes, int batchSize) {
         int totalSize = windCodes.size();
         for (String tradeDate : yearTradeDateList) {
-            if (tradeDate.contains("2026")) {
+            if (tradeDate.contains("2027")) {
                 log.error("日志记录|Log_message,out!,tradeDate={}", tradeDate);
-                throw new RuntimeException("2026!!!!");
+                throw new RuntimeException("2027!!!!");
             }
             for (int i = 0; i < totalSize; i += batchSize) {
                 List<String> subList = windCodes.subList(i, Math.min(i + batchSize, totalSize));
