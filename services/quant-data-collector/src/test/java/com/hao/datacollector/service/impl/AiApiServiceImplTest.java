@@ -652,6 +652,323 @@ public class AiApiServiceImplTest {
         log.info("无效视频输入处理测试通过|Invalid_video_input_test_passed");
     }
 
+    //region Token限制与并发测试
+
+    /**
+     * Token 限制测试 - 测试 Gemini API 最大支持的 token 数量
+     *
+     * <p><b>测试目的：</b></p>
+     * <ol>
+     *     <li>探测 API 支持的最大输入 token 数量。</li>
+     *     <li>记录不同 token 长度下的响应时间变化。</li>
+     *     <li>识别 token 限制触发时的错误类型。</li>
+     * </ol>
+     *
+     * <p><b>测试思路：</b></p>
+     * <ul>
+     *     <li>逐步增加输入文本长度（按 token 估算）。</li>
+     *     <li>记录每次调用的成功/失败状态和响应时间。</li>
+     *     <li>找到触发限制的临界点。</li>
+     * </ul>
+     *
+     * <p><b>Token 估算规则：</b></p>
+     * 中文约 1-2 字符 = 1 token，英文约 4 字符 = 1 token。
+     * 为简化测试，使用重复文本块逐步扩大输入。
+     */
+    @Test
+    @Order(14)
+    @DisplayName("极限测试_Gemini最大Token支持")
+    public void testGeminiMaxTokenLimit() {
+        log.info("开始测试Gemini最大Token支持|Start_testing_Gemini_max_token_limit");
+
+        // 基础文本块（约 100 个中文字符 ≈ 50-100 tokens）
+        String baseBlock = "这是一段用于测试Token限制的中文文本。我们需要逐步增加文本长度来探测API的最大输入限制。"
+                + "量化交易系统需要分析大量的市场数据和新闻资讯，因此了解API的token限制非常重要。";
+
+        // 测试不同的 token 量级
+        int[] tokenLevels = {100, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000};
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        int lastSuccessTokens = 0;
+        int firstFailTokens = -1;
+
+        log.info("================================================");
+        log.info("Token 限制测试开始 | Token Limit Test Start");
+        log.info("================================================");
+
+        for (int targetTokens : tokenLevels) {
+            // 构建指定长度的文本（按中文估算，约 2 字符 = 1 token）
+            int targetChars = targetTokens * 2;
+            StringBuilder sb = new StringBuilder();
+            while (sb.length() < targetChars) {
+                sb.append(baseBlock);
+            }
+            String longText = sb.substring(0, Math.min(sb.length(), targetChars));
+
+            String prompt = "请阅读以下文本并给出一句话总结：\n\n" + longText + "\n\n请用一句话总结上述内容。";
+            int actualChars = prompt.length();
+            int estimatedTokens = actualChars / 2; // 粗略估算
+
+            log.info("测试目标: {} tokens (实际约 {} 字符, 估算 {} tokens)",
+                    targetTokens, actualChars, estimatedTokens);
+
+            long startTime = System.currentTimeMillis();
+            Map<String, Object> result = new HashMap<>();
+            result.put("targetTokens", targetTokens);
+            result.put("actualChars", actualChars);
+            result.put("estimatedTokens", estimatedTokens);
+
+            try {
+                String response = aiApiService.geminiChat(prompt);
+                long elapsed = System.currentTimeMillis() - startTime;
+
+                result.put("elapsed", elapsed);
+
+                if (response != null && !response.contains("Error") && !response.contains("too long")
+                        && !response.contains("exceeds") && !response.contains("limit")) {
+                    result.put("status", "SUCCESS");
+                    result.put("responseLength", response.length());
+                    result.put("preview", response.substring(0, Math.min(80, response.length())).replace("\n", " "));
+                    lastSuccessTokens = estimatedTokens;
+                    log.info("  -> 成功 | {}ms | 回复长度: {}", elapsed, response.length());
+                } else {
+                    result.put("status", "FAILED");
+                    result.put("error", response);
+                    if (firstFailTokens < 0) firstFailTokens = estimatedTokens;
+                    log.warn("  -> 失败 | {}ms | 错误: {}", elapsed,
+                            response != null ? response.substring(0, Math.min(100, response.length())) : "null");
+                }
+            } catch (Exception e) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                result.put("elapsed", elapsed);
+                result.put("status", "EXCEPTION");
+                result.put("error", e.getMessage());
+                if (firstFailTokens < 0) firstFailTokens = estimatedTokens;
+                log.error("  -> 异常 | {}ms | {}", elapsed, e.getMessage());
+            }
+
+            results.add(result);
+
+            // 如果连续失败两次则停止继续测试
+            long failCount = results.stream()
+                    .filter(r -> !"SUCCESS".equals(r.get("status")))
+                    .count();
+            if (failCount >= 2 && results.size() > 3) {
+                log.info("连续失败，停止测试");
+                break;
+            }
+
+            // 大请求间隔久一点，避免限流
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        // 输出测试报告
+        log.info("================================================");
+        log.info("Token 限制测试报告 | Token Limit Test Report");
+        log.info("================================================");
+        log.info("测试轮数: {}", results.size());
+        log.info("最大成功 Token 数(估算): {}", lastSuccessTokens);
+        if (firstFailTokens > 0) {
+            log.info("首次失败 Token 数(估算): {}", firstFailTokens);
+            log.info("推测 Token 上限区间: {} ~ {}", lastSuccessTokens, firstFailTokens);
+        }
+        log.info("------------------------------------------------");
+        for (Map<String, Object> r : results) {
+            log.info("[{}] {} tokens, {} chars, {}ms, {}",
+                    r.get("status"), r.get("targetTokens"), r.get("actualChars"),
+                    r.get("elapsed"), r.containsKey("preview") ? r.get("preview") : r.get("error"));
+        }
+        log.info("================================================");
+
+        // 至少要有一次成功
+        assertTrue(lastSuccessTokens > 0, "至少应该有一次成功调用");
+    }
+
+    /**
+     * 并发调用测试 - 测试 Gemini API 最大并发数
+     *
+     * <p><b>测试目的：</b></p>
+     * <ol>
+     *     <li>探测 API 支持的最大并发请求数。</li>
+     *     <li>记录不同并发量下的成功率和响应时间。</li>
+     *     <li>识别并发限制触发时的错误类型（如 429 Too Many Requests）。</li>
+     * </ol>
+     *
+     * <p><b>测试思路：</b></p>
+     * <ul>
+     *     <li>使用多线程同时发起多个请求。</li>
+     *     <li>逐步增加并发数直到触发限制。</li>
+     *     <li>统计成功率、限流率、平均响应时间。</li>
+     * </ul>
+     */
+    @Test
+    @Order(15)
+    @DisplayName("极限测试_Gemini最大并发调用")
+    public void testGeminiMaxConcurrency() throws InterruptedException {
+        log.info("开始测试Gemini最大并发调用|Start_testing_Gemini_max_concurrency");
+
+        // 测试不同的并发级别
+        int[] concurrencyLevels = {1, 2, 5, 10, 15, 20, 30, 50};
+
+        List<Map<String, Object>> allResults = new ArrayList<>();
+
+        log.info("================================================");
+        log.info("并发测试开始 | Concurrency Test Start");
+        log.info("================================================");
+
+        for (int concurrency : concurrencyLevels) {
+            log.info("\n--- 测试并发数: {} ---", concurrency);
+
+            // 使用 CountDownLatch 同步所有线程同时开始
+            java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
+            java.util.concurrent.CountDownLatch endLatch = new java.util.concurrent.CountDownLatch(concurrency);
+
+            // 存储每个线程的结果
+            List<Map<String, Object>> threadResults = Collections.synchronizedList(new ArrayList<>());
+
+            // 创建并发线程
+            for (int i = 0; i < concurrency; i++) {
+                final int threadId = i;
+                new Thread(() -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("threadId", threadId);
+
+                    try {
+                        // 等待所有线程就绪
+                        startLatch.await();
+
+                        long start = System.currentTimeMillis();
+                        String prompt = "你好，这是并发测试请求 #" + threadId + "，请简短回复OK。";
+
+                        try {
+                            String response = aiApiService.geminiChat(prompt);
+                            long elapsed = System.currentTimeMillis() - start;
+
+                            result.put("elapsed", elapsed);
+
+                            if (response != null && !response.contains("Error")
+                                    && !response.toLowerCase().contains("rate")
+                                    && !response.contains("429")) {
+                                result.put("status", "SUCCESS");
+                                result.put("responseLength", response.length());
+                            } else if (response != null && (response.toLowerCase().contains("rate")
+                                    || response.contains("429"))) {
+                                result.put("status", "RATE_LIMITED");
+                                result.put("error", response.substring(0, Math.min(100, response.length())));
+                            } else {
+                                result.put("status", "FAILED");
+                                result.put("error", response);
+                            }
+                        } catch (Exception e) {
+                            long elapsed = System.currentTimeMillis() - start;
+                            result.put("elapsed", elapsed);
+
+                            if (e.getMessage() != null && e.getMessage().contains("429")) {
+                                result.put("status", "RATE_LIMITED");
+                            } else {
+                                result.put("status", "EXCEPTION");
+                            }
+                            result.put("error", e.getMessage());
+                        }
+                    } catch (InterruptedException e) {
+                        result.put("status", "INTERRUPTED");
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        threadResults.add(result);
+                        endLatch.countDown();
+                    }
+                }).start();
+            }
+
+            // 记录开始时间并释放所有线程
+            long batchStart = System.currentTimeMillis();
+            startLatch.countDown();
+
+            // 等待所有线程完成（最多30秒）
+            boolean completed = endLatch.await(60, java.util.concurrent.TimeUnit.SECONDS);
+            long batchElapsed = System.currentTimeMillis() - batchStart;
+
+            if (!completed) {
+                log.warn("部分线程超时未完成");
+            }
+
+            // 统计结果
+            long successCount = threadResults.stream()
+                    .filter(r -> "SUCCESS".equals(r.get("status")))
+                    .count();
+            long rateLimitCount = threadResults.stream()
+                    .filter(r -> "RATE_LIMITED".equals(r.get("status")))
+                    .count();
+            long failCount = threadResults.stream()
+                    .filter(r -> "FAILED".equals(r.get("status")) || "EXCEPTION".equals(r.get("status")))
+                    .count();
+
+            double avgElapsed = threadResults.stream()
+                    .filter(r -> r.get("elapsed") != null)
+                    .mapToLong(r -> (Long) r.get("elapsed"))
+                    .average()
+                    .orElse(0);
+
+            Map<String, Object> batchResult = new HashMap<>();
+            batchResult.put("concurrency", concurrency);
+            batchResult.put("totalTime", batchElapsed);
+            batchResult.put("success", successCount);
+            batchResult.put("rateLimited", rateLimitCount);
+            batchResult.put("failed", failCount);
+            batchResult.put("avgElapsed", avgElapsed);
+            batchResult.put("successRate", (successCount * 100.0 / concurrency));
+            allResults.add(batchResult);
+
+            log.info("并发数: {} | 总耗时: {}ms | 成功: {} | 限流: {} | 失败: {} | 成功率: {}% | 平均响应: {}ms",
+                    concurrency, batchElapsed, successCount, rateLimitCount, failCount,
+                    String.format("%.1f", successCount * 100.0 / concurrency),
+                    String.format("%.0f", avgElapsed));
+
+            // 如果限流率超过 50%，停止继续增加并发
+            if (rateLimitCount > concurrency * 0.5) {
+                log.info("限流率超过50%，停止增加并发");
+                break;
+            }
+
+            // 批次间等待，让 API 恢复
+            Thread.sleep(5000);
+        }
+
+        // 输出综合报告
+        log.info("\n================================================");
+        log.info("并发测试综合报告 | Concurrency Test Report");
+        log.info("================================================");
+        log.info("| 并发数 | 成功率 | 成功 | 限流 | 失败 | 平均响应 | 总耗时 |");
+        log.info("|--------|--------|------|------|------|----------|--------|");
+        for (Map<String, Object> r : allResults) {
+            log.info("| {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |",
+                    r.get("concurrency"), r.get("successRate"),
+                    r.get("success"), r.get("rateLimited"), r.get("failed"),
+                    r.get("avgElapsed"), r.get("totalTime"));
+        }
+        log.info("================================================");
+
+        // 找出最大成功并发数
+        int maxSuccessConcurrency = allResults.stream()
+                .filter(r -> ((Long) r.get("success")).intValue() == (Integer) r.get("concurrency"))
+                .mapToInt(r -> (Integer) r.get("concurrency"))
+                .max()
+                .orElse(0);
+
+        log.info("最大无限流并发数: {}", maxSuccessConcurrency);
+        log.info("================================================");
+
+        // 至少并发1要成功
+        assertTrue(allResults.stream().anyMatch(r -> (Long) r.get("success") > 0L),
+                "至少应该有成功的并发请求");
+    }
+
+    //endregion Token限制与并发测试
+
     /**
      * 测试音频模型配置是否正确加载
      *

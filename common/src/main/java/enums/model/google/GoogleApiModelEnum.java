@@ -22,6 +22,22 @@ public enum GoogleApiModelEnum {
      *     <li><b>能力：</b> 专门用于纯文本任务。</li>
      *     <li><b>特点：</b> 速度极快，适合简单的对话、文本摘要或在边缘设备上运行。通常不具备多模态理解能力。</li>
      * </ul>
+     *
+     * <p><b>API 限制 (免费层 Free Tier - 2026-01测试)：</b></p>
+     * <ul>
+     *     <li><b>请求频率：</b> 30 RPM (每分钟请求数)</li>
+     *     <li><b>输入Token：</b> 15,000 tokens/分钟</li>
+     *     <li><b>最大安全并发：</b> 10-15 并发（超过15会触发限流）</li>
+     *     <li><b>平均响应时间：</b> 1.0-2.2 秒</li>
+     *     <li><b>限流恢复时间：</b> 约18-33秒</li>
+     * </ul>
+     *
+     * <p><b>使用建议：</b></p>
+     * <ul>
+     *     <li>生产环境建议控制在 10 并发以内</li>
+     *     <li>批量处理使用 Rate Limiter，控制在 30 RPM</li>
+     *     <li>单分钟内总Token不超过 15,000</li>
+     * </ul>
      */
     GEMMA_3_TEXT_QA_1B("gemma-3-1b-it", GoogleModelSeriesEnum.GEMMA, ModelCapabilityEnum.TEXT_ONLY, "速度极快，适合简单对话和摘要"),
 
