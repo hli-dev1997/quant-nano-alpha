@@ -1,0 +1,757 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.hao:quant-data-collector >--------------------
+[INFO] Building quant-data-collector 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ quant-data-collector ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 18 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 164 source files with javac [debug release 21] to target\classes
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[72,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[91,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[94,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/AbnormalIndexVO.java:[7,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicStockVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/ResultObjectVO.java:[9,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/table/topic/TopicStockDTO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicInfoVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/ActiveSeatsRankVO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/integration/redis/RedisConfig.java:[346,86] 最后一个参数使用了不准确的变量类型的 varargs 方法的非 varargs 调用; 
+  对于 varargs 调用, 应使用 java.lang.Object
+  对于非 varargs 调用, 应使用 java.lang.Object[], 这样也可以抑制此警告
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/verification/VerificationQueryParam.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/verification/VerificationQueryParam.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/TopicServiceImpl.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/TopicServiceImpl.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ quant-data-collector ---
+[INFO] skip non existing resourceDirectory E:\project\quant-nano-alpha\services\quant-data-collector\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 32 source files with javac [debug release 21] to target\test-classes
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/DistributedLockTest.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/DistributedLockTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/report/mysql/PerformanceOatTests.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/report/mysql/PerformanceOatTests.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ quant-data-collector ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.hao.datacollector.service.impl.AiApiServiceImplTest
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+                                                         
+                                                                      ____        _
+                                                                     |  _ \  __ _| |_ __ _
+                                                                     | | | |/ _` | __/ _` |
+                                                                     | |_| | (_| | || (_| |
+                                                                     |____/ \__,_|\__\__,_|
+
+                                                          :: dataCollectionService start successfully!
+                                                                                   :: Spring Boot :: 3.5.3
+                                                         
+                                                           项目名称   : quant-data-collector
+                                                           运行端口   : 8801
+                                                           注册中心   : 127.0.0.1:7000
+                                                           当前环境   : dev
+                                                           调度中心   : http://127.0.0.1:8802/xxl-job-3.1.0
+                                                           执行器名称 : data-collector
+                                                         
+
+2026-01-10 16:47:46.047 [background-preinit] INFO  org.hibernate.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2026-01-10 16:47:46.084 [background-preinit] INFO  org.apache.kafka.clients.producer.ProducerConfig - ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 32768
+	bootstrap.servers = [192.168.254.2:9092, 192.168.254.3:9092, 192.168.254.4:9092]
+	buffer.memory = 67108864
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.gzip.level = -1
+	compression.lz4.level = 9
+	compression.type = snappy
+	compression.zstd.level = 3
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	enable.metrics.push = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.ByteArraySerializer
+	linger.ms = 5
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.ByteArraySerializer
+
+INFO: Sentinel log output type is: file
+INFO: Sentinel log charset is: utf-8
+INFO: Sentinel log base directory is: C:\Users\lihao\logs\csp\
+INFO: Sentinel log name use pid is: false
+INFO: Sentinel log level is: INFO
+2026-01-10 16:47:46.162 [background-preinit] INFO  o.a.k.c.telemetry.internals.KafkaMetricsCollector - initializing Kafka metrics collector
+2026-01-10 16:47:46.209 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - Starting AiApiServiceImplTest using Java 21.0.6 with PID 3508 (started by lihao in E:\project\quant-nano-alpha\services\quant-data-collector)
+2026-01-10 16:47:46.210 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - The following 1 profile is active: "dev"
+2026-01-10 16:47:46.338 [background-preinit] INFO  org.apache.kafka.clients.producer.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+2026-01-10 16:47:46.395 [background-preinit] INFO  org.apache.kafka.common.utils.AppInfoParser - Kafka version: 3.9.1
+2026-01-10 16:47:46.396 [background-preinit] INFO  org.apache.kafka.common.utils.AppInfoParser - Kafka commitId: f745dfdcee2b9851
+2026-01-10 16:47:46.396 [background-preinit] INFO  org.apache.kafka.common.utils.AppInfoParser - Kafka startTimeMs: 1768034866391
+2026-01-10 16:47:46.493 [main] INFO  c.a.cloud.nacos.configdata.NacosConfigDataLoader - [Nacos Config] Load config[dataId=common.yml, group=quant-data-collector] success
+2026-01-10 16:47:46.854 [kafka-producer-network-thread | producer-1] INFO  org.apache.kafka.clients.Metadata - [Producer clientId=producer-1] Cluster ID: n8vjTMpNSPWbUOrWJNnHJg
+2026-01-10 16:47:46.856 [kafka-producer-network-thread | producer-1] INFO  o.a.k.c.producer.internals.TransactionManager - [Producer clientId=producer-1] ProducerId set to 6314 with epoch 0
+2026-01-10 16:47:46.907 [main] INFO  c.a.cloud.nacos.configdata.NacosConfigDataLoader - [Nacos Config] Load config[dataId=application-dev.yml, group=quant-data-collector] success
+2026-01-10 16:47:48.354 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-10 16:47:48.359 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-10 16:47:48.445 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 40 ms. Found 0 Redis repository interfaces.
+2026-01-10 16:47:48.790 [main] INFO  o.springframework.cloud.context.scope.GenericScope - BeanFactory id=0c962dda-39f4-300c-8640-c4403a09863f
+2026-01-10 16:47:50.122 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-01-10 16:47:50.497 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@440d45c5
+2026-01-10 16:47:50.499 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-01-10 16:47:50.538 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=247
+2026-01-10 16:47:50.546 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=6
+2026-01-10 16:47:50.552 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=243
+2026-01-10 16:47:50.559 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=243
+2026-01-10 16:47:50.565 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=242
+2026-01-10 16:47:50.570 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=242
+2026-01-10 16:47:50.574 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=242
+2026-01-10 16:47:50.579 [main] INFO  c.h.datacollector.service.impl.BaseDataServiceImpl - 交易日历查询结果|Trade_date_query_result,recordSize=243
+2026-01-10 16:47:50.580 [main] INFO  com.hao.datacollector.cache.DateCache - 交易日历缓存完成|Trade_date_cache_loaded,thisYearSize=247,currentYearSize=6,year2022Size=242,year2023Size=242,year2024Size=242
+2026-01-10 16:47:50.615 [main] INFO  c.hao.datacollector.integration.redis.RedisConfig - 开始初始化Redis连接_-_host:_127.0.0.1,_port:_6379,_database:_0,_timeout:_PT2S,_password:_已配置
+2026-01-10 16:47:51.318 [main] INFO  c.hao.datacollector.integration.redis.RedisConfig - Redis连接测试成功
+2026-01-10 16:47:51.318 [main] INFO  c.hao.datacollector.integration.redis.RedisConfig - Redis初始化成功_-_连接到_127.0.0.1:6379/0
+2026-01-10 16:47:52.012 [main] INFO  com.hao.datacollector.cache.LimitCache - 涨停映射缓存完成|Limit_up_mapping_cache_done,redisKey=DATA_LIMIT_UP_TRADING_DATE_MAPPING_STOCK_MAP,mapSize=1413
+2026-01-10 16:47:52.110 [main] INFO  com.hao.datacollector.cache.StockCache - 股票代码补充缓存完成|Stock_supplement_code_cache_loaded,supplementSize=311
+2026-01-10 16:47:52.110 [main] INFO  com.hao.datacollector.cache.StockCache - 股票代码缓存完成|Stock_code_cache_loaded,totalSize=5860
+2026-01-10 16:47:52.125 [main] INFO  com.hao.datacollector.cache.StockCache - 股票基础信息缓存完成|Stock_base_cache_loaded,baseInfoSize=5549,nameMapSize=5549
+2026-01-10 16:47:52.127 [main] INFO  com.hao.datacollector.cache.StockCache - 股票ID映射缓存完成|Stock_id_mapping_cache_loaded,mapSize=5860
+2026-01-10 16:47:52.216 [main] INFO  com.hao.datacollector.cache.TopicCache - 题材缓存完成|Topic_cache_loaded,topicStockSize=10449
+2026-01-10 16:47:52.496 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 初始化IO密集型线程池，CPU核数：24
+2026-01-10 16:47:52.501 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - IO密集型线程池初始化完成|IO_thread_pool_ready,coreSize=96,maxSize=192,queueSize=1000
+2026-01-10 16:47:52.545 [main] INFO  com.hao.datacollector.web.config.OpenAIConfig - 日志记录|Log_message,_Initializing_OpenAI_Client_(Proxy:_127.0.0.1:7890)
+2026-01-10 16:47:52.674 [main] INFO  com.hao.datacollector.web.config.GeminiConfig - 初始化Gemini RestTemplate|Initializing_Gemini_RestTemplate,proxy=127.0.0.1:7890
+2026-01-10 16:47:52.811 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 主机信息系统属性初始化开始|Host_info_sysprop_init_start
+2026-01-10 16:47:52.819 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 主机信息系统属性设置完成|Host_info_sysprop_set_done
+2026-01-10 16:47:52.820 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,HOST_NAME|Host_name,name=hli
+2026-01-10 16:47:52.820 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,HOST_IP|Host_ip,ip=192.168.254.1
+2026-01-10 16:47:52.820 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,server.port|Server_port,port=8801
+2026-01-10 16:47:52.821 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,spring.application.name|Service_name,name=quant-data-collector
+2026-01-10 16:47:52.822 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,spring.profiles.active|Active_profile,profile=dev
+2026-01-10 16:47:52.822 [main] INFO  c.h.d.web.config.HostInfoSystemPropertyInitializer - 日志记录|Log_message,logging.kafka.topic|Log_topic,topic=log-quant-data-collector
+2026-01-10 16:47:52.862 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 初始化CPU密集型线程池
+2026-01-10 16:47:52.863 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - CPU密集型线程池初始化完成|CPU_thread_pool_ready,coreSize=25,maxSize=48,queueSize=100
+2026-01-10 16:47:52.971 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 初始化混合型线程池|Init_mixed_thread_pool
+2026-01-10 16:47:52.972 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 混合型线程池初始化完成|Mixed_thread_pool_ready,coreSize=48,maxSize=96,queueSize=400
+2026-01-10 16:47:52.973 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 初始化虚拟线程执行器（需要Java_21+）
+2026-01-10 16:47:52.975 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 虚拟线程执行器初始化成功|Virtual_thread_executor_ready
+2026-01-10 16:47:52.982 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 初始化量化交易专用线程池|Init_quant_thread_pool
+2026-01-10 16:47:52.983 [main] INFO  com.hao.datacollector.web.config.ThreadPoolConfig - 量化交易专用线程池初始化完成|Quant_thread_pool_ready,coreSize=102,maxSize=122,queueSize=200
+2026-01-10 16:47:52.986 [main] INFO  com.hao.datacollector.web.config.XxlJobConfig - 日志记录|Log_message,>>>>>>>>>>>_xxl-job_config_init.
+2026-01-10 16:47:53.601 [main] INFO  o.s.b.actuate.endpoint.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2026-01-10 16:47:53.696 [main] INFO  c.alibaba.cloud.sentinel.SentinelWebMvcConfigurer - [Sentinel Starter] register SentinelWebInterceptor with urlPatterns: [/**].
+2026-01-10 16:47:55.049 [main] INFO  org.springframework.cloud.commons.util.InetUtils - Cannot determine local hostname
+2026-01-10 16:47:55.076 [main] INFO  c.g.x.k.s.configuration.Knife4jAutoConfiguration - init CorsFilter...
+2026-01-10 16:47:56.453 [main] INFO  org.springframework.cloud.commons.util.InetUtils - Cannot determine local hostname
+2026-01-10 16:47:56.492 [main] INFO  com.xxl.job.core.executor.XxlJobExecutor - >>>>>>>>>>> xxl-job register jobhandler success, name:abnormalIndexJob, jobHandler:com.xxl.job.core.handler.impl.MethodJobHandler@30dc14e4[class com.hao.datacollector.service.job.AbnormalJob#todayAbnormalIndexTransferJob]
+2026-01-10 16:47:56.493 [main] INFO  com.xxl.job.core.executor.XxlJobExecutor - >>>>>>>>>>> xxl-job register jobhandler success, name:limitUpJob, jobHandler:com.xxl.job.core.handler.impl.MethodJobHandler@a1a7e28[class com.hao.datacollector.service.job.LimitJob#todayLimitUpTransferJob]
+2026-01-10 16:47:56.493 [main] INFO  com.xxl.job.core.executor.XxlJobExecutor - >>>>>>>>>>> xxl-job register jobhandler success, name:newsBaseTransferJob, jobHandler:com.xxl.job.core.handler.impl.MethodJobHandler@6d70965d[class com.hao.datacollector.service.job.NewsJob#newsBaseTransferJob]
+2026-01-10 16:47:56.588 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - Started AiApiServiceImplTest in 13.228 seconds (process running for 14.381)
+2026-01-10 16:47:56.601 [main] INFO  com.alibaba.nacos.client.config.impl.CacheData - config listener notify warn timeout millis use default 60000 millis 
+2026-01-10 16:47:56.601 [main] INFO  com.alibaba.nacos.client.config.impl.CacheData - nacos.cache.data.init.snapshot = true 
+2026-01-10 16:47:56.601 [scheduling-3] INFO  c.hao.datacollector.web.config.ThreadPoolMonitor - 线程池监控|Thread_pool_stats,type=IO,active=0,poolSize=0,queueSize=0,completed=0
+2026-01-10 16:47:56.601 [scheduling-3] INFO  c.hao.datacollector.web.config.ThreadPoolMonitor - 线程池监控|Thread_pool_stats,type=CPU,active=0,poolSize=0,queueSize=0,completed=0
+2026-01-10 16:47:56.602 [main] INFO  com.alibaba.nacos.client.config.impl.ClientWorker - [fixed-dev-127.0.0.1_7000] [subscribe] application-dev.yml+quant-data-collector+dev
+2026-01-10 16:47:56.617 [main] INFO  com.alibaba.nacos.client.config.impl.CacheData - [fixed-dev-127.0.0.1_7000] [add-listener] ok, tenant=dev, dataId=application-dev.yml, group=quant-data-collector, cnt=1
+2026-01-10 16:47:56.618 [main] INFO  com.hao.datacollector.DataCollectorApplication - 启动配置监听|Start_config_listener
+2026-01-10 16:47:56.618 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 主机信息初始化开始|Host_info_init_start
+2026-01-10 16:47:56.624 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 主机信息获取成功|Host_info_loaded
+2026-01-10 16:47:56.625 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 主机名|Host_name,name=hli
+2026-01-10 16:47:56.625 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 主机IP|Host_ip,ip=192.168.254.1
+2026-01-10 16:47:56.625 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 服务端口|Service_port,port=8801
+2026-01-10 16:47:56.625 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 实例ID|Instance_id,instanceId=quant-data-collector-192.168.254.1-8801
+2026-01-10 16:47:56.625 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 服务名|Service_name,name=quant-data-collector
+2026-01-10 16:47:56.626 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 运行环境|Active_profile,profile=dev
+2026-01-10 16:47:56.626 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 日志主题|Log_topic,topic=log-quant-data-collector
+2026-01-10 16:47:56.626 [main] INFO  com.hao.datacollector.config.HostInfoInitializer - 主机信息初始化完成|Host_info_init_done
+2026-01-10 16:47:56.627 [main] INFO  com.alibaba.nacos.client.config.impl.CacheData - [fixed-dev-127.0.0.1_7000] [add-listener] ok, tenant=dev, dataId=application-dev.yml, group=quant-data-collector, cnt=2
+2026-01-10 16:47:56.628 [main] INFO  c.a.cloud.nacos.refresh.NacosContextRefresher - [Nacos Config] Listening config: dataId=application-dev.yml, group=quant-data-collector
+2026-01-10 16:47:56.629 [main] INFO  com.alibaba.nacos.client.config.impl.ClientWorker - [fixed-dev-127.0.0.1_7000] [subscribe] common.yml+quant-data-collector+dev
+2026-01-10 16:47:56.629 [main] INFO  com.alibaba.nacos.client.config.impl.CacheData - [fixed-dev-127.0.0.1_7000] [add-listener] ok, tenant=dev, dataId=common.yml, group=quant-data-collector, cnt=1
+2026-01-10 16:47:56.630 [main] INFO  c.a.cloud.nacos.refresh.NacosContextRefresher - [Nacos Config] Listening config: dataId=common.yml, group=quant-data-collector
+2026-01-10 16:47:56.630 [main] INFO  com.hao.datacollector.web.config.GeminiConfig - 开始加载Gemini可用模型列表|Start_loading_Gemini_models
+2026-01-10 16:47:56.644 [Thread-20] INFO  com.xxl.job.core.server.EmbedServer - >>>>>>>>>>> xxl-job remoting server start success, nettype = class com.xxl.job.core.server.EmbedServer, port = 8901
+2026-01-10 16:47:56.669 [xxl-job, executor ExecutorRegistryThread] ERROR com.xxl.job.core.util.XxlJobRemotingUtil - Connection refused: getsockopt
+java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1319)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1252)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1138)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1067)
+	at com.xxl.job.core.util.XxlJobRemotingUtil.postBody(XxlJobRemotingUtil.java:99)
+	at com.xxl.job.core.biz.client.AdminBizClient.registry(AdminBizClient.java:46)
+	at com.xxl.job.core.thread.ExecutorRegistryThread$1.run(ExecutorRegistryThread.java:48)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:47:56.672 [xxl-job, executor ExecutorRegistryThread] INFO  com.xxl.job.core.thread.ExecutorRegistryThread - >>>>>>>>>>> xxl-job registry fail, registryParam:RegistryParam{registryGroup='EXECUTOR', registryKey='data-collector', registryValue='http://127.0.0.1:8901/'}, registryResult:ReturnT [code=500, msg=xxl-job remoting error(Connection refused: getsockopt), for url : http://127.0.0.1:8802/xxl-job-3.1.0/api/registry, content=null]
+2026-01-10 16:47:58.757 [main] INFO  com.hao.datacollector.web.config.GeminiConfig - Gemini模型列表加载完成|Gemini_models_loaded,count=100
+2026-01-10 16:47:58.759 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 应用启动完成开始更新Kafka配置|App_ready_update_kafka_logback
+2026-01-10 16:47:58.763 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 找到KafkaAppender开始更新配置|Kafka_appender_found_update_start
+2026-01-10 16:47:58.764 [main] INFO  org.apache.kafka.clients.producer.KafkaProducer - [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 9223372036854775807 ms.
+2026-01-10 16:47:58.772 [main] INFO  org.apache.kafka.common.metrics.Metrics - Metrics scheduler closed
+mvn : 16:47:58,772 |-WARN in com.github.danielwegener.logba
+ck.kafka.KafkaAppender[kafkaAppender] - Attempted to append
+ to non started appender [kafkaAppender].
+所在位置 行:1 字符: 1
++ mvn test -pl services/quant-data-collector -Dtest="AiApiS
+erviceImplTe ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (16:47:58,772  
+   |-...kafkaAppender].:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+16:47:58,772 |-WARN in com.github.danielwegener.logback.kaf
+ka.KafkaAppender[kafkaAppender] - Attempted to append to no
+n started appender [kafkaAppender].
+2026-01-10 16:47:58.772 [main] INFO  org.apache.kafka.common.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+16:47:58,773 |-WARN in com.github.danielwegener.logback.kaf
+ka.KafkaAppender[kafkaAppender] - Attempted to append to no
+n started appender [kafkaAppender].
+2026-01-10 16:47:58.773 [main] INFO  org.apache.kafka.common.metrics.Metrics - Closing reporter org.apache.kafka.common.telemetry.internals.ClientTelemetryReporter
+2026-01-10 16:47:58.773 [main] INFO  org.apache.kafka.common.metrics.Metrics - Metrics reporters closed
+2026-01-10 16:47:58.773 [main] INFO  org.apache.kafka.common.utils.AppInfoParser - App info kafka.producer for producer-1 unregistered
+2026-01-10 16:47:58.775 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka配置更新成功|Kafka_logback_update_done
+2026-01-10 16:47:58.776 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka集群|Kafka_bootstrap,bootstrap=192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092
+2026-01-10 16:47:58.776 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 主机名|Host_name,name=hli
+2026-01-10 16:47:58.776 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 主机IP|Host_ip,ip=192.168.254.1
+2026-01-10 16:47:58.776 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 服务端口|Service_port,port=8801
+2026-01-10 16:47:58.776 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 服务名|Service_name,name=quant-data-collector
+2026-01-10 16:47:58.777 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 运行环境|Active_profile,profile=dev
+2026-01-10 16:47:58.777 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 日志主题|Log_topic,topic=log-quant-data-collector
+2026-01-10 16:47:58.777 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 实例ID|Instance_id,instanceId=quant-data-collector-192.168.254.1-8801
+2026-01-10 16:47:58.777 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka日志推送恢复|Kafka_log_push_recovered
+2026-01-10 16:47:58.777 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 应用启动完成开始更新Kafka配置|App_ready_update_kafka_logback
+2026-01-10 16:47:58.782 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 找到KafkaAppender开始更新配置|Kafka_appender_found_update_start
+2026-01-10 16:47:58.783 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka配置更新成功|Kafka_logback_update_done
+2026-01-10 16:47:58.783 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka集群|Kafka_bootstrap,bootstrap=192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092
+2026-01-10 16:47:58.784 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 主机名|Host_name,name=hli
+2026-01-10 16:47:58.784 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 主机IP|Host_ip,ip=192.168.254.1
+2026-01-10 16:47:58.784 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 服务端口|Service_port,port=8801
+2026-01-10 16:47:58.785 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 服务名|Service_name,name=quant-data-collector
+2026-01-10 16:47:58.786 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 运行环境|Active_profile,profile=dev
+2026-01-10 16:47:58.786 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 日志主题|Log_topic,topic=log-quant-data-collector
+2026-01-10 16:47:58.786 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - 实例ID|Instance_id,instanceId=quant-data-collector-192.168.254.1-8801
+2026-01-10 16:47:58.786 [main] INFO  c.hao.datacollector.web.config.KafkaLogbackConfig - Kafka日志推送恢复|Kafka_log_push_recovered
+Mockito is currently self-attaching to enable the inline-mo
+ck-maker. This will no longer work in future releases of th
+e JDK. Please add Mockito as an agent to your build as desc
+ribed in Mockito's documentation: https://javadoc.io/doc/or
+g.mockito/mockito-core/latest/org.mockito/org/mockito/Mocki
+to.html#0.3
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only 
+supported for boot loader classes because bootstrap classpa
+th has been appended
+WARNING: A Java agent has been loaded dynamically (D:\maven
+3.9.9\repository\net\bytebuddy\byte-buddy-agent\1.17.6\byte
+-buddy-agent-1.17.6.jar)
+WARNING: If a serviceability tool is in use, please run wit
+h -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run
+ with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by de
+fault in a future release
+2026-01-10 16:47:59.307 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 当前测试加载的 API Key: AIzaS***
+2026-01-10 16:47:59.315 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 环境检查通过：API Key 已配置，网络连通性正常
+2026-01-10 16:47:59.317 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 开始测试Gemini最大并发调用|Start_testing_Gemini_max_concurrency
+2026-01-10 16:47:59.317 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - ================================================
+2026-01-10 16:47:59.317 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发测试开始 | Concurrency Test Start
+2026-01-10 16:47:59.317 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - ================================================
+2026-01-10 16:47:59.317 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 1 ---
+2026-01-10 16:47:59.319 [Thread-22] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:00.538 [Thread-22] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:00.540 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 1 | 总耗时: 1219ms | 成功: 1 | 限流: 0 | 失败: 0 | 成功率: 100.0% | 平均响应: 1219ms
+2026-01-10 16:48:05.552 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 2 ---
+2026-01-10 16:48:05.553 [Thread-23] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:05.553 [Thread-24] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #1，请简短回复OK。
+2026-01-10 16:48:07.289 [Thread-23] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:07.544 [Thread-24] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:07.544 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 2 | 总耗时: 1992ms | 成功: 2 | 限流: 0 | 失败: 0 | 成功率: 100.0% | 平均响应: 1864ms
+2026-01-10 16:48:12.557 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 5 ---
+2026-01-10 16:48:12.558 [Thread-26] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #1，请简短回复OK。
+2026-01-10 16:48:12.558 [Thread-25] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:12.558 [Thread-28] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #3，请简短回复OK。
+2026-01-10 16:48:12.559 [Thread-27] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #2，请简短回复OK。
+2026-01-10 16:48:12.559 [Thread-29] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #4，请简短回复OK。
+2026-01-10 16:48:14.145 [Thread-25] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:14.204 [Thread-29] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:14.238 [Thread-26] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:14.752 [Thread-27] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:15.872 [Thread-28] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:15.873 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 5 | 总耗时: 3314ms | 成功: 5 | 限流: 0 | 失败: 0 | 成功率: 100.0% | 平均响应: 2084ms
+2026-01-10 16:48:20.887 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 10 ---
+2026-01-10 16:48:20.888 [Thread-30] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:20.888 [Thread-32] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #2，请简短回复OK。
+2026-01-10 16:48:20.888 [Thread-39] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #9，请简短回复OK。
+2026-01-10 16:48:20.888 [Thread-31] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #1，请简短回复OK。
+2026-01-10 16:48:20.888 [Thread-34] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #4，请简短回复OK。
+2026-01-10 16:48:20.889 [Thread-36] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #6，请简短回复OK。
+2026-01-10 16:48:20.889 [Thread-35] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #5，请简短回复OK。
+2026-01-10 16:48:20.890 [Thread-33] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #3，请简短回复OK。
+2026-01-10 16:48:20.892 [Thread-38] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #8，请简短回复OK。
+2026-01-10 16:48:20.892 [Thread-37] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #7，请简短回复OK。
+2026-01-10 16:48:22.440 [Thread-31] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:22.516 [Thread-39] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:22.532 [Thread-34] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:22.532 [Thread-37] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:22.563 [Thread-33] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:22.995 [Thread-35] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:23.119 [Thread-30] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:23.260 [Thread-32] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:23.598 [Thread-38] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:23.678 [Thread-36] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:23.679 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 10 | 总耗时: 2791ms | 成功: 10 | 限流: 0 | 失败: 0 | 成功率: 100.0% | 平均响应: 2034ms
+2026-01-10 16:48:26.598 [scheduling-34] INFO  c.hao.datacollector.web.config.ThreadPoolMonitor - 线程池监控|Thread_pool_stats,type=IO,active=0,poolSize=0,queueSize=0,completed=0
+2026-01-10 16:48:26.598 [scheduling-34] INFO  c.hao.datacollector.web.config.ThreadPoolMonitor - 线程池监控|Thread_pool_stats,type=CPU,active=0,poolSize=0,queueSize=0,completed=0
+2026-01-10 16:48:26.692 [xxl-job, executor ExecutorRegistryThread] ERROR com.xxl.job.core.util.XxlJobRemotingUtil - Connection refused: getsockopt
+java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1319)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1252)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1138)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1067)
+	at com.xxl.job.core.util.XxlJobRemotingUtil.postBody(XxlJobRemotingUtil.java:99)
+	at com.xxl.job.core.biz.client.AdminBizClient.registry(AdminBizClient.java:46)
+	at com.xxl.job.core.thread.ExecutorRegistryThread$1.run(ExecutorRegistryThread.java:48)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:26.692 [xxl-job, executor ExecutorRegistryThread] INFO  com.xxl.job.core.thread.ExecutorRegistryThread - >>>>>>>>>>> xxl-job registry fail, registryParam:RegistryParam{registryGroup='EXECUTOR', registryKey='data-collector', registryValue='http://127.0.0.1:8901/'}, registryResult:ReturnT [code=500, msg=xxl-job remoting error(Connection refused: getsockopt), for url : http://127.0.0.1:8802/xxl-job-3.1.0/api/registry, content=null]
+2026-01-10 16:48:28.694 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 15 ---
+2026-01-10 16:48:28.695 [Thread-40] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-44] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #4，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-46] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #6，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-42] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #2，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-45] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #5，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-43] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #3，请简短回复OK。
+2026-01-10 16:48:28.695 [Thread-47] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #7，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-48] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #8，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-50] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #10，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-49] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #9，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-54] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #14，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-52] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #12，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-51] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #11，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-53] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #13，请简短回复OK。
+2026-01-10 16:48:28.696 [Thread-41] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #1，请简短回复OK。
+2026-01-10 16:48:30.327 [Thread-42] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.339 [Thread-43] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.339 [Thread-44] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.372 [Thread-52] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.469 [Thread-46] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.577 [Thread-47] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.779 [Thread-40] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.888 [Thread-49] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:30.919 [Thread-45] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:31.087 [Thread-54] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:31.150 [Thread-50] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:31.289 [Thread-41] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:31.382 [Thread-51] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:31.813 [Thread-53] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:32.279 [Thread-48] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:32.279 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 15 | 总耗时: 3585ms | 成功: 15 | 限流: 0 | 失败: 0 | 成功率: 100.0% | 平均响应: 2239ms
+2026-01-10 16:48:37.289 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+--- 测试并发数: 20 ---
+2026-01-10 16:48:37.291 [Thread-56] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #1，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-62] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #7，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-55] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #0，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-60] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #5，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-58] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #3，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-57] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #2，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-61] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #6，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-65] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #10，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-59] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #4，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-64] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #9，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-67] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #12，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-74] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #19，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-73] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #18，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-68] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #13，请简短回复OK。
+2026-01-10 16:48:37.292 [Thread-63] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #8，请简短回复OK。
+2026-01-10 16:48:37.292 [Thread-72] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #17，请简短回复OK。
+2026-01-10 16:48:37.292 [Thread-66] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #11，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-70] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #15，请简短回复OK。
+2026-01-10 16:48:37.291 [Thread-71] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #16，请简短回复OK。
+2026-01-10 16:48:37.292 [Thread-69] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - 调用Gemini对话接口|Calling_Gemini_chat_interface,model=gemma-3-1b-it,input=你好，这是并发测试请求 #14，请简短回复OK。
+2026-01-10 16:48:38.415 [Thread-62] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.958329081s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "model": "gemma-3-1b",<EOL>              "location": "global"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.415 [Thread-69] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.947858451s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.415 [Thread-60] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.951728745s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "model": "gemma-3-1b",<EOL>              "location": "global"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.415 [Thread-64] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.948814085s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.609 [Thread-56] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.957531276s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.890 [Thread-68] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:38.907 [Thread-61] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:38.922 [Thread-72] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.986524924s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:38.937 [Thread-67] INFO  c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini调用成功|Gemini_chat_success,output=OK
+
+2026-01-10 16:48:39.000 [Thread-73] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.358456389s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "model": "gemma-3-1b",<EOL>              "location": "global"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.031 [Thread-66] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.330045491s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.031 [Thread-57] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.319810587s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.201 [Thread-71] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.173935737s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.235 [Thread-74] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.734278301s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.439 [Thread-58] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 17.912762454s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "model": "gemma-3-1b",<EOL>              "location": "global"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "17s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.560 [Thread-70] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 18.005814241s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "model": "gemma-3-1b",<EOL>              "location": "global"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "18s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.592 [Thread-65] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 17.780538701s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "17s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:39.981 [Thread-63] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 17.422588328s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "17s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:40.229 [Thread-55] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 17.13088625s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "17s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:41.043 [Thread-59] ERROR c.hao.datacollector.service.impl.AiApiServiceImpl - Gemini请求失败|Gemini_request_failed
+org.springframework.web.client.HttpClientErrorException$TooManyRequests: 429 Too Many Requests on POST request for "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-1b-it:generateContent": "{<EOL>  "error": {<EOL>    "code": 429,<EOL>    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 30, model: gemma-3-1b\nPlease retry in 16.857805831s.",<EOL>    "status": "RESOURCE_EXHAUSTED",<EOL>    "details": [<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.Help",<EOL>        "links": [<EOL>          {<EOL>            "description": "Learn more about Gemini API quotas",<EOL>            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.QuotaFailure",<EOL>        "violations": [<EOL>          {<EOL>            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",<EOL>            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",<EOL>            "quotaDimensions": {<EOL>              "location": "global",<EOL>              "model": "gemma-3-1b"<EOL>            },<EOL>            "quotaValue": "30"<EOL>          }<EOL>        ]<EOL>      },<EOL>      {<EOL>        "@type": "type.googleapis.com/google.rpc.RetryInfo",<EOL>        "retryDelay": "16s"<EOL>      }<EOL>    ]<EOL>  }<EOL>}<EOL>"
+	at org.springframework.web.client.HttpClientErrorException.create(HttpClientErrorException.java:130)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:186)
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:147)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:953)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:902)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:801)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:683)
+	at com.hao.datacollector.service.impl.AiApiServiceImpl.geminiChat(AiApiServiceImpl.java:151)
+	at com.hao.datacollector.service.impl.AiApiServiceImplTest.lambda$testGeminiMaxConcurrency$7(AiApiServiceImplTest.java:848)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发数: 20 | 总耗时: 3752ms | 成功: 3 | 限流: 17 | 失败: 0 | 成功率: 15.0% | 平均响应: 1872ms
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 限流率超过50%，停止增加并发
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 
+================================================
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 并发测试综合报告 | Concurrency Test Report
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - ================================================
+2026-01-10 16:48:41.043 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | 并发数 | 成功率 | 成功 | 限流 | 失败 | 平均响应 | 总耗时 |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - |--------|--------|------|------|------|----------|--------|
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.044 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - | {:^6} | {:>5.1f}% | {:>4} | {:>4} | {:>4} | {:>6.0f}ms | {:>5}ms |
+2026-01-10 16:48:41.045 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - ================================================
+2026-01-10 16:48:41.049 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - 最大无限流并发数: 15
+2026-01-10 16:48:41.049 [main] INFO  c.h.d.service.impl.AiApiServiceImplTest - ================================================
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 58.26 s -- in com.hao.datacollector.service.impl.AiApiServiceImplTest
+2026-01-10 16:48:41.101 [Thread-4] WARN  com.alibaba.nacos.common.notify.NotifyCenter - [NotifyCenter] Start destroying Publisher
+2026-01-10 16:48:41.101 [Thread-2] WARN  c.alibaba.nacos.common.http.HttpClientBeanHolder - [HttpClientBeanHolder] Start destroying common HttpClient
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:20 min
+[INFO] Finished at: 2026-01-10T16:48:51+08:00
+[INFO] ------------------------------------------------------------------------

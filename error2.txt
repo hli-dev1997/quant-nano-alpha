@@ -1,0 +1,100 @@
+﻿[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] quant-nano-alpha                                                   [pom]
+[INFO] common                                                             [jar]
+[INFO] services                                                           [pom]
+[INFO] quant-data-collector                                               [jar]
+[INFO] 
+[INFO] ----------------------< com.hli:quant-nano-alpha >----------------------
+[INFO] Building quant-nano-alpha 1.0-SNAPSHOT                             [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ quant-nano-alpha ---
+[INFO] 
+[INFO] ---------------------------< com.hli:common >---------------------------
+[INFO] Building common 1.0-SNAPSHOT                                       [2/4]
+[INFO]   from common\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ common ---
+[INFO] Deleting E:\project\quant-nano-alpha\common\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ common ---
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ common ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 28 source files with javac [debug release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ common ---
+[INFO] skip non existing resourceDirectory E:\project\quant-nano-alpha\common\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ common ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] 
+[INFO] --------------------------< com.hli:services >--------------------------
+[INFO] Building services 1.0-SNAPSHOT                                     [3/4]
+[INFO]   from services\pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ services ---
+[INFO] 
+[INFO] --------------------< com.hao:quant-data-collector >--------------------
+[INFO] Building quant-data-collector 0.0.1-SNAPSHOT                       [4/4]
+[INFO]   from services\quant-data-collector\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ quant-data-collector ---
+[INFO] Deleting E:\project\quant-nano-alpha\services\quant-data-collector\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ quant-data-collector ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 18 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 164 source files with javac [debug release 21] to target\classes
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[72,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[91,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[94,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/AbnormalIndexVO.java:[7,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/table/topic/TopicStockDTO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/ResultObjectVO.java:[9,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/ActiveSeatsRankVO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicStockVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicInfoVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/integration/redis/RedisConfig.java:[346,86] 最后一个参数使用了不准确的变量类型的 varargs 方法的非 varargs 调用; 
+  对于 varargs 调用, 应使用 java.lang.Object
+  对于非 varargs 调用, 应使用 java.lang.Object[], 这样也可以抑制此警告
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/verification/VerificationQueryParam.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/verification/VerificationQueryParam.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/TopicServiceImpl.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/TopicServiceImpl.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ quant-data-collector ---
+[INFO] skip non existing resourceDirectory E:\project\quant-nano-alpha\services\quant-data-collector\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 32 source files with javac [debug release 21] to target\test-classes
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/DistributedLockTest.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/DistributedLockTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/report/mysql/PerformanceOatTests.java: 某些输入文件使用了未经检查或不安全的操作。
+[INFO] /E:/project/quant-nano-alpha/services/quant-data-collector/src/test/java/com/hao/datacollector/report/mysql/PerformanceOatTests.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] quant-nano-alpha 1.0-SNAPSHOT ...................... SUCCESS [  0.141 s]
+[INFO] common 1.0-SNAPSHOT ................................ SUCCESS [  2.101 s]
+[INFO] services 1.0-SNAPSHOT .............................. SUCCESS [  0.007 s]
+[INFO] quant-data-collector 0.0.1-SNAPSHOT ................ SUCCESS [  7.171 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.785 s
+[INFO] Finished at: 2026-01-10T16:41:38+08:00
+[INFO] ------------------------------------------------------------------------

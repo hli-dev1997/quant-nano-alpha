@@ -1,0 +1,83 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.hao:quant-data-collector >--------------------
+[INFO] Building quant-data-collector 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ quant-data-collector ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 18 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 164 source files with javac [debug release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[72,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[91,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[94,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/AbnormalIndexVO.java:[7,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicStockVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/ResultObjectVO.java:[9,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/table/topic/TopicStockDTO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicInfoVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/ActiveSeatsRankVO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[INFO] 9 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[9,22] 找不到符号
+  符号:   类 StrategyRedisKeyEnum
+  位置: 程序包 enums.strategy
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[14,12] 找不到符号
+  符号:   类 JsonUtil
+  位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[60,26] 找不到符号
+  符号:   类 StrategyRedisKeyEnum
+  位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/BaseDataServiceImpl.java:[37,12] 找不到符号
+  符号:   类 JsonUtil
+  位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/NewsServiceImpl.java:[19,12] 找不到符号
+  符号:   类 JsonUtil
+  位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/QuotationServiceImpl.java:[23,12] 找不到符号
+  符号:   类 JsonUtil
+  位置: 程序包 util
+[INFO] 6 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.421 s
+[INFO] Finished at: 2026-01-10T16:43:26+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project quant-data-collector: Compilation failure: Compilation failure: 
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[9,22] 找不到符号
+[ERROR]   符号:   类 StrategyRedisKeyEnum
+[ERROR]   位置: 程序包 enums.strategy
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[14,12] 找不到符号
+[ERROR]   符号:   类 JsonUtil
+[ERROR]   位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[60,26] 找不到符号
+[ERROR]   符号:   类 StrategyRedisKeyEnum
+[ERROR]   位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/BaseDataServiceImpl.java:[37,12] 找不到符号
+[ERROR]   符号:   类 JsonUtil
+[ERROR]   位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/NewsServiceImpl.java:[19,12] 找不到符号
+[ERROR]   符号:   类 JsonUtil
+[ERROR]   位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/QuotationServiceImpl.java:[23,12] 找不到符号
+[ERROR]   符号:   类 JsonUtil
+[ERROR]   位置: 程序包 util
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
