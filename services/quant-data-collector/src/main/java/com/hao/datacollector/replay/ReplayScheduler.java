@@ -1,14 +1,14 @@
 package com.hao.datacollector.replay;
 
-import com.hao.datacollector.config.ReplayConfig;
+import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.KafkaProducerService;
 import constants.DateTimeFormatConstants;
 import integration.kafka.KafkaTopics;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,13 +31,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ReplayScheduler {
 
     private final DataLoader dataLoader;
     private final TimeSliceBuffer buffer;
     private final KafkaProducerService kafkaProducer;
-    private final ReplayConfig config;
+    private final ReplayProperties config;
 
     /**
      * 北京时区偏移量
@@ -73,10 +72,36 @@ public class ReplayScheduler {
     private volatile long totalSentCount = 0;
 
     /**
+     * 显式构造函数，确保依赖注入成功
+     */
+    public ReplayScheduler(DataLoader dataLoader,
+                           TimeSliceBuffer buffer,
+                           KafkaProducerService kafkaProducer,
+                           ReplayProperties config) {
+        Assert.notNull(dataLoader, "DataLoader must not be null");
+        Assert.notNull(buffer, "TimeSliceBuffer must not be null");
+        Assert.notNull(kafkaProducer, "KafkaProducerService must not be null");
+        Assert.notNull(config, "ReplayProperties must not be null");
+
+        this.dataLoader = dataLoader;
+        this.buffer = buffer;
+        this.kafkaProducer = kafkaProducer;
+        this.config = config;
+        
+        log.info("ReplayScheduler initialized with config: {}", config);
+    }
+
+    /**
      * 启动回放（异步执行）
      */
     @Async("ioTaskExecutor")
     public void startReplay() {
+        // 双重检查，防止 config 为 null (虽然构造函数已经检查了)
+        if (config == null) {
+            log.error("严重错误：ReplayProperties 为 null，无法启动回放！");
+            return;
+        }
+
         if (!config.isEnabled()) {
             log.info("回放模式未启用|Replay_mode_disabled");
             return;
@@ -85,8 +110,11 @@ public class ReplayScheduler {
         if (running.compareAndSet(false, true)) {
             try {
                 doReplay();
+            } catch (Exception e) {
+                log.error("回放过程中发生未捕获异常|Replay_exception", e);
             } finally {
                 running.set(false);
+                log.info("回放任务结束，状态已重置|Replay_task_ended");
             }
         } else {
             log.warn("回放已在运行中|Replay_already_running");
@@ -106,10 +134,10 @@ public class ReplayScheduler {
         LocalDate startDate = LocalDate.parse(config.getStartDate(), COMPACT_FORMATTER);
         LocalDate endDate = LocalDate.parse(config.getEndDate(), COMPACT_FORMATTER);
 
-        // 股市开盘时间 09:30:00
-        LocalDateTime start = LocalDateTime.of(startDate, LocalTime.of(9, 30, 0));
-        // 股市收盘时间 15:00:00
-        LocalDateTime end = LocalDateTime.of(endDate, LocalTime.of(15, 0, 0));
+        // 股市开盘时间 09:30:00 (包含集合竞价从09:00开始)
+        LocalDateTime start = LocalDateTime.of(startDate, LocalTime.of(9, 24, 0));
+        // 股市收盘时间 15:00:00 (包含盘后交易到15:30)
+        LocalDateTime end = LocalDateTime.of(endDate, LocalTime.of(15, 5, 0));
 
         virtualTime = start.toEpochSecond(BEIJING_ZONE);
         preloadCursor = start;
@@ -144,6 +172,14 @@ public class ReplayScheduler {
             if (batch != null && !batch.isEmpty()) {
                 sendToKafka(batch);
                 totalSentCount += batch.size();
+                
+                // --- 新增日志：确认推送时间和数据 ---
+                if (log.isInfoEnabled()) {
+                    LocalDateTime currentTime = LocalDateTime.ofEpochSecond(virtualTime, 0, BEIJING_ZONE);
+                    log.info("推送数据|Push_data,virtualTime={},count={},firstStock={}",
+                            currentTime, batch.size(), batch.get(0).getWindCode());
+                }
+                // ----------------------------------
             }
 
             // 3. 定期打印进度日志（每10秒）
@@ -168,21 +204,17 @@ public class ReplayScheduler {
     private CompletableFuture<Void> startPreloader(LocalDateTime endDate) {
         return CompletableFuture.runAsync(() -> {
             log.info("预加载线程启动|Preloader_start");
-
             while (preloadCursor.isBefore(endDate) && running.get()) {
                 // 如果缓冲区数据太多，等待消费
                 while (buffer.size() > config.getBufferMaxSize() && running.get()) {
                     log.debug("缓冲区已满，等待消费|Buffer_full,size={}", buffer.size());
                     sleep(500);
                 }
-
                 if (!running.get()) break;
-
                 LocalDateTime sliceEnd = preloadCursor.plusMinutes(config.getPreloadMinutes());
                 if (sliceEnd.isAfter(endDate)) {
                     sliceEnd = endDate;
                 }
-
                 try {
                     List<HistoryTrendDTO> data = dataLoader.loadTimeSlice(preloadCursor, sliceEnd);
                     if (!data.isEmpty()) {

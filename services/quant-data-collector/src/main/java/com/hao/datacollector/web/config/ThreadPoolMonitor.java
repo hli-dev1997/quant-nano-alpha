@@ -32,11 +32,12 @@ public class ThreadPoolMonitor {
     
     private void logThreadPoolStats(String type, ThreadPoolTaskExecutor executor) {
         ThreadPoolExecutor pool = executor.getThreadPoolExecutor();
-        log.info("线程池监控|Thread_pool_stats,type={},active={},poolSize={},queueSize={},completed={}",
-                type,
-                pool.getActiveCount(),
-                pool.getPoolSize(), 
-                pool.getQueue().size(),
-                pool.getCompletedTaskCount());
+        //todo 暂不打印此日志以免干扰
+//        log.info("线程池监控|Thread_pool_stats,type={},active={},poolSize={},queueSize={},completed={}",
+//                type,
+//                pool.getActiveCount(),
+//                pool.getPoolSize(),
+//                pool.getQueue().size(),
+//                pool.getCompletedTaskCount());
     }
 }

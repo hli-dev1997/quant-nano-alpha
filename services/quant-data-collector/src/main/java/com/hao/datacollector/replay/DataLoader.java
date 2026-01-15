@@ -1,6 +1,6 @@
 package com.hao.datacollector.replay;
 
-import com.hao.datacollector.config.ReplayConfig;
+import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.QuotationService;
 import constants.DateTimeFormatConstants;
@@ -31,7 +31,7 @@ import java.util.List;
 public class DataLoader {
 
     private final QuotationService quotationService;
-    private final ReplayConfig config;
+    private final ReplayProperties config;
 
     private static final DateTimeFormatter COMPACT_FORMATTER =
             DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
@@ -46,29 +46,25 @@ public class DataLoader {
     public List<HistoryTrendDTO> loadTimeSlice(LocalDateTime start, LocalDateTime end) {
         String startStr = start.format(COMPACT_FORMATTER);
         String endStr = end.format(COMPACT_FORMATTER);
-
+        // --- 新增调试日志 ---
+        log.info("准备加载数据|Prepare_load_data,inputStart={},inputEnd={},queryStart={},queryEnd={}", start, end, startStr, endStr);
+        // ------------------
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-
         // 解析股票代码列表
         List<String> stockList = parseStockCodes();
-
         // 复用现有冷热表分离逻辑
         List<HistoryTrendDTO> data = quotationService.getHistoryTrendDataByStockList(
                 startStr,
                 endStr,
                 stockList
         );
-
         // Null safety
         if (data == null) {
             data = Collections.emptyList();
         }
-
         stopWatch.stop();
-        log.info("数据加载完成|Data_load_done,range={}-{},count={},elapsedMs={}",
-                startStr, endStr, data.size(), stopWatch.getTotalTimeMillis());
-
+        log.info("数据加载完成|Data_load_done,range={}-{},count={},elapsedMs={}", startStr, endStr, data.size(), stopWatch.getTotalTimeMillis());
         return data;
     }
 

@@ -1,6 +1,6 @@
 package com.hao.datacollector.replay;
 
-import com.hao.datacollector.config.ReplayConfig;
+import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.KafkaProducerService;
 import com.hao.datacollector.service.QuotationService;
@@ -51,7 +51,7 @@ class ReplaySchedulerTest {
     @Mock
     private KafkaProducerService kafkaProducer;
 
-    private ReplayConfig config;
+    private ReplayProperties config;
     private TimeSliceBuffer buffer;
     private DataLoader dataLoader;
     private ReplayScheduler scheduler;
@@ -64,7 +64,7 @@ class ReplaySchedulerTest {
     @BeforeEach
     void setUp() {
         // 初始化配置
-        config = new ReplayConfig();
+        config = new ReplayProperties();
         config.setEnabled(true);
         config.setStartDate("20250601");
         config.setEndDate("20250601");

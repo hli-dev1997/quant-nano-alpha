@@ -1,12 +1,11 @@
 package com.hao.datacollector.web.controller;
 
-import com.hao.datacollector.config.ReplayConfig;
+import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.replay.ReplayScheduler;
 import com.hao.datacollector.replay.TimeSliceBuffer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,19 +39,20 @@ class ReplayControllerTest {
     @Mock
     private TimeSliceBuffer timeSliceBuffer;
 
-    private ReplayConfig replayConfig;
+    private ReplayProperties replayConfig;
 
-    @InjectMocks
+    // 移除 @InjectMocks，因为我们在 setUp 中手动实例化了 controller
+    // 且 ReplayProperties 不是 Mock 对象，Mockito 无法自动注入
     private ReplayController controller;
 
     @BeforeEach
     void setUp() {
-        // 手动创建真实的 ReplayConfig（因为需要测试其状态变化）
-        replayConfig = new ReplayConfig();
+        // 手动创建真实的 ReplayProperties（因为需要测试其状态变化）
+        replayConfig = new ReplayProperties();
         replayConfig.setEnabled(true);
-        replayConfig.setStartDate("20250601");
-        replayConfig.setEndDate("20250601");
-        replayConfig.setSpeedMultiplier(10);
+        replayConfig.setStartDate("20260105");
+        replayConfig.setEndDate("20260105");
+        replayConfig.setSpeedMultiplier(1);
         replayConfig.setPreloadMinutes(5);
         replayConfig.setBufferMaxSize(100000);
 

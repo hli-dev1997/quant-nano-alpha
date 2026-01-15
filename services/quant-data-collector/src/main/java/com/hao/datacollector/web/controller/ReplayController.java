@@ -1,12 +1,12 @@
 package com.hao.datacollector.web.controller;
 
-import com.hao.datacollector.config.ReplayConfig;
+import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.replay.ReplayScheduler;
 import com.hao.datacollector.replay.TimeSliceBuffer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,14 +22,30 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/replay")
+@RequestMapping("/replay")
 @Tag(name = "行情回放", description = "行情回放服务控制接口")
-@RequiredArgsConstructor
 public class ReplayController {
 
     private final ReplayScheduler replayScheduler;
-    private final ReplayConfig replayConfig;
+    private final ReplayProperties replayConfig;
     private final TimeSliceBuffer timeSliceBuffer;
+
+    /**
+     * 显式构造函数，确保依赖注入成功
+     */
+    public ReplayController(ReplayScheduler replayScheduler,
+                            ReplayProperties replayConfig,
+                            TimeSliceBuffer timeSliceBuffer) {
+        Assert.notNull(replayScheduler, "ReplayScheduler must not be null");
+        Assert.notNull(replayConfig, "ReplayProperties must not be null");
+        Assert.notNull(timeSliceBuffer, "TimeSliceBuffer must not be null");
+
+        this.replayScheduler = replayScheduler;
+        this.replayConfig = replayConfig;
+        this.timeSliceBuffer = timeSliceBuffer;
+        
+        log.info("ReplayController initialized with config: {}", replayConfig);
+    }
 
     /**
      * 启动回放

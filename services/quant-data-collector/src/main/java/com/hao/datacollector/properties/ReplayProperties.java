@@ -1,8 +1,8 @@
-package com.hao.datacollector.config;
+package com.hao.datacollector.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * 行情回放服务配置
@@ -13,9 +13,10 @@ import org.springframework.context.annotation.Configuration;
  * @date 2026-01-01
  */
 @Data
-@Configuration
+//配置批量绑定在nacos下，可以无需@RefreshScope注解就能实现自动刷新
 @ConfigurationProperties(prefix = "replay")
-public class ReplayConfig {
+@Component
+public class ReplayProperties {
 
     /**
      * 是否启用回放模式
