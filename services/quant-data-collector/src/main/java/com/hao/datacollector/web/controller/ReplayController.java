@@ -15,7 +15,32 @@ import java.util.Map;
 /**
  * 行情回放控制器
  * <p>
- * 提供回放服务的启动、暂停、恢复、停止等控制接口
+ * 提供回放服务的启动、暂停、恢复、停止等控制接口。
+ * <p>
+ * <b>核心执行链路说明：</b>
+ * <ol>
+ *     <li><b>启动回放 (start/startWithParams)</b>
+ *         <ul>
+ *             <li>调用 {@link ReplayScheduler#startReplay()} 异步启动回放任务。</li>
+ *             <li>{@link ReplayScheduler#doReplay()} 初始化虚拟时钟，并启动预加载线程 {@link ReplayScheduler#startPreloader(java.time.LocalDateTime)}。</li>
+ *             <li><b>预加载：</b> {@link com.hao.datacollector.replay.DataLoader#loadTimeSlice} 调用 {@link com.hao.datacollector.service.QuotationService#getHistoryTrendDataByStockList}
+ *                 从 MySQL (tb_quotation_history_hot/warm) 批量加载历史行情数据。</li>
+ *             <li><b>缓存：</b> 加载的数据存入 {@link TimeSliceBuffer} 内存队列。</li>
+ *             <li><b>推送：</b> 主循环按秒推进虚拟时间，调用 {@link TimeSliceBuffer#pollSlice(long)} 取出当前秒的数据。</li>
+ *             <li><b>发送：</b> 调用 {@link com.hao.datacollector.service.KafkaProducerService#sendBatchHighPerformance} 将数据推送到 Kafka (Topic: quotation)。</li>
+ *         </ul>
+ *     </li>
+ *     <li><b>暂停/恢复 (pause/resume)</b>
+ *         <ul>
+ *             <li>修改 {@link ReplayScheduler} 中的 {@code paused} 原子标志位，控制主循环的挂起与继续。</li>
+ *         </ul>
+ *     </li>
+ *     <li><b>调速 (setSpeed)</b>
+ *         <ul>
+ *             <li>修改 {@link ReplayProperties#setSpeedMultiplier}，影响主循环中的 {@code sleepForReplay()} 休眠时间。</li>
+ *         </ul>
+ *     </li>
+ * </ol>
  *
  * @author hli
  * @date 2026-01-01
@@ -43,7 +68,7 @@ public class ReplayController {
         this.replayScheduler = replayScheduler;
         this.replayConfig = replayConfig;
         this.timeSliceBuffer = timeSliceBuffer;
-        
+
         log.info("ReplayController initialized with config: {}", replayConfig);
     }
 
