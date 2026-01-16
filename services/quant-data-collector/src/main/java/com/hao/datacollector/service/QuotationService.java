@@ -64,6 +64,16 @@ public interface QuotationService {
     List<HistoryTrendDTO> getHistoryTrendDataByStockList(String startDate, String endDate, List<String> stockList);
 
     /**
+     * 根据精确时间区间获取指定股票列表的历史分时数据（回放专用）
+     *
+     * @param startTime 起始时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param endTime   结束时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param stockList 股票列表
+     * @return 历史分时数据
+     */
+    List<HistoryTrendDTO> getHistoryTrendDataByTimeRange(String startTime, String endTime, List<String> stockList);
+
+    /**
      * 根据时间区间获取指定指标列表的历史分时数据
      *
      * @param startDate  起始日期（格式 yyyyMMdd）

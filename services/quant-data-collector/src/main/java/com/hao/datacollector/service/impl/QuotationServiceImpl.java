@@ -46,22 +46,6 @@ import java.util.concurrent.Executor;
  * @Date 2025-07-04 17:43:47
  * @description: 行情实现类
  */
-
-/**
- * 实现思路：
- * <p>
- * 1. 通过配置化 URL 和认证信息调用 Wind 行情接口，获取基础与分时原始数据。
- * 2. 将原始 JSON/数组结构映射为业务 DTO，并进行必要的格式转换（时间、价格精度等）。
- * 3. 利用 Mapper 层提供的批量写入能力，将数据持久化，同时暴露查询与统计接口供外部调用。
- */
-
-/**
- * 实现思路：
- * <p>
- * 1. 通过配置化 URL 和认证信息调用 Wind 行情接口，获取基础与分时原始数据。
- * 2. 将原始 JSON/数组结构映射为业务 DTO，并进行必要的格式转换（时间、价格精度等）。
- * 3. 利用 Mapper 层提供的批量写入能力，将数据持久化，同时暴露查询与统计接口供外部调用。
- */
 @Slf4j
 @Service
 public class QuotationServiceImpl implements QuotationService {
@@ -643,13 +627,75 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     /**
+     * 根据精确时间区间获取指定股票列表的历史分时数据（回放专用）
+     *
+     * @param startTime 起始时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param endTime   结束时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param stockList 股票列表
+     * @return 历史分时数据
+     */
+    @Override
+    public List<HistoryTrendDTO> getHistoryTrendDataByTimeRange(String startTime, String endTime, List<String> stockList) {
+        // 解析时间以确定冷热表路由
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.DEFAULT_DATETIME_FORMAT);
+        LocalDate start = LocalDateTime.parse(startTime, pattern).toLocalDate();
+        LocalDate end = LocalDateTime.parse(endTime, pattern).toLocalDate();
+
+        // 判断查询范围
+        boolean queryWarm = start.isBefore(HOT_DATA_START_DATE);
+        boolean queryHot = end.isAfter(HOT_DATA_START_DATE) || end.isEqual(HOT_DATA_START_DATE);
+
+        // 1. 仅查询热表
+        if (queryHot && !queryWarm) {
+            log.debug("回放查询热表|Replay_query_hot,range={}-{}", startTime, endTime);
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, startTime, endTime, stockList);
+        }
+        // 2. 仅查询温表
+        if (queryWarm && !queryHot) {
+            log.debug("回放查询温表|Replay_query_warm,range={}-{}", startTime, endTime);
+            return quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startTime, endTime, stockList);
+        }
+        // 3. 跨冷热表查询（回放场景较少见，但支持）
+        if (queryWarm && queryHot) {
+            // 定义温表查询范围
+            LocalDate warmEnd = HOT_DATA_START_DATE.minusDays(1);
+            String warmEndDateStr = DateUtil.appendEndOfDayTime(warmEnd.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT)));
+            // 定义热表查询范围
+            String hotStartDateStr = HOT_DATA_START_DATE.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+            
+            // 修正跨表边界：如果 startTime 在热表范围内，则温表查询为空；反之亦然。
+            // 简单起见，这里直接并行查，Mapper 会根据时间过滤
+            
+            CompletableFuture<List<HistoryTrendDTO>> warmFuture = CompletableFuture.supplyAsync(() -> 
+                quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startTime, warmEndDateStr, stockList), ioTaskExecutor);
+                
+            CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() -> 
+                quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endTime, stockList), ioTaskExecutor);
+
+            CompletableFuture.allOf(warmFuture, hotFuture).join();
+            try {
+                List<HistoryTrendDTO> warmData = warmFuture.get();
+                List<HistoryTrendDTO> hotData = hotFuture.get();
+                List<HistoryTrendDTO> combinedResult = new ArrayList<>(warmData.size() + hotData.size());
+                combinedResult.addAll(warmData);
+                combinedResult.addAll(hotData);
+                return combinedResult;
+            } catch (Exception e) {
+                log.error("回放跨表查询失败|Replay_cross_table_error", e);
+                return Collections.emptyList();
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      * 根据时间区间获取指定指标列表的历史分时数据
      * <p>
      * 指标表不分冷热，直接查询 tb_quotation_index_history_trend 表
      *
-     * @param startDate 起始日期（格式 yyyyMMdd）
-     * @param endDate   结束日期（格式 yyyyMMdd）
-     * @param indexList 指标代码列表（为空时查询所有指标）
+     * @param startDate  起始日期（格式 yyyyMMdd）
+     * @param endDate    结束日期（格式 yyyyMMdd）
+     * @param indexList  指标代码列表（为空时查询所有指标）
      * @return 指标历史分时数据
      */
     @Override
