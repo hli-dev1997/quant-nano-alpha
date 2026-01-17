@@ -198,7 +198,7 @@ class TimeSliceBufferTest {
         // Then: 只有2条有效数据被添加
         assertEquals(2, buffer.size(), "null tradeDate 的数据应被过滤");
 
-        log.info("null tradeDate 数据过滤测试通过");
+        log.info("null_tradeDate数据过滤测试通过|Null_tradeDate_filter_test_passed");
     }
 
     /**
@@ -238,8 +238,8 @@ class TimeSliceBufferTest {
         assertEquals(stockCount * secondsCount, buffer.size());
         assertEquals(secondsCount, buffer.sliceCount());
 
-        log.info("大数据量处理测试通过，添加 {} 条数据耗时 {} ms",
-                largeData.size(), stopWatch.getTotalTimeMillis());
+        log.info("大数据量处理测试通过,添加{}条数据耗时{}ms|Large_data_test_passed,count={},elapsed={}ms",
+                largeData.size(), stopWatch.getTotalTimeMillis(), largeData.size(), stopWatch.getTotalTimeMillis());
     }
 
     // ==================== 并发安全测试 ====================
@@ -298,8 +298,8 @@ class TimeSliceBufferTest {
         assertEquals(threadCount * dataPerThread, buffer.size(),
                 "所有数据都应被添加，无丢失");
 
-        log.info("并发写入测试通过，{} 个线程 × {} 条数据/线程 = {} 条总数据",
-                threadCount, dataPerThread, buffer.size());
+        log.info("并发写入测试通过,{}个线程×{}条数据/线程={}条总数据|Concurrent_write_test_passed,threads={},dataPerThread={},total={}",
+                threadCount, dataPerThread, buffer.size(), threadCount, dataPerThread, buffer.size());
     }
 
     /**
@@ -378,8 +378,8 @@ class TimeSliceBufferTest {
         assertTrue(completed, "应在超时前完成");
         assertEquals(0, errorCount.get(), "不应有错误发生");
 
-        log.info("并发读写测试通过，写入操作 {} 次，读取操作 {} 次",
-                writeCount.get(), readCount.get());
+        log.info("并发读写测试通过,写入操作{}次,读取操作{}次|Concurrent_rw_test_passed,writes={},reads={}",
+                writeCount.get(), readCount.get(), writeCount.get(), readCount.get());
     }
 
     // ==================== 性能测试 ====================
@@ -418,8 +418,8 @@ class TimeSliceBufferTest {
         long elapsedMs = stopWatch.getTotalTimeMillis();
         double throughput = (double) totalRecords / elapsedMs * 1000;
 
-        log.info("写入性能测试：{} 条数据，耗时 {} ms，吞吐量 {}/s",
-                totalRecords, elapsedMs, String.format("%.0f", throughput));
+        log.info("写入性能测试:{}条数据,耗时{}ms,吞吐量{}/s|Write_perf_test,count={},elapsed={}ms,throughput={}/s",
+                totalRecords, elapsedMs, String.format("%.0f", throughput), totalRecords, elapsedMs, String.format("%.0f", throughput));
 
         // 性能断言：应在合理时间内完成
         assertTrue(elapsedMs < 2000, "10万条数据写入应在2秒内完成");
@@ -469,8 +469,8 @@ class TimeSliceBufferTest {
         stopWatch.stop();
 
         long elapsedMs = stopWatch.getTotalTimeMillis();
-        log.info("读取性能测试：{} 次 pollSlice，获取 {} 条数据，耗时 {} ms",
-                secondsCount, totalPolled, elapsedMs);
+        log.info("读取性能测试:{}次pollSlice,获取{}条数据,耗时{}ms|Read_perf_test,polls={},records={},elapsed={}ms",
+                secondsCount, totalPolled, elapsedMs, secondsCount, totalPolled, elapsedMs);
 
         // 性能断言
         assertTrue(elapsedMs < 500, "1000次 pollSlice 应在 500ms 内完成");

@@ -37,6 +37,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import exception.ExternalServiceException;
 
 /**
  * 题材库同步的具体实现，负责从 KPL 接口拉取热点题材并拆分入库。
@@ -138,7 +139,7 @@ public class TopicServiceImpl implements TopicService {
         );
         // 检查响应状态码，非2xx状态码抛出异常
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("setKplTopicInfoJob_getRequestKplTopicData_error,result=" + response.getStatusCode());
+            throw new ExternalServiceException("获取KPL主题数据失败|Get_KPL_topic_data_failed,statusCode=" + response.getStatusCode());
         }
         // 记录响应数据大小
         log.info("日志记录|Log_message,setKplTopicInfoJob_response.size={}", response.getBody().length());

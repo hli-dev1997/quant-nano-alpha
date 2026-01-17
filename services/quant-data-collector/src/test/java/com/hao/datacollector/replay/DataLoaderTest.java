@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
  * 测试目标：验证 DataLoader 正确调用 QuotationService 并处理返回数据
  * <p>
  * 测试范围：
- * 1. 功能测试：加载时间片数据、加载全天数据
+ * 1. 功能测试：加载时间片数据
  * 2. 边界测试：空数据、异常处理
  * 3. 配置测试：股票代码列表解析
  * <p>
@@ -58,7 +58,7 @@ class DataLoaderTest {
      * 测试：加载时间片数据
      * <p>
      * 思路：
-     * 1. Mock QuotationService 返回测试数据
+     * 1. Mock QuotationService.getHistoryTrendDataByTimeRange 返回测试数据
      * 2. 调用 loadTimeSlice
      * 3. 验证正确调用 Service 并返回数据
      * <p>
@@ -70,7 +70,7 @@ class DataLoaderTest {
     void testLoadTimeSlice() {
         // Given: Mock 返回测试数据
         List<HistoryTrendDTO> mockData = createTestData(100);
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(mockData);
 
         LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
@@ -83,46 +83,47 @@ class DataLoaderTest {
         assertNotNull(result);
         assertEquals(100, result.size());
 
-        // 验证 Service 被正确调用
-        verify(quotationService).getHistoryTrendDataByStockList(
-                eq("20250601"),  // startDate
-                eq("20250601"),  // endDate
+        // 验证 Service 被正确调用 - 注意边界处理，end会减去1秒变为 09:34:59
+        verify(quotationService).getHistoryTrendDataByTimeRange(
+                eq("2025-06-01 09:30:00"),  // startTime
+                eq("2025-06-01 09:34:59"),  // endTime (减去1秒)
                 eq(Collections.emptyList())  // 空股票列表（全市场）
         );
 
-        log.info("加载时间片数据测试通过");
+        log.info("加载时间片数据测试通过|Load_time_slice_test_passed");
     }
 
     /**
-     * 测试：加载全天数据
+     * 测试：边界时间不被截断（收盘时间15:05:00）
      * <p>
-     * 思路：测试 loadFullDay 方法
+     * 思路：测试收盘时间边界不会被减1秒
      * <p>
-     * 预期结果：正确调用 Service 并返回数据
+     * 预期结果：收盘时间保持原样
      */
     @Test
     @Order(2)
-    @DisplayName("基本功能 - 加载全天数据")
-    void testLoadFullDay() {
+    @DisplayName("基本功能 - 收盘时间不截断")
+    void testClosingTimeNotTruncated() {
         // Given
-        List<HistoryTrendDTO> mockData = createTestData(5000);
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        List<HistoryTrendDTO> mockData = createTestData(50);
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(mockData);
 
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 15, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 15, 5, 0);  // 收盘时间
+
         // When
-        List<HistoryTrendDTO> result = dataLoader.loadFullDay("20250601");
+        List<HistoryTrendDTO> result = dataLoader.loadTimeSlice(start, end);
 
-        // Then
+        // Then: 收盘时间 15:05:00 应该保持不变
         assertNotNull(result);
-        assertEquals(5000, result.size());
-
-        verify(quotationService).getHistoryTrendDataByStockList(
-                eq("20250601"),
-                eq("20250601"),
-                eq(Collections.emptyList())
+        verify(quotationService).getHistoryTrendDataByTimeRange(
+                eq("2025-06-01 15:00:00"),
+                eq("2025-06-01 15:05:00"),  // 不截断
+                anyList()
         );
 
-        log.info("加载全天数据测试通过");
+        log.info("收盘时间不截断测试通过|Closing_time_not_truncated_test_passed");
     }
 
     // ==================== 股票代码配置测试 ====================
@@ -144,16 +145,19 @@ class DataLoaderTest {
         config.setStockCodes("600519.SH,000001.SZ,600036.SH");
 
         List<HistoryTrendDTO> mockData = createTestData(30);
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(mockData);
 
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 9, 35, 0);
+
         // When
-        dataLoader.loadFullDay("20250601");
+        dataLoader.loadTimeSlice(start, end);
 
         // Then: 验证股票列表被正确解析
-        verify(quotationService).getHistoryTrendDataByStockList(
-                eq("20250601"),
-                eq("20250601"),
+        verify(quotationService).getHistoryTrendDataByTimeRange(
+                anyString(),
+                anyString(),
                 argThat(list -> {
                     // 验证列表包含3只股票
                     return list.size() == 3
@@ -163,7 +167,7 @@ class DataLoaderTest {
                 })
         );
 
-        log.info("指定股票代码测试通过");
+        log.info("指定股票代码测试通过|Specified_stock_codes_test_passed");
     }
 
     /**
@@ -180,20 +184,23 @@ class DataLoaderTest {
         // Given: 不配置股票代码
         config.setStockCodes(null);
 
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(Collections.emptyList());
 
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 9, 35, 0);
+
         // When
-        dataLoader.loadFullDay("20250601");
+        dataLoader.loadTimeSlice(start, end);
 
         // Then: 应传递空列表
-        verify(quotationService).getHistoryTrendDataByStockList(
+        verify(quotationService).getHistoryTrendDataByTimeRange(
                 anyString(),
                 anyString(),
                 eq(Collections.emptyList())
         );
 
-        log.info("空股票代码（全市场）测试通过");
+        log.info("空股票代码（全市场）测试通过|Empty_stock_codes_test_passed");
     }
 
     /**
@@ -210,20 +217,23 @@ class DataLoaderTest {
         // Given
         config.setStockCodes("600519.SH");
 
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(Collections.emptyList());
 
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 9, 35, 0);
+
         // When
-        dataLoader.loadFullDay("20250601");
+        dataLoader.loadTimeSlice(start, end);
 
         // Then
-        verify(quotationService).getHistoryTrendDataByStockList(
+        verify(quotationService).getHistoryTrendDataByTimeRange(
                 anyString(),
                 anyString(),
                 argThat(list -> list.size() == 1 && list.contains("600519.SH"))
         );
 
-        log.info("单只股票配置测试通过");
+        log.info("单只股票配置测试通过|Single_stock_code_test_passed");
     }
 
     // ==================== 边界条件测试 ====================
@@ -240,44 +250,48 @@ class DataLoaderTest {
     @DisplayName("边界条件 - 空数据返回")
     void testEmptyDataReturn() {
         // Given
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(Collections.emptyList());
 
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 9, 35, 0);
+
         // When
-        List<HistoryTrendDTO> result = dataLoader.loadFullDay("20250601");
+        List<HistoryTrendDTO> result = dataLoader.loadTimeSlice(start, end);
 
         // Then
         assertNotNull(result);
         assertTrue(result.isEmpty());
 
-        log.info("空数据返回测试通过");
+        log.info("空数据返回测试通过|Empty_data_return_test_passed");
     }
 
     /**
      * 测试：Service 返回 null
      * <p>
-     * 思路：如果 Service 返回 null，DataLoader 应能处理
+     * 思路：如果 Service 返回 null，DataLoader 应转换为空列表
      * <p>
-     * 预期结果：不抛异常，返回 null
+     * 预期结果：不抛异常，返回空列表
      */
     @Test
     @Order(21)
     @DisplayName("边界条件 - null 数据返回")
     void testNullDataReturn() {
         // Given
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(null);
 
-        // When
-        List<HistoryTrendDTO> result = dataLoader.loadFullDay("20250602");
+        LocalDateTime start = LocalDateTime.of(2025, 6, 2, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 2, 9, 35, 0);
 
-        // Then
-        // 注意：DataLoader 实现中如果返回 null，会转为空列表，这里根据实际实现调整断言
-        // 假设 DataLoader 做了 null safety
+        // When
+        List<HistoryTrendDTO> result = dataLoader.loadTimeSlice(start, end);
+
+        // Then: DataLoader 做了 null safety，返回空列表
         assertNotNull(result);
         assertTrue(result.isEmpty());
 
-        log.info("null 数据返回测试通过");
+        log.info("null数据返回测试通过|Null_data_return_test_passed");
     }
 
     /**
@@ -292,15 +306,18 @@ class DataLoaderTest {
     @DisplayName("边界条件 - Service 异常")
     void testServiceException() {
         // Given
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenThrow(new RuntimeException("数据库连接失败"));
+
+        LocalDateTime start = LocalDateTime.of(2025, 6, 1, 9, 30, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 6, 1, 9, 35, 0);
 
         // When & Then
         assertThrows(RuntimeException.class, () -> {
-            dataLoader.loadFullDay("20250601");
+            dataLoader.loadTimeSlice(start, end);
         });
 
-        log.info("Service 异常测试通过");
+        log.info("Service异常测试通过|Service_exception_test_passed");
     }
 
     // ==================== 日期格式测试 ====================
@@ -308,7 +325,7 @@ class DataLoaderTest {
     /**
      * 测试：日期格式转换
      * <p>
-     * 思路：验证 LocalDateTime 被正确格式化为 yyyyMMdd 字符串
+     * 思路：验证 LocalDateTime 被正确格式化为 yyyy-MM-dd HH:mm:ss 字符串
      * <p>
      * 预期结果：日期格式正确
      */
@@ -317,23 +334,23 @@ class DataLoaderTest {
     @DisplayName("日期格式 - LocalDateTime 转换")
     void testDateFormatConversion() {
         // Given
-        when(quotationService.getHistoryTrendDataByStockList(anyString(), anyString(), anyList()))
+        when(quotationService.getHistoryTrendDataByTimeRange(anyString(), anyString(), anyList()))
                 .thenReturn(Collections.emptyList());
 
         LocalDateTime start = LocalDateTime.of(2025, 12, 31, 9, 30, 0);
-        LocalDateTime end = LocalDateTime.of(2025, 12, 31, 15, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 12, 31, 15, 5, 0);  // 收盘时间
 
         // When
         dataLoader.loadTimeSlice(start, end);
 
-        // Then: 验证日期格式为 yyyyMMdd
-        verify(quotationService).getHistoryTrendDataByStockList(
-                eq("20251231"),
-                eq("20251231"),
+        // Then: 验证日期格式为 yyyy-MM-dd HH:mm:ss
+        verify(quotationService).getHistoryTrendDataByTimeRange(
+                eq("2025-12-31 09:30:00"),
+                eq("2025-12-31 15:05:00"),
                 anyList()
         );
 
-        log.info("日期格式转换测试通过");
+        log.info("日期格式转换测试通过|Date_format_conversion_test_passed");
     }
 
     // ==================== 辅助方法 ====================

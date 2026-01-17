@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.*;
+import exception.DataException;
 
 /**
  * Excel读取工具类
@@ -76,7 +76,7 @@ public class ExcelReaderUtil {
 
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("读取Excel文件失败: " + e.getMessage(), e);
+            throw new DataException("读取Excel文件失败|Read_Excel_file_failed: " + e.getMessage(), e);
         }
     }
 
@@ -130,7 +130,7 @@ public class ExcelReaderUtil {
             }
             return headers;
         } catch (Exception e) {
-            throw new RuntimeException("读取Excel表头失败: " + e.getMessage(), e);
+            throw new DataException("读取Excel表头失败|Read_Excel_header_failed: " + e.getMessage(), e);
         }
     }
 

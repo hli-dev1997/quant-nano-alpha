@@ -2,7 +2,6 @@ package com.hao.datacollector.web.controller;
 
 import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.replay.ReplayScheduler;
-import com.hao.datacollector.replay.TimeSliceBuffer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,13 +35,9 @@ class ReplayControllerTest {
     @Mock
     private ReplayScheduler replayScheduler;
 
-    @Mock
-    private TimeSliceBuffer timeSliceBuffer;
-
     private ReplayProperties replayConfig;
 
-    // 移除 @InjectMocks，因为我们在 setUp 中手动实例化了 controller
-    // 且 ReplayProperties 不是 Mock 对象，Mockito 无法自动注入
+    // ReplayController 只需要 ReplayScheduler 和 ReplayProperties
     private ReplayController controller;
 
     @BeforeEach
@@ -56,8 +51,8 @@ class ReplayControllerTest {
         replayConfig.setPreloadMinutes(5);
         replayConfig.setBufferMaxSize(100000);
 
-        // 使用反射或重新创建 controller 注入真实的 config
-        controller = new ReplayController(replayScheduler, replayConfig, timeSliceBuffer);
+        // 使用实际的 ReplayController 构造函数（只接受 2 个参数）
+        controller = new ReplayController(replayScheduler, replayConfig);
     }
 
     // ==================== 启动 API 测试 ====================
@@ -137,17 +132,13 @@ class ReplayControllerTest {
                 "600519.SH,000001.SZ"  // stockCodes
         );
 
-        // Then: 验证配置被更新
+        // Then: 验证返回成功（注意：startWithParams 不修改全局配置，只是通过 DTO 传递参数）
         assertTrue((Boolean) result.get("success"));
-        assertEquals("20251001", replayConfig.getStartDate());
-        assertEquals("20251031", replayConfig.getEndDate());
-        assertEquals(50, replayConfig.getSpeedMultiplier());
-        assertEquals("600519.SH,000001.SZ", replayConfig.getStockCodes());
-        assertTrue(replayConfig.isEnabled());
 
-        verify(replayScheduler).startReplay();
+        // 验证 replayScheduler.startReplay(ReplayParamsDTO) 被调用
+        verify(replayScheduler).startReplay(any(com.hao.datacollector.dto.replay.ReplayParamsDTO.class));
 
-        log.info("自定义参数启动测试通过");
+        log.info("自定义参数启动测试通过|Custom_params_start_test_passed");
     }
 
     /**
@@ -162,16 +153,21 @@ class ReplayControllerTest {
     @DisplayName("启动 API - 部分参数覆盖")
     void testStartWithPartialParams() {
         // Given: 原始配置
+        String originalStartDate = replayConfig.getStartDate();
         String originalEndDate = replayConfig.getEndDate();
 
-        // When: 只传 startDate
-        controller.startWithParams("20251201", null, null, null);
+        // When: 只传 startDate（其他参数为 null，会使用默认配置）
+        Map<String, Object> result = controller.startWithParams("20251201", null, null, null);
 
-        // Then: startDate 被更新，endDate 保持原值
-        assertEquals("20251201", replayConfig.getStartDate());
+        // Then: 返回成功，同样不修改全局配置
+        assertTrue((Boolean) result.get("success"));
+        // 全局配置不变
+        assertEquals(originalStartDate, replayConfig.getStartDate());
         assertEquals(originalEndDate, replayConfig.getEndDate());
 
-        log.info("部分参数覆盖测试通过");
+        verify(replayScheduler).startReplay(any(com.hao.datacollector.dto.replay.ReplayParamsDTO.class));
+
+        log.info("部分参数覆盖测试通过|Partial_params_test_passed");
     }
 
     // ==================== 控制 API 测试 ====================
@@ -195,7 +191,7 @@ class ReplayControllerTest {
         assertEquals("回放已暂停", result.get("message"));
         verify(replayScheduler).pause();
 
-        log.info("暂停 API 测试通过");
+        log.info("暂停API测试通过|Pause_API_test_passed");
     }
 
     /**
@@ -217,7 +213,7 @@ class ReplayControllerTest {
         assertEquals("回放已恢复", result.get("message"));
         verify(replayScheduler).resume();
 
-        log.info("恢复 API 测试通过");
+        log.info("恢复API测试通过|Resume_API_test_passed");
     }
 
     /**
@@ -239,7 +235,7 @@ class ReplayControllerTest {
         assertEquals("回放已停止", result.get("message"));
         verify(replayScheduler).stop();
 
-        log.info("停止 API 测试通过");
+        log.info("停止API测试通过|Stop_API_test_passed");
     }
 
     // ==================== 调速 API 测试 ====================
@@ -255,19 +251,15 @@ class ReplayControllerTest {
     @Order(20)
     @DisplayName("调速 API - 正常调速")
     void testSetSpeed() {
-        // Given: 原始速度
-        int originalSpeed = replayConfig.getSpeedMultiplier();
-        assertNotEquals(100, originalSpeed);
-
         // When: 调整速度
         Map<String, Object> result = controller.setSpeed(100);
 
-        // Then
+        // Then: 验证返回成功并调用了 updateSpeed
         assertTrue((Boolean) result.get("success"));
-        assertEquals(100, replayConfig.getSpeedMultiplier());
         assertTrue(result.get("message").toString().contains("100"));
+        verify(replayScheduler).updateSpeed(100);
 
-        log.info("正常调速测试通过");
+        log.info("正常调速测试通过|Speed_update_test_passed");
     }
 
     /**
@@ -281,13 +273,14 @@ class ReplayControllerTest {
     @Order(21)
     @DisplayName("调速 API - 最快速度")
     void testSetSpeedToFastest() {
-        // When
-        controller.setSpeed(0);
+        // When: 设置为最快速度
+        Map<String, Object> result = controller.setSpeed(0);
 
-        // Then
-        assertEquals(0, replayConfig.getSpeedMultiplier());
+        // Then: 调用 updateSpeed(0)
+        assertTrue((Boolean) result.get("success"));
+        verify(replayScheduler).updateSpeed(0);
 
-        log.info("最快速度调速测试通过");
+        log.info("最快速度调速测试通过|Fastest_speed_test_passed");
     }
 
     // ==================== 状态查询 API 测试 ====================
@@ -394,13 +387,13 @@ class ReplayControllerTest {
     @Order(41)
     @DisplayName("边界条件 - 负数速度")
     void testNegativeSpeed() {
-        // When
+        // When: 设置负数速度
         Map<String, Object> result = controller.setSpeed(-10);
 
-        // Then: 配置被更新（业务逻辑中负数与0等效）
+        // Then: 调用 updateSpeed(-10)
         assertTrue((Boolean) result.get("success"));
-        assertEquals(-10, replayConfig.getSpeedMultiplier());
+        verify(replayScheduler).updateSpeed(-10);
 
-        log.info("负数速度测试通过");
+        log.info("负数速度测试通过|Negative_speed_test_passed");
     }
 }

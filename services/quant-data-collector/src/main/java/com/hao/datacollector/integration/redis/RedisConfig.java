@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import exception.RedisException;
 
 /**
  * Redis 客户端通用配置类（适用于外部标准 Redis 服务）
@@ -111,7 +112,7 @@ public class RedisConfig implements RedisClient<String>, InitializingBean, Dispo
             log.info("Redis初始化成功_-_连接到_{}:{}/{}", redisHost, redisPort, redisDatabase);
         } catch (Exception e) {
             log.error("Redis初始化失败:_{}", e.getMessage(), e);
-            throw new RuntimeException("Redis initialization failed", e);
+            throw new RedisException("Redis初始化失败|Redis_initialization_failed", e);
         }
     }
 
@@ -125,13 +126,13 @@ public class RedisConfig implements RedisClient<String>, InitializingBean, Dispo
             redisTemplate.opsForValue().set(testKey, testValue, Duration.ofSeconds(10));
             String result = redisTemplate.opsForValue().get(testKey);
             if (!testValue.equals(result)) {
-                throw new RuntimeException("Redis connection test failed: value mismatch");
+                throw new RedisException("Redis连接测试失败_值不匹配|Redis_connection_test_failed_value_mismatch");
             }
             redisTemplate.delete(testKey);
             log.info("Redis连接测试成功");
         } catch (Exception e) {
             log.error("Redis连接测试失败:_{}", e.getMessage(), e);
-            throw new RuntimeException("Redis connection test failed", e);
+            throw new RedisException("Redis连接测试失败|Redis_connection_test_failed", e);
         }
     }
 

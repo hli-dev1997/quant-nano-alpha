@@ -10,7 +10,7 @@ public class CommonConstants {
     /**
      * http 请求成功状态码
      */
-    public static final Integer successCode = 200;
+    public static final Integer SUCCESS_CODE = 200;
 
     /**
      * 请求成功标识

@@ -419,8 +419,8 @@ class ReplaySchedulerTest {
         assertEquals(secondsCount * stocksPerSecond, totalProcessed.get());
         assertTrue(buffer.isEmpty());
 
-        log.info("调度循环性能测试：处理 {} 个时间片，{} 条数据，耗时 {} ms",
-                secondsCount, totalProcessed.get(), elapsedMs);
+        log.info("调度循环性能测试:处理{}个时间片,{}条数据,耗时{}ms|Scheduler_loop_perf_test,slices={},records={},elapsed={}ms",
+                secondsCount, totalProcessed.get(), elapsedMs, secondsCount, totalProcessed.get(), elapsedMs);
 
         // 性能断言：1000个时间片应在500ms内处理完成
         assertTrue(elapsedMs < 1000, "1000个时间片应在1秒内处理完成");

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import util.DateUtil;
 import util.PageUtil;
+import exception.BusinessException;
+import exception.ExternalServiceException;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -78,7 +80,7 @@ public class LimitUpServiceImpl implements LimitUpService {
             // Corrected DateCache usage if it was incorrect
             if (!DateCache.ThisYearTradeDateList.contains(DateUtil.parseToLocalDate(tradeTime, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT))) {
                 log.warn("非交易日|Not_a_trade_date,tradeTime={}", tradeTime);
-                throw new RuntimeException("LimitUpServiceImpl_getLimitUpData: " + tradeTime + " is not a trade date.");
+                throw new BusinessException(4003, "非交易日_无数据|Not_a_trade_date,tradeTime=" + tradeTime);
             }
             //url具体参数含义可查看TopicDetailParam,日期格式必须类似20250609
             String url = String.format(limitUpBaseUrl, tradeTime);
@@ -88,7 +90,7 @@ public class LimitUpServiceImpl implements LimitUpService {
             String response = HttpUtil.sendGetRequest(DataSourceConstants.WIND_PROD_WGQ + url, headers, 10000, 30000).getBody();
             if (!StringUtils.hasLength(response)) {
                 log.warn("日志记录|Log_message,LimitUpServiceImpl_getLimitUpData:_HTTP_response_body_is_empty_for_tradeTime:_{}", tradeTime);
-                throw new RuntimeException("LimitUpServiceImpl_getLimitUpData: HTTP response body is empty for tradeTime: " + tradeTime);
+                throw new ExternalServiceException("获取涨停数据响应为空|Get_limit_up_data_response_empty,tradeTime=" + tradeTime);
             }
             // 配置忽略未知字段，避免反序列化错误。解析JSON响应为ApiResponse对象
             objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -102,11 +104,11 @@ public class LimitUpServiceImpl implements LimitUpService {
             );
             log.info("日志记录|Log_message,LimitUpServiceImpl_getLimitUpData,resultCode={}", result.getResultCode());
             if (result == null || !"200".equals(result.getResultCode()) || result.getResultObject() == null || result.getResultObject().getStockDetail() == null || result.getResultObject().getStockDetail().isEmpty()) {
-                throw new RuntimeException("获取涨停数据为空或接口返回错误，交易日期: {}，响应码: {}" + tradeTime + result != null ? result.getResultCode() : "null");
+                throw new ExternalServiceException("获取涨停数据为空或接口返回错误|Get_limit_up_data_empty_or_error,tradeTime=" + tradeTime + ",resultCode=" + (result != null ? result.getResultCode() : "null"));
             }
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get or parse limit up data:" + e.getMessage());
+            throw new ExternalServiceException("获取或解析涨停数据失败|Failed_to_get_or_parse_limit_up_data:" + e.getMessage(), e);
         }
     }
 

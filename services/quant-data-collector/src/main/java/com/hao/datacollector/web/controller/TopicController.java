@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import exception.BusinessException;
 
 /**
  * @author Hao Li
@@ -47,7 +48,7 @@ public class TopicController {
             maxId = 1;
         }
         if (endId <= maxId) {
-            throw new RuntimeException("转档endId不能<=表中存储最大id");
+            throw new BusinessException(4004, "转档endId不能<=表中存储最大id|Transfer_endId_cannot_be_less_than_maxId");
         }
         return topicService.setKplTopicInfoJob(maxId, endId);
     }

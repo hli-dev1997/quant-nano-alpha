@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import util.JsonUtil;
 import util.PageUtil;
+import exception.ExternalServiceException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,9 +77,9 @@ public class NewsServiceImpl implements NewsService {
         // 发送请求，设置超时时间
         String bodyStr = HttpUtil.sendPostRequestTimeOut(url, JsonUtil.toJson(params), 10000, header);
         List<Object> jsonArray = JsonUtil.toList(bodyStr, Object.class);
-        if (jsonArray == null || !CommonConstants.successCode.equals(jsonArray.get(0))) {
+        if (jsonArray == null || !CommonConstants.SUCCESS_CODE.equals(jsonArray.get(0))) {
             log.warn("日志记录|Log_message,NewsServiceImpl_transferNewsStockData_error=windCode={}", windCode);
-            throw new RuntimeException("数据异常");
+            throw new ExternalServiceException("获取股票新闻数据失败|Get_stock_news_data_failed,windCode=" + windCode);
         }
         // Wind 返回的数组中，下标 3 为具体数据，先取出再解析
         Map<String, Object> dataMap = JsonUtil.toMap(JsonUtil.toJson(jsonArray.get(3)), String.class, Object.class);

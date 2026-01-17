@@ -2,7 +2,8 @@ package com.hao.strategyengine;
 
 import com.hao.strategyengine.core.stream.domain.StockDomainContext;
 import com.hao.strategyengine.core.stream.domain.Tick;
-import com.hao.strategyengine.core.stream.strategy.impl.NineTurnStrategy;
+import com.hao.strategyengine.core.stream.strategy.impl.nineturn.RedNineTurnStrategy;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,15 +21,18 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author hli
  * @date 2026-01-02
  */
+@Slf4j
 @DisplayName("策略引擎测试（极简版）")
 class StrategyEngineFullFlowTest {
 
-    private NineTurnStrategy nineTurnStrategy;
+    private RedNineTurnStrategy nineTurnStrategy;
     private static final String TEST_SYMBOL = "TEST_001.SZ";
 
     @BeforeEach
     void setUp() {
-        nineTurnStrategy = new NineTurnStrategy();
+        // 使用 RedNineTurnStrategy 进行测试（九转序列红九策略 - 买入信号）
+        // GreenNineTurnStrategy 可用于测试卖出信号
+        nineTurnStrategy = new RedNineTurnStrategy();
     }
 
     @Test
@@ -53,8 +57,8 @@ class StrategyEngineFullFlowTest {
         assertTrue(isMatch, "第9次满足条件应触发");
         assertEquals(0, (int) context.getStrategyPropOrDefault("NINE_TURN_COUNT", 0), "计数器应重置");
 
-        System.out.println("===== 九转触发测试 =====");
-        System.out.println("结果: 触发 ✓");
+        log.info("=====_九转触发测试_=====|Nine_Turn_Trigger_Test");
+        log.info("结果:触发✓|Result:Triggered");
     }
 
     @Test
@@ -70,8 +74,8 @@ class StrategyEngineFullFlowTest {
 
         // Then：不触发
         assertFalse(isMatch, "上涨不应触发");
-        System.out.println("===== 九转未触发测试 =====");
-        System.out.println("结果: 未触发 ✓");
+        log.info("=====_九转未触发测试_=====|Nine_Turn_No_Match_Test");
+        log.info("结果:未触发✓|Result:Not_Triggered");
     }
 
     @Test
@@ -80,10 +84,10 @@ class StrategyEngineFullFlowTest {
         String[] symbols = {"000001.SZ", "600000.SH", "300001.SZ"};
         int workerCount = 8;
 
-        System.out.println("===== 路由测试 =====");
+        log.info("=====_路由测试_=====|Routing_Test");
         for (String symbol : symbols) {
             int slot = Math.abs(symbol.hashCode()) % workerCount;
-            System.out.println(symbol + " → Worker-" + slot);
+            log.info("{}→Worker-{}|Symbol_Routed", symbol, slot);
             assertEquals(slot, Math.abs(symbol.hashCode()) % workerCount, "路由应稳定");
         }
     }
@@ -102,8 +106,8 @@ class StrategyEngineFullFlowTest {
         assertEquals(6.0, context.getPrice(9), 0.001, "最早=6");
         assertTrue(Double.isNaN(context.getPrice(10)), "超出=NaN");
 
-        System.out.println("===== RingBuffer 测试 =====");
-        System.out.println("容量: " + capacity + ", 最新: 15.0, 最早: 6.0 ✓");
+        log.info("=====_RingBuffer测试_=====|RingBuffer_Test");
+        log.info("容量:{},最新:15.0,最早:6.0✓|Capacity:{}", capacity, capacity);
     }
 
     @Test
@@ -120,8 +124,8 @@ class StrategyEngineFullFlowTest {
         long end = System.nanoTime();
 
         double avgMicros = (double) (end - start) / iterations / 1000;
-        System.out.println("===== 性能测试 =====");
-        System.out.println("10000次, 平均: " + String.format("%.2f", avgMicros) + " μs");
+        log.info("=====_性能测试_=====|Performance_Test");
+        log.info("10000次,平均:{}μs|Iterations:10000,Avg:{}us", String.format("%.2f", avgMicros), String.format("%.2f", avgMicros));
         assertTrue(avgMicros < 100, "应<100μs");
     }
 }

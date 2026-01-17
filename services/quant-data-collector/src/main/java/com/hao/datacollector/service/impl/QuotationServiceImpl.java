@@ -22,6 +22,8 @@ import org.springframework.util.StringUtils;
 import util.DateUtil;
 import util.JsonUtil;
 import util.MathUtil;
+import exception.DataException;
+import exception.ExternalServiceException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -240,7 +242,7 @@ public class QuotationServiceImpl implements QuotationService {
                         .mapToInt(subList -> subList.get(1))
                         .sum();
                 if (sum > 160000) {
-                    throw new RuntimeException("数据异常");
+                    throw new DataException("数据异常_sum值超过阈值|Data_error_sum_exceeds_threshold,sum=" + sum);
                 }
                 int timeIndex = indicatorIds.indexOf(2);
                 int latestPriceIndex = indicatorIds.indexOf(3);
@@ -309,12 +311,12 @@ public class QuotationServiceImpl implements QuotationService {
                     Thread.sleep(1000 * retryCount); // 递增等待时间
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("请求被中断", ie);
+                    throw new ExternalServiceException("请求被中断|Request_interrupted", ie);
                 }
             }
         }
         if (response == null || response.getBody() == null) {
-            throw new RuntimeException("请求失败，无法获取数据");
+            throw new ExternalServiceException("请求失败_无法获取数据|Request_failed_unable_to_get_data");
         }
         // 处理响应数据结构 - 先解析外层包装
         String responseBody = response.getBody();
@@ -341,7 +343,7 @@ public class QuotationServiceImpl implements QuotationService {
             });
         } catch (Exception e) {
             log.error("解析JSON数据失败:_{}", e.getMessage(), e);
-            throw new RuntimeException("数据解析失败", e);
+            throw new DataException("数据解析失败|Data_parsing_failed", e);
         }
         if (rawData == null || rawData.isEmpty()) {
             log.warn("解析后的数据为空|Log_message");
@@ -392,7 +394,7 @@ public class QuotationServiceImpl implements QuotationService {
         // 获取配置数组 - 最后一行
         List<Number> configArray = dataArrays.get(dataArrays.size() - 1);
         if (configArray == null || configArray.size() < 10) {
-            throw new RuntimeException("配置数组格式不正确");
+            throw new DataException("配置数组格式不正确|Config_array_format_invalid");
         }
         // 解析配置
         List<Integer> indicatorIds = new ArrayList<>();
@@ -409,7 +411,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .sum();
 
         if (sum > 160000) {
-            throw new RuntimeException("数据异常，sum: " + sum);
+            throw new DataException("数据异常_sum值超过阈值|Data_error_sum_exceeds_threshold,sum=" + sum);
         }
         // 获取各指标的索引位置
         int timeIndex = indicatorIds.indexOf(SpeedIndicatorEnum.TRADE_TIME.getIndicator());
@@ -421,14 +423,14 @@ public class QuotationServiceImpl implements QuotationService {
         int totalVolume = indicatorIds.indexOf(SpeedIndicatorEnum.TOTAL_VOLUME.getIndicator());
         // 检查必要的索引是否存在
         if (timeIndex < 0 || latestPriceIndex < 0) {
-            throw new RuntimeException("缺少必要的指标索引");
+            throw new DataException("缺少必要的指标索引|Missing_required_indicator_index");
         }
         // 解析日期
         LocalDate localDate;
         try {
             localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyyMMdd"));
         } catch (Exception e) {
-            throw new RuntimeException("日期解析失败: " + date, e);
+            throw new DataException("日期解析失败|Date_parsing_failed,date=" + date, e);
         }
         // 处理每一行数据（排除最后一行配置数据）
         int time_s = 0;

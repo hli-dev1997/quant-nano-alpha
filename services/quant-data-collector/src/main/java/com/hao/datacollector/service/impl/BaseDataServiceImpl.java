@@ -35,6 +35,8 @@ import util.DateUtil;
 import util.ExceptionUtil;
 import util.JsonUtil;
 import util.PageUtil;
+import exception.DataException;
+import exception.ExternalServiceException;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -149,7 +151,7 @@ public class BaseDataServiceImpl implements BaseDataService {
             if (stockDailyMetricsList.isEmpty()) {
                 if (emptyStatus == 500) {
                     log.warn("已处理代码累计|Processed_code_total,count={}", i);
-                    throw new RuntimeException("继续获取股票市场数据失败");
+                    throw new ExternalServiceException("继续获取股票市场数据失败|Continue_fetching_stock_market_data_failed");
                 }
                 boolean insertAbnormalResult = baseDataMapper.insertAbnormalStock(allWindCode.get(i));
                 log.warn("插入异常标记|Insert_abnormal_mark,windCode={},insertResult={}", allWindCode.get(i), insertAbnormalResult);
@@ -331,10 +333,10 @@ public class BaseDataServiceImpl implements BaseDataService {
             tradeDateList = result.getData();
         } catch (Exception e) {
             log.error("交易日历解析失败|Trade_date_parse_failed,responseLength={}", response == null ? 0 : response.length(), e);
-            throw new RuntimeException("BaseDataServiceImpl_setTradeDateList_tradeDateList_parse_error");
+            throw new DataException("交易日历解析失败|Trade_date_parse_failed", e);
         }
         if (tradeDateList.isEmpty()) {
-            throw new RuntimeException("BaseDataServiceImpl_setTradeDateList_tradeDateList_isEmpty");
+            throw new DataException("交易日历为空|Trade_date_list_is_empty");
         }
         //先清空再插入
         Integer tradeDate = baseDataMapper.clearTradeDate();

@@ -20,6 +20,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import exception.ExternalServiceException;
 
 /**
  * 公告与大事数据采集实现，负责基于 Wind API 拉取并落库对应信息。
@@ -84,7 +85,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         queryParams.add("pageSize", String.valueOf(pageSize));
         ResponseEntity<String> response = HttpUtil.sendGetWithParams(url, queryParams, headers, 100000, 100000);
         if (!SUCCESS_FLAG.equals(response.getStatusCode().toString())) {
-            throw new RuntimeException("getBigEventData_error,result=" + response.getStatusCode());
+            throw new ExternalServiceException("获取公告或大事数据失败|Get_announcement_data_failed,statusCode=" + response.getStatusCode());
         }
         // 成功返回后直接反序列化为公告列表
         List<AnnouncementVO> announcementList = JSON.parseObject(response.getBody(), new TypeReference<List<AnnouncementVO>>() {
@@ -153,7 +154,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         queryParams.add("pageSize", String.valueOf(pageSize));
         ResponseEntity<String> response = HttpUtil.sendGetWithParams(url, queryParams, headers, 10000, 10000);
         if (!SUCCESS_FLAG.equals(response.getStatusCode().toString())) {
-            throw new RuntimeException("getBigEventData_error,result=" + response.getStatusCode());
+            throw new ExternalServiceException("获取公告或大事数据失败|Get_announcement_data_failed,statusCode=" + response.getStatusCode());
         }
         // 直接将 JSON 数组映射为大事 VO 列表
         List<BigEventVO> eventVOList = JSON.parseObject(response.getBody(), new TypeReference<List<BigEventVO>>() {

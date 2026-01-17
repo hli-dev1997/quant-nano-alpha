@@ -140,4 +140,46 @@ public class TimeSliceBuffer {
             lock.writeLock().unlock();
         }
     }
+
+    /**
+     * 获取时间片数量
+     *
+     * @return 时间片的个数（不同秒的数量）
+     */
+    public int sliceCount() {
+        lock.readLock().lock();
+        try {
+            return timeSlices.size();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * 获取最早的时间戳
+     *
+     * @return 最早时间戳（秒），缓冲区为空时返回 -1
+     */
+    public long getEarliestTimestamp() {
+        lock.readLock().lock();
+        try {
+            return timeSlices.isEmpty() ? -1L : timeSlices.firstKey();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * 获取最晚的时间戳
+     *
+     * @return 最晚时间戳（秒），缓冲区为空时返回 -1
+     */
+    public long getLatestTimestamp() {
+        lock.readLock().lock();
+        try {
+            return timeSlices.isEmpty() ? -1L : timeSlices.lastKey();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
 }

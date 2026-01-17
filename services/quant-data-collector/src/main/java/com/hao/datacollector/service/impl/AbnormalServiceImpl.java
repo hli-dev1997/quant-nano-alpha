@@ -26,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import util.DateUtil;
+import exception.BusinessException;
+import exception.DataException;
+import exception.ExternalServiceException;
 
 import java.util.List;
 
@@ -81,7 +84,7 @@ public class AbnormalServiceImpl implements AbnormalService {
         }
         // 判断当前传入日期是否属交易日，预留扩展点给未来的交易日校验
         if (false) {
-            throw new RuntimeException("not_support_tradeDate!");
+            throw new BusinessException(4005, "不支持的交易日|Not_supported_trade_date");
         }
         HttpHeaders httpHeader = new HttpHeaders();
         httpHeader.set(DataSourceConstants.WIND_POINT_SESSION_NAME, properties.getWindSessionId());
@@ -97,10 +100,10 @@ public class AbnormalServiceImpl implements AbnormalService {
             // 所有网络访问统一走 HttpUtil，便于集中处理超时与异常
             entity = HttpUtil.sendGetWithParams(url, queryParams, httpHeader, 10000, 10000);
         } catch (Exception e) {
-            throw new RuntimeException("getHomePage_error," + e.getMessage());
+            throw new ExternalServiceException("获取龙虎榜首页失败|Get_home_page_failed," + e.getMessage(), e);
         }
         if (!CommonConstants.SUCCESS_FLAG.equals(entity.getStatusCode().toString())) {
-            throw new RuntimeException("getHomePage_error,result=" + entity.getStatusCode());
+            throw new ExternalServiceException("获取龙虎榜首页失败|Get_home_page_failed,statusCode=" + entity.getStatusCode());
         }
         // 使用 Fastjson 将数组 JSON 反序列化为 VO，保持字段顺序不变
         List<AbnormalIndexVO> indexVOList = JSONObject.parseObject(entity.getBody().toString(), new TypeReference<List<AbnormalIndexVO>>() {
@@ -120,7 +123,7 @@ public class AbnormalServiceImpl implements AbnormalService {
     public Boolean transferHomePage(IndexSourceParam indexSourceParam) {
         List<AbnormalIndexVO> indexVOList = getSourceHomePage(indexSourceParam.getTradeDate(), indexSourceParam.getSortCol(), indexSourceParam.getOrderType());
         if (indexVOList.isEmpty()) {
-            throw new RuntimeException("transferHomePage_error,indexVOList_is_empty,param=" + JSONObject.toJSONString(indexSourceParam));
+            throw new DataException("转档首页数据为空|Transfer_home_page_data_empty,param=" + JSONObject.toJSONString(indexSourceParam));
         }
         // 调用 Mapper 做批量写入，依赖数据库层面的去重保障幂等
         int resultCount = abnormalMapper.insertHomePageSourceData(indexVOList, indexSourceParam.getTradeDate());
@@ -143,7 +146,7 @@ public class AbnormalServiceImpl implements AbnormalService {
     public List<ActiveSeatsRankVO> getSourceListOfSeats(Integer period, Integer seatType, Integer pageNo, Integer pageSize, Integer sortCol, Integer sortFlag) {
         // 判断当前传入日期是否属交易日，可与首页逻辑保持一致
         if (false) {
-            throw new RuntimeException("not_support_tradeDate!");
+            throw new BusinessException(4005, "不支持的交易日|Not_supported_trade_date");
         }
         HttpHeaders httpHeader = new HttpHeaders();
         httpHeader.set(DataSourceConstants.WIND_POINT_SESSION_NAME, properties.getWindSessionId());
@@ -160,10 +163,10 @@ public class AbnormalServiceImpl implements AbnormalService {
             // 与首页相同的 GET 调用模式，只是命中不同的后端路径
             entity = HttpUtil.sendGetWithParams(DataSourceConstants.WIND_PROD_WGQ + seatsUrl, queryParams, httpHeader, 10000, 10000);
         } catch (Exception e) {
-            throw new RuntimeException("getSourceListOfSeats_error," + e.getMessage());
+            throw new ExternalServiceException("获取龙虎榜席位榜失败|Get_seats_list_failed," + e.getMessage(), e);
         }
         if (!CommonConstants.SUCCESS_FLAG.equals(entity.getStatusCode().toString())) {
-            throw new RuntimeException("getSourceListOfSeats_error,result=" + entity.getStatusCode());
+            throw new ExternalServiceException("获取龙虎榜席位榜失败|Get_seats_list_failed,statusCode=" + entity.getStatusCode());
         }
         // 将 JSON 直接转换为 VO 列表，供后续转档或透传使用
         List<ActiveSeatsRankVO> activeSeatsRankList = JSONObject.parseObject(entity.getBody().toString(), new TypeReference<List<ActiveSeatsRankVO>>() {
@@ -206,7 +209,7 @@ public class AbnormalServiceImpl implements AbnormalService {
     public List<ActiveRankRecordVO> getSourceActiveRank(Integer period, Integer pageNo, Integer pageSize, Integer sortCol, Integer sortFlag) {
         // 判断当前传入日期是否属交易日，与其他接口保持一致的扩展点
         if (false) {
-            throw new RuntimeException("not_support_tradeDate!");
+            throw new BusinessException(4005, "不支持的交易日|Not_supported_trade_date");
         }
         HttpHeaders httpHeader = new HttpHeaders();
         httpHeader.set(DataSourceConstants.WIND_POINT_SESSION_NAME, properties.getWindSessionId());
@@ -223,10 +226,10 @@ public class AbnormalServiceImpl implements AbnormalService {
             // 直接请求活跃榜接口，复用统一的超时配置
             entity = HttpUtil.sendGetWithParams(DataSourceConstants.WIND_PROD_WGQ + activeUrl, queryParams, httpHeader, 10000, 10000);
         } catch (Exception e) {
-            throw new RuntimeException("getSourceActiveRank_error," + e.getMessage());
+            throw new ExternalServiceException("获取龙虎榜活跃榜失败|Get_active_rank_failed," + e.getMessage(), e);
         }
         if (!CommonConstants.SUCCESS_FLAG.equals(entity.getStatusCode().toString())) {
-            throw new RuntimeException("getSourceActiveRank_error,result=" + entity.getStatusCode());
+            throw new ExternalServiceException("获取龙虎榜活跃榜失败|Get_active_rank_failed,statusCode=" + entity.getStatusCode());
         }
         // Fastjson 反序列化列表数据，供后续落库或直接返回
         List<ActiveRankRecordVO> activeRankRecordVOList = JSONObject.parseObject(entity.getBody().toString(), new TypeReference<List<ActiveRankRecordVO>>() {

@@ -136,9 +136,9 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
             newEncoder.start();
             
             kafkaAppender.setEncoder(newEncoder);
-            log.debug("Encoder pattern 更新成功|Encoder_pattern_updated");
+            log.debug("Encoder_pattern更新成功|Encoder_pattern_updated");
         } catch (Exception e) {
-            log.warn("更新 Encoder pattern 失败|Encoder_pattern_update_failed,error={}", e.getMessage());
+            log.warn("更新Encoder_pattern失败|Encoder_pattern_update_failed,error={}", e.getMessage());
         }
     }
 
