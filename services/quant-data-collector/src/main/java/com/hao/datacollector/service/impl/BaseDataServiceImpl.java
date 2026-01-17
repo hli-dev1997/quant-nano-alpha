@@ -2,7 +2,6 @@ package com.hao.datacollector.service.impl;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -389,7 +388,7 @@ public class BaseDataServiceImpl implements BaseDataService {
      */
     @Override
     public List<StockBasicInfoQueryResultVO> queryStockBasicInfo(StockBasicInfoQueryParam queryParam) {
-        log.info("股票基础信息查询开始|Stock_basic_query_start,queryParam={}", JSON.toJSONString(queryParam));
+        log.info("股票基础信息查询开始|Stock_basic_query_start,queryParam={}", JsonUtil.toJson(queryParam));
         // 处理分页参数，将pageNo转换为offset
         if (queryParam.getPageNo() != null && queryParam.getPageSize() != null) {
             int offset = PageUtil.calculateOffset(queryParam.getPageNo(), queryParam.getPageSize());
@@ -408,7 +407,7 @@ public class BaseDataServiceImpl implements BaseDataService {
      */
     @Override
     public List<StockMarketDataQueryResultVO> queryStockMarketData(StockMarketDataQueryParam queryParam) {
-        log.info("股票行情查询开始|Stock_market_query_start,queryParam={}", JSON.toJSONString(queryParam));
+        log.info("股票行情查询开始|Stock_market_query_start,queryParam={}", JsonUtil.toJson(queryParam));
         // 处理分页参数，将pageNo转换为offset
         if (queryParam.getPageNo() != null && queryParam.getPageSize() != null) {
             int offset = PageUtil.calculateOffset(queryParam.getPageNo(), queryParam.getPageSize());

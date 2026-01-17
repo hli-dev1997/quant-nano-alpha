@@ -134,23 +134,4 @@ public class ExcelReaderUtil {
         }
     }
 
-    /**
-     * Excel读取演示入口
-     *
-     * 实现逻辑：
-     * 1. 读取Excel行数据。
-     * 2. 输出部分字段供人工核验。
-     *
-     * @param args 启动参数
-     */
-    public static void main(String[] args) {
-        // 实现思路：使用相对路径避免平台绑定
-        File file = Paths.get("data", "1.xlsx").toFile();
-        List<Map<String, String>> dataList = ExcelReaderUtil.readExcel(file);
-        // 打印数据
-        dataList.forEach(row -> {
-            LOG.info("Excel读取结果|Excel_read_result,stockCode={},profile={}", row.get("证券代码"), row.get("公司简介"));
-        });
-
-    }
 }

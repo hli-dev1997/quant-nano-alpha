@@ -108,8 +108,6 @@ public class KafkaConsumerService {
             // 中文：每秒输出一次吞吐量统计
             // English: Output throughput stats every second
             if (now - windowStart >= 1000) {
-                //todo 暂时不统计
-//                log.info("Kafka消费统计|Kafka_consume_stats,threadName={},throughput={}条/s", Thread.currentThread().getName(), count);
                 // 中文：重置计数器和窗口
                 // English: Reset counter and window
                 counter.set(0);

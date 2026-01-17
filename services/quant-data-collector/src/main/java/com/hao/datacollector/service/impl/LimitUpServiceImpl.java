@@ -77,7 +77,7 @@ public class LimitUpServiceImpl implements LimitUpService {
             //非交易日无数据。
             // Corrected DateCache usage if it was incorrect
             if (!DateCache.ThisYearTradeDateList.contains(DateUtil.parseToLocalDate(tradeTime, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT))) {
-                log.warn("日志记录|Log_message,LimitUpServiceImpl_getLimitUpData:_{}_is_not_a_trade_date.", tradeTime);
+                log.warn("非交易日|Not_a_trade_date,tradeTime={}", tradeTime);
                 throw new RuntimeException("LimitUpServiceImpl_getLimitUpData: " + tradeTime + " is not a trade date.");
             }
             //url具体参数含义可查看TopicDetailParam,日期格式必须类似20250609
@@ -138,7 +138,7 @@ public class LimitUpServiceImpl implements LimitUpService {
             for (TopicStockVO stockDetail : stockDetails) {
                 for (TopicInfoVO stockDetailTopic : stockDetail.getTopics()) {
                     if (stockDetailTopic == null) {
-                        log.warn("日志记录|Log_message,LimitUpServiceImpl_transferLimitUpDataToDatabase:stockDetailTopic_is_null,tradeDate={},windCode={},", localTradeTime, stockDetail.getWindCode());
+                        log.warn("股票详情题材为空|Stock_detail_topic_is_null,tradeDate={},windCode={}", localTradeTime, stockDetail.getWindCode());
                         continue;
                     }
                     //基础标签
@@ -185,7 +185,9 @@ public class LimitUpServiceImpl implements LimitUpService {
                 for (BaseTopicInsertDTO topicInsertDTO : distinctList) {
                     // BaseTopic 逐条 upsert，避免重复主键导致批量失败
                     Boolean insertBaseTopicResult = limitUpMapper.insertBaseTopic(topicInsertDTO);
-                    log.info("日志记录|Log_message,LimitUpServiceImpl_transferLimitUpDataToDatabase_insertBaseTopicResult={}", insertBaseTopicResult);
+                    if (log.isDebugEnabled()) {
+                        log.debug("插入BaseTopic结果|Insert_base_topic_result,topicId={},result={}", topicInsertDTO.getTopicId(), insertBaseTopicResult);
+                    }
                 }
                 log.info("插入BaseTopic={}条", baseTopicInsertList.size());
             }

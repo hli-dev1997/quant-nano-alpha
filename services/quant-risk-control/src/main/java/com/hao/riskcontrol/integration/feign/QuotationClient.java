@@ -19,6 +19,7 @@ import java.util.Map;
  * @description: 外部行情服务客户端
  */
 @FeignClient(name = "quotation", url = "http://114.80.154.45")
+// TODO: 硬编码IP地址，建议迁移到配置文件 (Hardcoded IP, consider moving to configuration)
 public interface QuotationClient {
 
     Integer MAX_WINDCODE_SIZE = 100;

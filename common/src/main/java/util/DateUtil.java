@@ -90,7 +90,6 @@ public final class DateUtil {
         try {
             return getDateFormat(pattern).format(date);
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_format_date:_{}_with_pattern:_{}", date, pattern, e);
             throw new IllegalArgumentException("Invalid date pattern: " + pattern, e);
         }
     }
@@ -134,7 +133,6 @@ public final class DateUtil {
         try {
             return localDateTime.format(DateTimeFormatter.ofPattern(pattern));
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_format_LocalDateTime:_{}_with_pattern:_{}", localDateTime, pattern, e);
             throw new IllegalArgumentException("Invalid date pattern: " + pattern, e);
         }
     }
@@ -158,7 +156,6 @@ public final class DateUtil {
         try {
             return localDate.format(DateTimeFormatter.ofPattern(pattern));
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_format_LocalDate:_{}_with_pattern:_{}", localDate, pattern, e);
             throw new IllegalArgumentException("Invalid date pattern: " + pattern, e);
         }
     }
@@ -185,7 +182,6 @@ public final class DateUtil {
         try {
             return getDateFormat(pattern).parse(dateStr);
         } catch (ParseException e) {
-//            log.error("日志记录|Log_message,Failed_to_parse_date_string:_{}_with_pattern:_{}", dateStr, pattern, e);
             throw new IllegalArgumentException("Invalid date string: " + dateStr + " for pattern: " + pattern, e);
         }
     }
@@ -220,7 +216,6 @@ public final class DateUtil {
                 return parseDate(dateStr, pattern);
             } catch (IllegalArgumentException e) {
                 // 继续尝试下一个格式
-//                log.debug("日志记录|Log_message,Failed_to_parse_with_pattern_{}:_{}", pattern, e.getMessage());
             }
         }
 
@@ -246,7 +241,6 @@ public final class DateUtil {
         try {
             return LocalDateTime.parse(dateStr, DateTimeFormatter.ofPattern(pattern));
         } catch (DateTimeParseException e) {
-//            log.error("日志记录|Log_message,Failed_to_parse_LocalDateTime:_{}_with_pattern:_{}", dateStr, pattern, e);
             throw new IllegalArgumentException("Invalid date string: " + dateStr + " for pattern: " + pattern, e);
         }
     }
@@ -276,7 +270,6 @@ public final class DateUtil {
 
             return Date.from(result.atZone(ZoneId.systemDefault()).toInstant());
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_add_time_to_date:_{},_amount:_{},_unit:_{}", date, amount, unit, e);
             throw new IllegalArgumentException("Date calculation failed", e);
         }
     }
@@ -365,7 +358,6 @@ public final class DateUtil {
 
             return isBetween(date, startCal.getTime(), endCal.getTime());
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_check_date_range_for_date:_{},_start:_{},_end:_{}", date, startDate, endDate, e);
             return false;
         }
     }
@@ -448,8 +440,6 @@ public final class DateUtil {
     public static boolean isAfterStockClosing() {
         LocalTime now = LocalTime.now();
         boolean result = now.isAfter(STOCK_CLOSING_TIME);
-//        log.debug("日志记录|Log_message,Current_time:_{},_Stock_closing_time:_{},_Is_after_closing:_{}",
-//                now, STOCK_CLOSING_TIME, result);
         return result;
     }
 
@@ -595,7 +585,6 @@ public final class DateUtil {
             LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
             return formatLocalDateTime(localDateTime, pattern);
         } catch (Exception e) {
-//            log.error("日志记录|Log_message,Failed_to_convert_timestamp_{}_to_string_with_pattern_{}", timestamp, pattern, e);
             throw new IllegalArgumentException("Invalid timestamp or pattern", e);
         }
     }

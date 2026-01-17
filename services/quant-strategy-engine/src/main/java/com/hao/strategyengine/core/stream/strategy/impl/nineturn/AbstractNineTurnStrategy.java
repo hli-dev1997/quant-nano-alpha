@@ -60,14 +60,16 @@ public abstract class AbstractNineTurnStrategy implements StreamingStrategy {
     @Override
     public boolean isMatch(Tick tick, StockDomainContext context) {
         // 1. 时间检查：必须是收盘数据 (>= 15:00:00)
-        //todo 2.当前交易日必须是历史缓存辩识数据的下一个交易日数据才可以链接
+        // TODO: 2.当前交易日必须是历史缓存辩识数据的下一个交易日数据才可以链接
         // 注意：Tick 中的 eventTime 是毫秒时间戳
         if (!isMarketClose(tick.getEventTime())) {
-            log.info("AbstractNineTurnStrategy_!isMarketClose");
+            if (log.isDebugEnabled()) {
+                log.debug("非收盘时间_跳过计算|Not_market_close,strategy={}", getId());
+            }
             return false;
         }
 
-        //todo bug 2. 检查历史数据是否充足
+        // TODO: bug 2. 检查历史数据是否充足
         if (!context.hasEnoughHistory(LOOKBACK_DAYS)) {
             log.debug("数据不足_跳过{}计算|Insufficient_data,symbol={},size={}", getId(), context.getSymbol(), context.getSize());
             return false;
