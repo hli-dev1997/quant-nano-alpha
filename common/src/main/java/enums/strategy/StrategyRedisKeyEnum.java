@@ -26,16 +26,32 @@ import lombok.Getter;
 public enum StrategyRedisKeyEnum {
 
     /**
-     * 九转序列策略预热数据
+     * 九转序列（红九）策略预热数据
      *
      * Redis数据结构：
-     * - Key: NINE_TURN:PREHEAT:{yyyyMMdd}
+     * - Key: NINE_TURN_RED:PREHEAT:{yyyyMMdd}
      * - 数据类型: Hash
      * - Field: windCode (股票代码)
-     * - Value: JSON数组，存储前20个交易日收盘价，索引0=昨日收盘价
+     * - Value: JSON数组，存储前20个交易日收盘价
      */
-    NINE_TURN_PREHEAT(
-            "NINE_TURN",
+    NINE_TURN_RED_PREHEAT(
+            "NINE_TURN_RED",
+            "PREHEAT",
+            24,        // TTL: 24小时
+            20         // 历史天数: 20天
+    ),
+
+    /**
+     * 九转序列（绿九）策略预热数据
+     *
+     * Redis数据结构：
+     * - Key: NINE_TURN_GREEN:PREHEAT:{yyyyMMdd}
+     * - 数据类型: Hash
+     * - Field: windCode (股票代码)
+     * - Value: JSON数组，存储前20个交易日收盘价
+     */
+    NINE_TURN_GREEN_PREHEAT(
+            "NINE_TURN_GREEN",
             "PREHEAT",
             24,        // TTL: 24小时
             20         // 历史天数: 20天
