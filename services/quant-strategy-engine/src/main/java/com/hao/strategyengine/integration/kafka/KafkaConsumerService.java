@@ -1,8 +1,10 @@
 package com.hao.strategyengine.integration.kafka;
 
 import com.hao.strategyengine.core.stream.engine.StreamDispatchEngine;
+import integration.kafka.KafkaConstants;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class KafkaConsumerService {
 
     /**
@@ -55,11 +58,6 @@ public class KafkaConsumerService {
      */
     private final StreamDispatchEngine streamDispatchEngine;
 
-    @Autowired
-    public KafkaConsumerService(StreamDispatchEngine streamDispatchEngine) {
-        this.streamDispatchEngine = streamDispatchEngine;
-    }
-
     /**
      * 消费行情消息
      *
@@ -72,22 +70,32 @@ public class KafkaConsumerService {
      * - 消费异常不提交offset，消息将被重试
      * - StreamDispatchEngine内部已做异常隔离
      *
-     * @param message Kafka消息（JSON格式）
-     * @param ack     手动提交句柄
+     * @param record Kafka消息记录
+     * @param ack    手动提交句柄
      */
     @KafkaListener(
-            topics = "quotation",
+            topics = KafkaConstants.TOPIC_QUOTATION,
             groupId = "strategy-service-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void consume(String message, Acknowledgment ack) {
+    public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
         try {
+            String message = record.value();
             long now = System.currentTimeMillis();
+
+            // 保留原 ReplayDataConsumer 的日志逻辑 (建议仅在调试或低频场景开启，高频场景请注意日志量)
+            if (log.isDebugEnabled()) {
+                log.debug("策略引擎收到数据|Strategy_received_data,offset={},valueLength={},content={}",
+                        record.offset(), message.length(), message);
+            }
 
             // 中文：记录第一条消息用于日志采样
             // English: Record first message for log sampling
             if (firstMessage == null) {
                 firstMessage = message;
+                // 采样打印一条详细日志，保留原 ReplayDataConsumer 的关键信息
+                log.info("策略引擎收到数据(采样)|Strategy_received_data_sample,offset={},valueLength={},content={}",
+                        record.offset(), message.length(), message);
             }
             // 中文：每条消息都更新lastMessage
             // English: Update lastMessage for each message

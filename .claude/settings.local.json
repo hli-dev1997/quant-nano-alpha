@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(mvn clean install -DskipTests)",
-      "Bash(dir /s /b servicesquant-stock-list)"
+      "Bash(dir /s /b servicesquant-stock-list)",
+      "Bash(dir /s /b servicesquant-strategy-enginesrcmainjava)"
     ]
   }
 }

@@ -1,5 +1,6 @@
 package com.hao.datacollector.replay;
 
+import com.hao.datacollector.dto.replay.ReplayParamsDTO;
 import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.KafkaProducerService;
@@ -25,6 +26,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * 核心组件：维护虚拟时钟，按节奏从缓冲区取出数据推送到 Kafka。
  * 支持速度调节和暂停/恢复控制。
+ * <p>
+ * <b>核心执行链路：</b>
+ * <ol>
+ *     <li><b>启动 (Start)</b>: 异步启动回放任务，初始化虚拟时间。</li>
+ *     <li><b>预加载 (Preload)</b>: {@link DataLoader} 批量从数据库加载历史行情到 {@link TimeSliceBuffer}。</li>
+ *     <li><b>调度 (Schedule)</b>: 主循环按秒推进虚拟时间，从缓冲区获取当前秒的数据。</li>
+ *     <li><b>推送 (Push)</b>: 将数据批量发送到 Kafka (Topic: quotation)。</li>
+ *     <li><b>控制 (Control)</b>: 支持暂停 (Pause)、恢复 (Resume)、调速 (Speed Control)。</li>
+ * </ol>
  *
  * @author hli
  * @date 2026-01-01
@@ -33,16 +43,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class ReplayScheduler {
 
+    /** 数据加载器，负责从数据库读取历史行情数据 */
     private final DataLoader dataLoader;
+
+    /** 时间片缓冲区，用于缓存预加载的行情数据 */
     private final TimeSliceBuffer buffer;
+
+    /** Kafka 生产者服务，用于高性能推送行情数据 */
     private final KafkaProducerService kafkaProducer;
+
+    /** 回放配置属性（全局默认配置） */
     private final ReplayProperties config;
+
+    /** 当前运行的回放参数（线程安全，每次启动时复制） */
+    private volatile ReplayParamsDTO currentParams;
 
     /**
      * 北京时区偏移量
      */
     private static final ZoneOffset BEIJING_ZONE = ZoneOffset.of("+8");
 
+    /**
+     * 紧凑型日期格式化器 (yyyyMMdd)
+     */
     private static final DateTimeFormatter COMPACT_FORMATTER =
             DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
 
@@ -52,27 +75,32 @@ public class ReplayScheduler {
     private volatile long virtualTime;
 
     /**
-     * 预加载游标
+     * 预加载游标，记录当前已加载到的时间点
      */
     private volatile LocalDateTime preloadCursor;
 
     /**
-     * 运行状态标志
+     * 运行状态标志，true表示正在运行
      */
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     /**
-     * 暂停状态标志
+     * 暂停状态标志，true表示暂停中
      */
     private final AtomicBoolean paused = new AtomicBoolean(false);
 
     /**
-     * 回放统计：已推送的消息数
+     * 回放统计：已推送的消息总数
      */
     private volatile long totalSentCount = 0;
 
     /**
      * 显式构造函数，确保依赖注入成功
+     *
+     * @param dataLoader    数据加载器
+     * @param buffer        时间片缓冲区
+     * @param kafkaProducer Kafka生产者
+     * @param config        回放配置
      */
     public ReplayScheduler(DataLoader dataLoader,
                            TimeSliceBuffer buffer,
@@ -87,33 +115,62 @@ public class ReplayScheduler {
         this.buffer = buffer;
         this.kafkaProducer = kafkaProducer;
         this.config = config;
-        
+
         log.info("ReplayScheduler initialized with config: {}", config);
     }
 
     /**
-     * 启动回放（异步执行）
+     * 使用默认配置启动回放（异步执行）
+     * <p>
+     * 检查配置是否启用，并确保同一时间只有一个回放任务在运行。
      */
     @Async("ioTaskExecutor")
     public void startReplay() {
-        // 双重检查，防止 config 为 null (虽然构造函数已经检查了)
-        if (config == null) {
-            log.error("严重错误：ReplayProperties 为 null，无法启动回放！");
-            return;
-        }
+        // 构造 DTO 并调用重载方法
+        ReplayParamsDTO params = ReplayParamsDTO.builder()
+                .startDate(config.getStartDate())
+                .endDate(config.getEndDate())
+                .speedMultiplier(config.getSpeedMultiplier())
+                .preloadMinutes(config.getPreloadMinutes())
+                .bufferMaxSize(config.getBufferMaxSize())
+                .stockCodes(config.getStockCodes())
+                .build();
 
         if (!config.isEnabled()) {
-            log.info("回放模式未启用|Replay_mode_disabled");
+            log.info("回放模式未启用（全局配置 disabled）|Replay_mode_disabled");
+            // 注意：这里我们依然允许调用 startReplay(params) 强制启动，
+            // 但如果仅仅是调用 startReplay() 且 config.enabled=false，则拒绝
+             return;
+        }
+
+        startReplay(params);
+    }
+
+    /**
+     * 使用指定参数启动回放（异步执行）
+     * <p>
+     * 即使全局配置 enabled=false，显式调用此方法也会启动回放。
+     * 线程安全：使用传入的 params 对象作为本次回放的配置，不受全局配置修改影响。
+     *
+     * @param params 回放参数 DTO
+     */
+    @Async("ioTaskExecutor")
+    public void startReplay(ReplayParamsDTO params) {
+        if (params == null) {
+            log.error("启动失败：参数不能为 null");
             return;
         }
 
         if (running.compareAndSet(false, true)) {
             try {
+                // 锁定当前参数
+                this.currentParams = params;
                 doReplay();
             } catch (Exception e) {
                 log.error("回放过程中发生未捕获异常|Replay_exception", e);
             } finally {
                 running.set(false);
+                this.currentParams = null; // 清理引用
                 log.info("回放任务结束，状态已重置|Replay_task_ended");
             }
         } else {
@@ -123,16 +180,22 @@ public class ReplayScheduler {
 
     /**
      * 执行回放主流程
+     * <p>
+     * 1. 初始化虚拟时间为回放开始日期的 09:24:00。<br>
+     * 2. 启动异步预加载线程 {@link #startPreloader(LocalDateTime)}。<br>
+     * 3. 进入主循环，按秒推进虚拟时间。<br>
+     * 4. 每秒从缓冲区取出数据并推送到 Kafka。<br>
+     * 5. 处理暂停、休眠和非交易时间跳过。
      */
     private void doReplay() {
         log.info("=== 回放服务启动|Replay_service_start ===");
-        log.info("配置信息|Config,startDate={},endDate={},speed={}x,preloadMinutes={}",
-                config.getStartDate(), config.getEndDate(),
-                config.getSpeedMultiplier(), config.getPreloadMinutes());
+        log.info("回放参数|Params,startDate={},endDate={},speed={}x,preloadMinutes={}",
+                currentParams.getStartDate(), currentParams.getEndDate(),
+                currentParams.getSpeedMultiplier(), currentParams.getPreloadMinutes());
 
         // 初始化时间参数
-        LocalDate startDate = LocalDate.parse(config.getStartDate(), COMPACT_FORMATTER);
-        LocalDate endDate = LocalDate.parse(config.getEndDate(), COMPACT_FORMATTER);
+        LocalDate startDate = LocalDate.parse(currentParams.getStartDate(), COMPACT_FORMATTER);
+        LocalDate endDate = LocalDate.parse(currentParams.getEndDate(), COMPACT_FORMATTER);
 
         // 股市开盘时间 09:24:00 (包含集合竞价从09:24开始)
         LocalDateTime start = LocalDateTime.of(startDate, LocalTime.of(9, 24, 0));
@@ -172,7 +235,7 @@ public class ReplayScheduler {
             if (batch != null && !batch.isEmpty()) {
                 sendToKafka(batch);
                 totalSentCount += batch.size();
-                
+
                 // --- 新增日志：确认推送时间和数据 ---
                 if (log.isInfoEnabled()) {
                     LocalDateTime currentTime = LocalDateTime.ofEpochSecond(virtualTime, 0, BEIJING_ZONE);
@@ -200,18 +263,27 @@ public class ReplayScheduler {
 
     /**
      * 启动预加载线程
+     * <p>
+     * 异步从数据库批量加载数据到缓冲区，确保主线程回放时不会因为 I/O 阻塞。
+     * 当缓冲区满时，会自动等待。
+     *
+     * @param endDate 回放结束时间
+     * @return CompletableFuture 用于追踪线程状态
      */
     private CompletableFuture<Void> startPreloader(LocalDateTime endDate) {
         return CompletableFuture.runAsync(() -> {
             log.info("预加载线程启动|Preloader_start");
+            int preloadMin = currentParams.getPreloadMinutes() != null ? currentParams.getPreloadMinutes() : 5;
+            int bufferMax = currentParams.getBufferMaxSize() != null ? currentParams.getBufferMaxSize() : 100000;
+
             while (preloadCursor.isBefore(endDate) && running.get()) {
                 // 如果缓冲区数据太多，等待消费
-                while (buffer.size() > config.getBufferMaxSize() && running.get()) {
+                while (buffer.size() > bufferMax && running.get()) {
                     log.debug("缓冲区已满，等待消费|Buffer_full,size={}", buffer.size());
                     sleep(500);
                 }
                 if (!running.get()) break;
-                LocalDateTime sliceEnd = preloadCursor.plusMinutes(config.getPreloadMinutes());
+                LocalDateTime sliceEnd = preloadCursor.plusMinutes(preloadMin);
                 if (sliceEnd.isAfter(endDate)) {
                     sliceEnd = endDate;
                 }
@@ -235,6 +307,8 @@ public class ReplayScheduler {
 
     /**
      * 等待初始数据加载
+     * <p>
+     * 阻塞主回放线程，直到缓冲区中有足够的数据或超时（60秒）。
      */
     private void waitForInitialData() {
         log.info("等待初始数据加载...|Waiting_initial_data");
@@ -248,6 +322,8 @@ public class ReplayScheduler {
 
     /**
      * 发送数据到 Kafka
+     *
+     * @param batch 历史行情数据批次
      */
     private void sendToKafka(List<HistoryTrendDTO> batch) {
         String topic = KafkaTopics.QUOTATION.code();
@@ -256,9 +332,14 @@ public class ReplayScheduler {
 
     /**
      * 根据速度倍数休眠
+     * <p>
+     * 用于控制回放速度。
+     * 例如 1倍速 = 休眠1000ms，10倍速 = 休眠100ms。
+     * 0倍速不休眠。
      */
     private void sleepForReplay() {
-        int speed = config.getSpeedMultiplier();
+        if (currentParams == null) return;
+        int speed = currentParams.getSpeedMultiplier() != null ? currentParams.getSpeedMultiplier() : 1;
         if (speed <= 0) {
             // 最快速度，不休眠
             return;
@@ -271,6 +352,9 @@ public class ReplayScheduler {
 
     /**
      * 判断是否为非交易时间（午休 11:30-13:00）
+     *
+     * @param timestamp 当前虚拟时间戳
+     * @return true如果是午休时间
      */
     private boolean isNonTradingTime(long timestamp) {
         LocalDateTime time = LocalDateTime.ofEpochSecond(timestamp, 0, BEIJING_ZONE);
@@ -294,6 +378,8 @@ public class ReplayScheduler {
 
     /**
      * 暂停回放
+     * <p>
+     * 设置暂停标志位，主循环将挂起。
      */
     public void pause() {
         paused.set(true);
@@ -302,6 +388,8 @@ public class ReplayScheduler {
 
     /**
      * 恢复回放
+     * <p>
+     * 清除暂停标志位，主循环将继续。
      */
     public void resume() {
         paused.set(false);
@@ -310,6 +398,8 @@ public class ReplayScheduler {
 
     /**
      * 停止回放
+     * <p>
+     * 停止主循环和预加载线程，并清空缓冲区。
      */
     public void stop() {
         running.set(false);
@@ -318,7 +408,20 @@ public class ReplayScheduler {
     }
 
     /**
+     * 动态调整回放速度（运行时）
+     * @param multiplier 速度倍数
+     */
+    public void updateSpeed(int multiplier) {
+        if (running.get() && currentParams != null) {
+            currentParams.setSpeedMultiplier(multiplier);
+            log.info("运行时速度已调整为 {}x", multiplier);
+        }
+    }
+
+    /**
      * 获取当前状态
+     *
+     * @return 回放状态快照
      */
     public ReplayStatus getStatus() {
         return new ReplayStatus(
@@ -326,20 +429,33 @@ public class ReplayScheduler {
                 paused.get(),
                 virtualTime,
                 buffer.size(),
-                totalSentCount
+                totalSentCount,
+                currentParams // 传入当前运行的配置
         );
     }
 
     /**
      * 回放状态信息
+     *
+     * @param running          是否正在运行
+     * @param paused           是否已暂停
+     * @param virtualTimestamp 当前虚拟时间戳（秒）
+     * @param bufferSize       当前缓冲区大小
+     * @param totalSentCount   累计发送消息数
+     * @param activeConfig     当前运行的回放配置（可能为null）
      */
     public record ReplayStatus(
             boolean running,
             boolean paused,
             long virtualTimestamp,
             int bufferSize,
-            long totalSentCount
+            long totalSentCount,
+            ReplayParamsDTO activeConfig
     ) {
+        /**
+         * 获取格式化的虚拟时间字符串
+         * @return ISO-8601 格式的时间字符串
+         */
         public String getVirtualTimeStr() {
             return Instant.ofEpochSecond(virtualTimestamp).toString();
         }

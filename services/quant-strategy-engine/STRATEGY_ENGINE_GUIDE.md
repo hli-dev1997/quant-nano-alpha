@@ -29,7 +29,7 @@ com.hao.strategyengine
 ├── integration/             # [基础设施层] 外部依赖交互
 │   ├── kafka/               # Kafka 消息收发
 │   │   ├── KafkaConsumerConfig  # 消费者配置
-│   │   └── KafkaConsumerService # 消息监听器
+│   │   └── KafkaConsumerService # 消息监听器 (统一入口)
 │   └── redis/               # Redis 存储
 │       ├── RedisClient      # Redis 客户端封装
 │       └── RedisStrategyRepository # 策略结果仓储
