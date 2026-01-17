@@ -57,7 +57,7 @@ public class TimeSliceBuffer {
             return;
         }
 
-        // 按 tradeDate 的秒级时间戳分组
+        // Step 1: 按 tradeDate 的秒级时间戳分组
         Map<Long, List<HistoryTrendDTO>> grouped = data.stream()
                 .filter(dto -> dto.getTradeDate() != null)
                 .collect(Collectors.groupingBy(
@@ -67,12 +67,14 @@ public class TimeSliceBuffer {
         lock.writeLock().lock();
         try {
             int addedCount = 0;
+            // Step 2: 将分组后的数据合并到 TreeMap 中
             for (Map.Entry<Long, List<HistoryTrendDTO>> entry : grouped.entrySet()) {
                 Long timestamp = entry.getKey();
                 List<HistoryTrendDTO> list = entry.getValue();
                 timeSlices.computeIfAbsent(timestamp, k -> new ArrayList<>()).addAll(list);
                 addedCount += list.size();
             }
+            // Step 3: 更新总计数
             totalSize.addAndGet(addedCount);
             log.debug("时间片缓存新增|TimeSlice_buffer_add,sliceCount={},recordCount={},totalSize={}",
                     grouped.size(), addedCount, totalSize.get());
@@ -90,41 +92,15 @@ public class TimeSliceBuffer {
     public List<HistoryTrendDTO> pollSlice(long timestamp) {
         lock.writeLock().lock();
         try {
+            // Step 1: 移除并返回指定时间戳的数据
             List<HistoryTrendDTO> removed = timeSlices.remove(timestamp);
             if (removed != null) {
+                // Step 2: 更新总计数
                 totalSize.addAndGet(-removed.size());
             }
             return removed;
         } finally {
             lock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * 获取缓冲区最早的时间戳
-     *
-     * @return 最早的时间戳，缓冲区为空时返回 null
-     */
-    public Long getEarliestTimestamp() {
-        lock.readLock().lock();
-        try {
-            return timeSlices.isEmpty() ? null : timeSlices.firstKey();
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * 获取缓冲区最晚的时间戳
-     *
-     * @return 最晚的时间戳，缓冲区为空时返回 null
-     */
-    public Long getLatestTimestamp() {
-        lock.readLock().lock();
-        try {
-            return timeSlices.isEmpty() ? null : timeSlices.lastKey();
-        } finally {
-            lock.readLock().unlock();
         }
     }
 
@@ -135,20 +111,6 @@ public class TimeSliceBuffer {
      */
     public int size() {
         return totalSize.get();
-    }
-
-    /**
-     * 获取当前时间片数量（不同的秒数）
-     *
-     * @return 时间片数量
-     */
-    public int sliceCount() {
-        lock.readLock().lock();
-        try {
-            return timeSlices.size();
-        } finally {
-            lock.readLock().unlock();
-        }
     }
 
     /**

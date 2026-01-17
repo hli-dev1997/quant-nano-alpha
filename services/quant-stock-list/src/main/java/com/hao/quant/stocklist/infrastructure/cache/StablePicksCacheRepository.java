@@ -71,4 +71,33 @@ public class StablePicksCacheRepository {
         caffeineCache.invalidate(cacheKey);
         redisTemplate.delete(cacheKey);
     }
+
+    /**
+     * 将缓存 Key 记录到指定的 Set 集合中，用于后续批量清理。
+     *
+     * @param groupKey 集合 Key (如按日期分组)
+     * @param cacheKey 具体的缓存 Key
+     * @param ttl      集合的过期时间 (通常应大于缓存内容的过期时间)
+     */
+    public void trackKeyInGroup(String groupKey, String cacheKey, Duration ttl) {
+        redisTemplate.opsForValue().getOperations().boundSetOps(groupKey).add(cacheKey);
+        redisTemplate.expire(groupKey, ttl);
+    }
+
+    /**
+     * 清理指定分组下的所有缓存 Key。
+     *
+     * @param groupKey 集合 Key
+     */
+    public void clearGroup(String groupKey) {
+        // 1. 获取该分组下的所有 Key
+        java.util.Set<Object> keys = redisTemplate.opsForSet().members(groupKey);
+        if (keys != null && !keys.isEmpty()) {
+            // 2. 逐个清理 (本地 + Redis)
+            keys.forEach(key -> evict(key.toString()));
+            log.info("分组缓存清理完成|Group_cache_cleared,groupKey={},count={}", groupKey, keys.size());
+        }
+        // 3. 删除分组集合本身
+        redisTemplate.delete(groupKey);
+    }
 }

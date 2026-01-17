@@ -134,9 +134,9 @@ public class ReplayScheduler {
         LocalDate startDate = LocalDate.parse(config.getStartDate(), COMPACT_FORMATTER);
         LocalDate endDate = LocalDate.parse(config.getEndDate(), COMPACT_FORMATTER);
 
-        // 股市开盘时间 09:30:00 (包含集合竞价从09:00开始)
+        // 股市开盘时间 09:24:00 (包含集合竞价从09:24开始)
         LocalDateTime start = LocalDateTime.of(startDate, LocalTime.of(9, 24, 0));
-        // 股市收盘时间 15:00:00 (包含盘后交易到15:30)
+        // 股市收盘时间 15:05:00 (包含盘后交易到15:05)
         LocalDateTime end = LocalDateTime.of(endDate, LocalTime.of(15, 5, 0));
 
         virtualTime = start.toEpochSecond(BEIJING_ZONE);

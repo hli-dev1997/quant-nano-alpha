@@ -34,9 +34,6 @@ public class DataLoader {
     private final QuotationService quotationService;
     private final ReplayProperties config;
 
-    private static final DateTimeFormatter COMPACT_FORMATTER =
-            DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
-    
     // 精确到秒的时间格式化器
     private static final DateTimeFormatter FULL_FORMATTER =
             DateTimeFormatter.ofPattern(DateTimeFormatConstants.DEFAULT_DATETIME_FORMAT);
@@ -49,18 +46,17 @@ public class DataLoader {
      * @return 行情数据列表
      */
     public List<HistoryTrendDTO> loadTimeSlice(LocalDateTime start, LocalDateTime end) {
-        // 修正边界重叠问题：
+        // Step 1: 修正边界重叠问题
         // ReplayScheduler 的切分逻辑是 [start, start+5min]，下一次是 [start+5min, start+10min]
         // 数据库查询是闭区间 [start, end]
         // 因此，如果不处理，start+5min 这一秒的数据会被查询两次。
         // 解决方案：将查询的结束时间向前推 1 秒，变为 [start, end-1s]
-        // 注意：如果 end 是当天的最终结束时间（例如 15:30:00），则不应减去，否则会丢失最后一秒的数据。
-        // 这里简单判断：如果 end 的秒数是 00，且不是 15:30:00，则减去 1 秒。
+        // 注意：如果 end 是当天的最终结束时间（例如 15:05:00），则不应减去，否则会丢失最后一秒的数据。
         
         LocalDateTime queryEnd = end;
         // 简单的边界判断逻辑：如果不是收盘时间，且是整分，则减去1秒
-        // 假设收盘时间是 15:30:00
-        boolean isClosingTime = end.toLocalTime().equals(LocalTime.of(15, 30, 0));
+        // 假设收盘时间是 15:05:00 (根据 ReplayScheduler 中的配置)
+        boolean isClosingTime = end.toLocalTime().equals(LocalTime.of(15, 5, 0));
         if (!isClosingTime && end.getSecond() == 0) {
             queryEnd = end.minusSeconds(1);
         }
@@ -76,10 +72,10 @@ public class DataLoader {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        // 解析股票代码列表
+        // Step 2: 解析股票代码列表
         List<String> stockList = parseStockCodes();
 
-        // 调用新增的精确时间查询接口
+        // Step 3: 调用新增的精确时间查询接口
         List<HistoryTrendDTO> data = quotationService.getHistoryTrendDataByTimeRange(
                 startStr,
                 endStr,
@@ -94,36 +90,6 @@ public class DataLoader {
         stopWatch.stop();
         log.info("数据加载完成|Data_load_done,range={}-{},count={},elapsedMs={}",
                 startStr, endStr, data.size(), stopWatch.getTotalTimeMillis());
-
-        return data;
-    }
-
-    /**
-     * 加载指定日期的全天行情数据（用于单日回放）
-     *
-     * @param date 日期字符串，格式 yyyyMMdd
-     * @return 行情数据列表
-     */
-    public List<HistoryTrendDTO> loadFullDay(String date) {
-        List<String> stockList = parseStockCodes();
-
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-
-        List<HistoryTrendDTO> data = quotationService.getHistoryTrendDataByStockList(
-                date,
-                date,
-                stockList
-        );
-
-        // Null safety
-        if (data == null) {
-            data = Collections.emptyList();
-        }
-
-        stopWatch.stop();
-        log.info("全天数据加载完成|Full_day_load_done,date={},count={},elapsedMs={}",
-                date, data.size(), stopWatch.getTotalTimeMillis());
 
         return data;
     }

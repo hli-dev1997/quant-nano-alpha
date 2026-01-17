@@ -43,27 +43,17 @@ public class StrategyResultEventListener {
         try {
             log.info("接收策略结果事件|Receive_strategy_event,event={}", event);
             bloomFilter.addTradeDate(event.getTradeDate());
+
+            // 1. 清理该交易日相关的所有缓存 (Daily List + Detail)
             String dateKey = DATE_FORMAT.format(event.getTradeDate());
-            String dailyPattern = "stable:picks:daily:" + dateKey + "*";
-            evictPattern(dailyPattern);
-            String latestPattern = "stable:picks:latest:*";
-            evictPattern(latestPattern);
-            String detailPattern = "stable:picks:detail:*:" + dateKey;
-            evictPattern(detailPattern);
+            String dateIndexKey = "stable:picks:index:" + dateKey;
+            cacheRepository.clearGroup(dateIndexKey);
+
+            // 2. 清理 Latest 列表缓存
+            cacheRepository.clearGroup("stable:picks:index:latest");
+
         } finally {
             ack.acknowledge();
         }
-    }
-
-    /**
-     * 根据模式批量删除缓存。
-     */
-    private void evictPattern(String pattern) {
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (keys == null || keys.isEmpty()) {
-            return;
-        }
-        keys.forEach(cacheRepository::evict);
-        log.info("批量清理缓存|Batch_cache_evict,pattern={},size={}", pattern, keys.size());
     }
 }

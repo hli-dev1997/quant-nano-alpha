@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mvn clean install -DskipTests)"
+      "Bash(mvn clean install -DskipTests)",
+      "Bash(dir /s /b servicesquant-stock-list)"
     ]
   }
 }

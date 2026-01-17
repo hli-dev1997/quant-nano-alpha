@@ -211,6 +211,12 @@ public class StablePicksServiceImpl implements StablePicksService {
 
         CacheWrapper<PageResult<StablePicksVO>> wrapper = CacheWrapper.of(page, redisTtl);
         cacheRepository.put(cacheKey, wrapper, redisTtl.plusSeconds(randomTtlOffset()));
+
+        // 记录 Key 到日期分组，便于策略更新时批量清理
+        // Index Key TTL 设置得比数据略长，防止索引先过期
+        String indexKey = "stable:picks:index:" + DATE_FORMAT.format(query.getTradeDate());
+        cacheRepository.trackKeyInGroup(indexKey, cacheKey, redisTtl.plusHours(1));
+
         return wrapper;
     }
 
@@ -227,6 +233,10 @@ public class StablePicksServiceImpl implements StablePicksService {
         List<StablePicksVO> result = assembler.toView(picks);
         CacheWrapper<List<StablePicksVO>> wrapper = CacheWrapper.of(result, redisTtl);
         cacheRepository.put(cacheKey, wrapper, redisTtl.plusSeconds(randomTtlOffset()));
+
+        // 记录到 Latest 分组
+        cacheRepository.trackKeyInGroup("stable:picks:index:latest", cacheKey, redisTtl.plusHours(1));
+
         if (!CollectionUtils.isEmpty(picks)) {
             // 回写所有出现的交易日,确保布隆过滤器数据新鲜
             bloomFilter.addTradeDates(picks.stream().map(StablePick::tradeDate).distinct().toList());
@@ -247,6 +257,11 @@ public class StablePicksServiceImpl implements StablePicksService {
         StablePicksVO vo = pickOpt.map(assembler::toView).orElse(null);
         CacheWrapper<StablePicksVO> wrapper = CacheWrapper.of(vo, redisTtl);
         cacheRepository.put(cacheKey, wrapper, redisTtl.plusSeconds(randomTtlOffset()));
+
+        // 记录到日期分组
+        String indexKey = "stable:picks:index:" + DATE_FORMAT.format(tradeDate);
+        cacheRepository.trackKeyInGroup(indexKey, cacheKey, redisTtl.plusHours(1));
+
         pickOpt.ifPresent(pick -> bloomFilter.addTradeDate(pick.tradeDate()));
         return wrapper;
     }
