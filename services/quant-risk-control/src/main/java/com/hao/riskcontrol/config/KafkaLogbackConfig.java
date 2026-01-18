@@ -1,4 +1,4 @@
-package com.hao.strategyengine.config;
+package com.hao.riskcontrol.config;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.github.danielwegener.logback.kafka.KafkaAppender;
@@ -16,7 +16,7 @@ import util.IPUtil;
 import java.util.List;
 
 /**
- * Kafka Logback 配置热更新器 - quant-strategy-engine
+ * Kafka Logback 配置热更新器 - quant-risk-control
  */
 @Slf4j
 @Component
@@ -29,10 +29,10 @@ public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyE
     @Value("${spring.profiles.active:dev}")
     private String env;
 
-    @Value("${server.port:8804}")
+    @Value("${server.port:8802}")
     private String serverPort;
 
-    @Value("${spring.application.name:strategy-engine}")
+    @Value("${spring.application.name:risk-control}")
     private String serviceName;
 
     @Override

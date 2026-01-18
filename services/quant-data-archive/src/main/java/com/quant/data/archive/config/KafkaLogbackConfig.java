@@ -36,10 +36,10 @@ import java.util.List;
 @RefreshScope
 public class KafkaLogbackConfig implements ApplicationListener<ApplicationReadyEvent> {
 
-    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String kafkaBootstrap;
 
-    @Value("${spring.profiles.active}")
+    @Value("${spring.profiles.active:dev}")
     private String env;
 
     @Value("${server.port:8080}")
