@@ -4,75 +4,30 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 继承你的聚合services公共项目 -->
     <parent>
         <groupId>com.hli</groupId>
         <artifactId>services</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <packaging>jar</packaging>
 
-    <groupId>com.hao</groupId>
+    <groupId>com.hli</groupId>
     <artifactId>quant-data-collector</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <name>quant-data-collector</name>
-    <description>量化交易-数据服务模块:实现数据采集(包括定时拉取第三方数据)、清洗、存储等任务</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
-    <properties>
-        <java.version>21</java.version>
-        <xxl-job-core.version>3.1.0</xxl-job-core.version>
-        <caffeine.version>2.7.0</caffeine.version>
-        <spring-boot-starter-cache.version>2.1.4.RELEASE</spring-boot-starter-cache.version>
-        <jakarta.annotation.version>2.1.0</jakarta.annotation.version>
-        <spring-kafka.version>4.0.0</spring-kafka.version>
-        <knife4j.version>4.5.0</knife4j.version>
-        <gemini.version>1.0.0</gemini.version>
-        <openai.api.version>4.0.0</openai.api.version>
-    </properties>
+    <description>量化交易-数据采集服务（数据拉取、清洗、存储）</description>
+
     <dependencies>
-
-        <!-- ======================== 基础注解与公共依赖 ======================== -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>${jakarta.annotation.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- ======================== Spring Boot 核心依赖 ======================== -->
+        <!-- ==================== Spring Boot 扩展 ==================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
+            <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
-<!--        &lt;!&ndash; 开发环境热部署 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
 
-        <!-- ======================== 数据访问与缓存 ======================== -->
+        <!-- ==================== 数据访问与缓存 ==================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -82,66 +37,37 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- 本地缓存 Caffeine -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>${caffeine.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>error_prone_annotations</artifactId>
-                    <groupId>com.google.errorprone</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <!-- Spring 缓存抽象支持 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
-<!--            <version>${spring-boot-starter-cache.version}</version>-->
-        </dependency>
-        <!-- ======================== 消息队列 ======================== -->
+
+        <!-- ==================== 消息队列 ==================== -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.3.6</version> <!-- 对应 Spring Boot 3.x -->
         </dependency>
-        
-        <!-- Kafka 日志输出 -->
+
+        <!-- ==================== 日志组件 ==================== -->
         <dependency>
             <groupId>com.github.danielwegener</groupId>
             <artifactId>logback-kafka-appender</artifactId>
-            <version>0.2.0-RC2</version>
         </dependency>
-
-        <!-- 这个依赖提供了将日志格式化为 JSON 格式的功能，特别适合与 ELK 栈（Elasticsearch, Logstash, Kibana）集成。-->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version>
         </dependency>
 
-        
-        <!-- ======================== 文档与工具 ======================== -->
+        <!-- ==================== 文档与API ==================== -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
-            <version>${knife4j.version}</version>
         </dependency>
 
-        <!-- 处理 Excel -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.2.5</version>
-        </dependency>
-
-        <!-- ======================== 任务调度（XXL-JOB） ======================== -->
-        <!-- 当前项目作为 XXL-JOB 执行器 -->
+        <!-- ==================== 任务调度 ==================== -->
         <dependency>
             <groupId>com.xuxueli</groupId>
             <artifactId>xxl-job-core</artifactId>
-            <version>${xxl-job-core.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
@@ -149,58 +75,53 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- 手动引入高版本 Groovy -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.9</version>
-        </dependency>
-        <!-- 安全版本 xxl-rpc-core -->
-        <dependency>
-            <groupId>com.xuxueli</groupId>
-            <artifactId>xxl-rpc-core</artifactId>
-            <version>1.7.1</version>
+            <version>${groovy.version}</version>
         </dependency>
 
-        <!-- ======================== 其他工具类 ======================== -->
+        <!-- ==================== 工具类 ==================== -->
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna-platform</artifactId>
-            <version>5.9.0</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.83</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>${jna.version}</version>
         </dependency>
 
-        <!-- ======================== AI工具类 ======================== -->
+        <!-- ==================== AI 组件 ==================== -->
         <dependency>
             <groupId>com.google.genai</groupId>
             <artifactId>google-genai</artifactId>
-            <version>${gemini.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.openai</groupId>
             <artifactId>openai-java</artifactId>
-            <version>${openai.api.version}</version>
         </dependency>
 
-        <!-- ======================== 测试依赖 ======================== -->
+        <!-- ==================== 测试依赖 ==================== -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter-test</artifactId>
-            <version>3.0.4</version>
+            <version>${mybatis-spring-boot.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -208,30 +129,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                    <source>21</source>
-                    <target>21</target>
                     <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

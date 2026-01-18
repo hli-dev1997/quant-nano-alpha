@@ -3,76 +3,62 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- 继承你的聚合services公共项目 -->
+
     <parent>
         <groupId>com.hli</groupId>
         <artifactId>services</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <groupId>com.hli</groupId>
     <artifactId>quant-xxl-job</artifactId>
     <packaging>jar</packaging>
+    <name>quant-xxl-job</name>
+    <description>量化交易-XXL-JOB 调度中心</description>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!--project.version-->
-        <xxl.project.version>3.1.0</xxl.project.version>
-        <!-- db -->
-        <!--        <mybatis-spring-boot-starter.version>3.0.4</mybatis-spring-boot-starter.version>-->
-        <mysql-connector-j.version>9.3.0</mysql-connector-j.version>
     </properties>
 
-
     <dependencies>
-        <!-- freemarker-starter -->
+        <!-- ==================== Spring Boot 扩展 ==================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
-
-        <!-- mail-starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-        <!-- mysql -->
+        <!-- ==================== 数据访问 ==================== -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>${mysql-connector-j.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
-        <!-- xxl-job-core -->
+        <!-- ==================== 任务调度 ==================== -->
         <dependency>
             <groupId>com.xuxueli</groupId>
             <artifactId>xxl-job-core</artifactId>
-            <version>${xxl.project.version}</version>
         </dependency>
 
-        <!-- ======================== 消息队列 ======================== -->
+        <!-- ==================== 消息队列 ==================== -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.3.6</version>
         </dependency>
-        <!-- Kafka 日志输出 -->
+
+        <!-- ==================== 日志组件 ==================== -->
         <dependency>
             <groupId>com.github.danielwegener</groupId>
             <artifactId>logback-kafka-appender</artifactId>
-            <version>0.2.0-RC2</version>
         </dependency>
-        <!-- 日志 JSON 格式化 -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -80,7 +66,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!--<version>${spring-boot.version}</version>-->
                 <executions>
                     <execution>
                         <goals>
@@ -89,27 +74,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- docker -->
-            <!--<plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.13</version>
-                <configuration>
-                    &lt;!&ndash; made of '[a-z0-9-_.]' &ndash;&gt;
-                    <imageName>${project.artifactId}:${project.version}</imageName>
-                    <dockerDirectory>${project.basedir}</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>-->
-
         </plugins>
     </build>
-
 </project>

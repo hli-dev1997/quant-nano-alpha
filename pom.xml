@@ -8,7 +8,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <groupId>com.hli</groupId>
@@ -18,36 +18,66 @@
     <name>quant-nano-alpha</name>
     <description>量化交易系统父工程:
         - **Quant**：量化，专业且有科技感
-        - **Nano**：极小资金规模，突出“小资金”
+        - **Nano**：极小资金规模，突出"小资金"
         - **Alpha**：超额收益，目标明确
     </description>
+
     <modules>
         <module>common</module>
         <module>services</module>
     </modules>
+
     <properties>
-        <!-- Java 配置 -->
+        <!-- ==================== Java 编译配置 ==================== -->
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Spring 版本 -->
+        <!-- ==================== Spring Cloud 版本 ==================== -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.3.3</spring-cloud-alibaba.version>
 
-        <!-- 组件版本 -->
-        <nacos.version>2.3.2</nacos.version>
-        <seata.version>2.0.0</seata.version>
-        <sentinel.version>1.8.6</sentinel.version>
-        <spring-cloud-gateway.version>4.1.2</spring-cloud-gateway.version>
-        <spring-cloud-openfeign.version>4.1.1</spring-cloud-openfeign.version>
+        <!-- ==================== 数据库与缓存 ==================== -->
+        <mybatis-spring-boot.version>3.0.4</mybatis-spring-boot.version>
+        <mysql-connector.version>9.2.0</mysql-connector.version>
+        <redisson.version>3.27.2</redisson.version>
+        <caffeine.version>3.2.1</caffeine.version>
+
+        <!-- ==================== 消息队列 ==================== -->
+        <spring-kafka.version>3.3.6</spring-kafka.version>
+
+        <!-- ==================== 日志组件 ==================== -->
+        <logback-kafka-appender.version>0.2.0-RC2</logback-kafka-appender.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+
+        <!-- ==================== 文档与API ==================== -->
+        <knife4j.version>4.5.0</knife4j.version>
+        <springdoc.version>2.3.0</springdoc.version>
+
+        <!-- ==================== 任务调度 ==================== -->
+        <xxl-job.version>3.1.0</xxl-job.version>
+
+        <!-- ==================== 工具类 ==================== -->
         <lombok.version>1.18.32</lombok.version>
+        <fastjson.version>1.2.83</fastjson.version>
+        <poi.version>5.2.5</poi.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <groovy.version>4.0.18</groovy.version>
+        <jna.version>5.9.0</jna.version>
+        <jakarta-annotation.version>2.1.0</jakarta-annotation.version>
+
+        <!-- ==================== 容错与弹性 ==================== -->
+        <resilience4j.version>2.2.0</resilience4j.version>
+
+        <!-- ==================== AI 组件 ==================== -->
+        <google-genai.version>1.0.0</google-genai.version>
+        <openai-java.version>4.0.0</openai-java.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Spring Cloud BOM -->
+            <!-- ==================== Spring Cloud BOM ==================== -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -56,7 +86,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Spring Cloud Alibaba BOM -->
+            <!-- ==================== Spring Cloud Alibaba BOM ==================== -->
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
@@ -65,16 +95,104 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Lombok 统一版本管理 -->
+            <!-- ==================== 数据库与缓存 ==================== -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+
+            <!-- ==================== 消息队列 ==================== -->
+            <dependency>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka</artifactId>
+                <version>${spring-kafka.version}</version>
+            </dependency>
+
+            <!-- ==================== 日志组件 ==================== -->
+            <dependency>
+                <groupId>com.github.danielwegener</groupId>
+                <artifactId>logback-kafka-appender</artifactId>
+                <version>${logback-kafka-appender.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+
+            <!-- ==================== 文档与API ==================== -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- ==================== 任务调度 ==================== -->
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job.version}</version>
+            </dependency>
+
+            <!-- ==================== 容错与弹性 ==================== -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-spring-boot3</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+
+            <!-- ==================== 工具类 ==================== -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${jakarta-annotation.version}</version>
+            </dependency>
+
+            <!-- ==================== AI 组件 ==================== -->
+            <dependency>
+                <groupId>com.google.genai</groupId>
+                <artifactId>google-genai</artifactId>
+                <version>${google-genai.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.openai</groupId>
+                <artifactId>openai-java</artifactId>
+                <version>${openai-java.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
 
     <build>
         <plugins>
@@ -95,8 +213,6 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                    <!-- 如果所有模块都使用 preview 特性，可在父 POM 配置 -->
-                    <!-- <compilerArgs>enable-preview</compilerArgs> -->
                 </configuration>
             </plugin>
 
