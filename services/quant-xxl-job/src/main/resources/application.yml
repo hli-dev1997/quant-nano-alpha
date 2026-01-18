@@ -1,0 +1,44 @@
+server:
+  port: 8802
+  servlet:
+    context-path: /xxl-job-3.1.0
+
+mybatis:
+  mapper-locations: classpath:/mybatis-mapper/*Mapper.xml
+
+spring:
+  application:
+    name: quant-xxl-job
+  profiles:
+    active: dev
+  mvc:
+    servlet:
+      load-on-startup: 0
+    static-path-pattern: /static/**
+  web:
+    resources:
+      static-locations: classpath:/static/
+  freemarker:
+    templateLoaderPath: classpath:/templates/
+    suffix: .ftl
+    charset: UTF-8
+    request-context-attribute: request
+    settings:
+      number_format: 0.##########
+      new_builtin_class_resolver: safer
+  ### 报警邮箱
+  mail:
+    host: smtp.qq.com
+    port: 25
+    username: 836184425@qq.com
+    from: 836184425@qq.com
+    password: Q836184425
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory

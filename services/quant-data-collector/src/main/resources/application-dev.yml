@@ -1,0 +1,94 @@
+# DataSource Config
+spring:
+  cloud:
+    nacos:
+      #nacos服务端地址及端口
+      server-addr: 127.0.0.1:7000
+      #登录页面账号和密码
+      username: nacos
+      password: nacos
+      config:
+        #nacos可以以命名空间作为不同环境依据(默认dev)
+        namespace: ${spring.profiles.active:dev}
+        group: quant-data-collector
+      discovery:
+        namespace: ${spring.profiles.active:dev}
+    sentinel:
+      transport:
+        dashboard: localhost:7003
+        # 【新增这行】强制指定本机 IP，解决 Dashboard 连不上微服务的问题
+        client-ip: 127.0.0.1
+      #默认懒加载机制,也就是说有第一次的流量访问之后才会,这里显示指定直接连接就显示在控制台
+      eager: true
+  config:
+    import:
+      - nacos:application-dev.yml
+      - nacos:common.yml
+
+# Kafka 日志配置
+logging:
+  kafka:
+    # 是否启用 Kafka 日志推送
+    enabled: true
+    # 推送到 Kafka 的最低日志级别 (TRACE, DEBUG, INFO, WARN, ERROR, OFF)
+    level: INFO
+    # Kafka 主题名称
+    topic: log-quant-data-collector
+    # 生产者配置
+    producer:
+      # 确认级别 (0=不等待确认, 1=等待leader确认, all=等待所有ISR确认)
+      acks: 1
+      # 批量发送延迟时间（毫秒）- 平衡延迟和吞吐量
+      linger-ms: 100
+      # 批量大小（字节）- 16KB 适合日志消息
+      batch-size: 16384
+      # 缓冲区大小（字节）- 32MB 缓冲区
+      buffer-memory: 33554432
+      # 压缩类型 - snappy 压缩比和性能平衡
+      compression-type: snappy
+      # 重试次数 - 网络抖动时重试
+      retries: 3
+      # 最大阻塞时间（毫秒）- 避免长时间阻塞应用
+      max-block-ms: 5000
+    # 异步配置
+    async:
+      # 异步队列大小 - 1024 个日志事件
+      queue-size: 1024
+      # 丢弃阈值 - 0 表示不丢弃任何日志
+      discarding-threshold: 0
+      # 是否包含调用者信息 - false 提升性能
+      include-caller-data: false
+  # 日志级别配置
+  level:
+    com.hao.datacollector: INFO
+    org.springframework.kafka: INFO
+    com.github.danielwegener.logback.kafka: WARN
+
+# ==================== Replay 配置 ====================
+replay:
+  # 是否启用回放模式（默认关闭）
+  enabled: false
+
+  # 回放起始日期（格式：yyyyMMdd）
+  start-date: "20250101"
+
+  # 回放结束日期（格式：yyyyMMdd）
+  end-date: "20250101"
+
+  # 回放速度倍数
+  # 1 = 实时（1秒推送1秒的数据）
+  # 10 = 10倍速（1秒推送10秒的数据）
+  # 0 = 最快速度（无延迟持续推送）
+  speed-multiplier: 10
+
+  # 每次预加载的时间片长度（分钟）
+  # 建议值：5-10分钟
+  preload-minutes: 5
+
+  # 缓冲区最大数据条数
+  # 超过此值时预加载线程将暂停等待
+  buffer-max-size: 100000
+
+  # 指定股票代码（可选，逗号分隔）
+  # 为空时回放全市场数据
+  # stock-codes: "600519.SH,000001.SZ"

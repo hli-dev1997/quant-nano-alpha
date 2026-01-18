@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: quant-data-collector
+  profiles:
+    active: dev
+  #虚拟线程开启
+  threads:
+    virtual:
+      enabled: true
+
+#应用上下文
+server:
+  servlet:
+    context-path: /data-collector
+  port: 8801

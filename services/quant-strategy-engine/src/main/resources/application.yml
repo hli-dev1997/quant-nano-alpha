@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: quant-strategy-engine
+  profiles:
+    active: dev
+  #开启虚拟线程
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  servlet:
+    context-path: /strategy-engine
+  port: 8803
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml

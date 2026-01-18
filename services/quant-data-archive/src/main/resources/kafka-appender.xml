@@ -1,0 +1,64 @@
+<!-- kafka-appender.xml -->
+<included>
+    <!-- 在included文件中定义springProperty和property -->
+    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="data-archive"/>
+    <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-data-archive"/>
+    <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
+    <springProperty scope="context" name="bootstrapServers" source="spring.kafka.bootstrap-servers"
+                    defaultValue="192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092"/>
+    <springProperty scope="context" name="hostPort" source="server.port" defaultValue="8080"/>
+
+    <!-- 从系统属性读取主机信息 -->
+    <property name="hostIp" value="${HOST_IP:-unknown}"/>
+
+    <!-- Kafka日志追加器配置 - 将日志事件发送到Kafka集群 -->
+    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <!-- 使用LogstashEncoder将日志格式化为JSON格式 -->
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
+                <!--
+                    自定义JSON格式模式
+                    注意：timestamp格式需与 DateTimeFormatConstants.ISO_DATETIME_UTC_FORMAT 保持一致
+                    格式：yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+                    主机信息将在 KafkaLogbackConfig 中通过重启 Appender 更新
+                -->
+                <pattern>
+                    <pattern>
+                        {
+                        "env": "${env}",
+                        "service": "${service}",
+                        "ip": "${hostIp}",
+                        "port": "${hostPort}",
+                        "level": "%level",
+                        "thread": "%thread",
+                        "logger": "%logger{36}",
+                        "timestamp": "%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}",
+                        "message": "%msg",
+                        "exception": "%exception"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+
+        <!-- Kafka主题名称 -->
+        <topic>${topic}</topic>
+
+        <!-- 键策略：使用主机名作为键，便于分区和消费端识别 -->
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy"/>
+
+        <!-- 传递策略：异步发送日志到Kafka -->
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+
+        <!-- Kafka生产者配置 - 与Nacos配置保持一致 -->
+        <producerConfig>bootstrap.servers=${bootstrapServers}</producerConfig>
+        <producerConfig>acks=all</producerConfig>
+        <producerConfig>retries=2147483647</producerConfig>
+        <producerConfig>enable.idempotence=true</producerConfig>
+        <producerConfig>max.in.flight.requests.per.connection=5</producerConfig>
+        <producerConfig>linger.ms=5</producerConfig>
+        <producerConfig>batch.size=32768</producerConfig>
+        <producerConfig>buffer.memory=67108864</producerConfig>
+        <producerConfig>compression.type=snappy</producerConfig>
+    </appender>
+</included>

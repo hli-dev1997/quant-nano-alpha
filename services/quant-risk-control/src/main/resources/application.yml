@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: quant-risk-control
+  profiles:
+    active: dev
+  #虚拟线程开启
+  threads:
+    virtual:
+      enabled: true
+
+#应用上下文
+server:
+  servlet:
+    context-path: /risk-control
+  port: 8804
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
