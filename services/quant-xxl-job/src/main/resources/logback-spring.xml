@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    logback-spring.xml - quant-risk-control 日志配置
+    logback-spring.xml - quant-xxl-job 日志配置
     
     配置规范版本: 1.0.0
     最后更新: 2026-01-18
@@ -65,13 +65,13 @@
 
     <!-- 4.3 业务日志 -->
     <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/business/risk-control.log</file>
+        <file>${LOG_HOME}/business/xxl-job.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${LOG_PATTERN}</pattern>
             <charset>${LOG_CHARSET}</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/business/risk-control.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/business/xxl-job.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
             <maxHistory>${MAX_HISTORY}</maxHistory>
             <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
@@ -120,8 +120,8 @@
 
     <!-- ==================== 6. Loggers 配置 ==================== -->
     
-    <!-- 业务代码日志 -->
-    <logger name="com.hao.riskcontrol" level="INFO" additivity="false">
+    <!-- XXL-Job 业务日志 -->
+    <logger name="com.xxl.job" level="INFO" additivity="false">
         <appender-ref ref="ASYNC_BUSINESS"/>
         <appender-ref ref="ASYNC_ERROR"/>
         <appender-ref ref="CONSOLE"/>

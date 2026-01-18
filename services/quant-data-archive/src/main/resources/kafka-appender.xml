@@ -1,6 +1,26 @@
-<!-- kafka-appender.xml -->
+<!--
+    kafka-appender.xml - Kafka 日志追加器配置
+    
+    配置规范版本: 1.0.0
+    最后更新: 2026-01-18
+    
+    功能说明：
+    - 将日志事件异步发送到 Kafka 集群进行集中收集
+    - 使用 JSON 格式便于 ELK 等日志系统解析
+    - 支持动态配置更新（通过 KafkaLogbackConfig）
+-->
 <included>
-    <!-- 在included文件中定义springProperty和property -->
+
+    <!-- ==================== Spring 属性注入 ==================== -->
+    <!-- 
+        springProperty 说明：
+        - scope="context": 属性在整个 logback 上下文可用
+        - source: 对应 Spring 配置文件中的属性名
+        - defaultValue: Spring 配置未加载时的默认值（logback 先于 Spring 初始化）
+        
+        注意：由于 logback 在 Spring 容器启动前初始化，这些默认值可能被使用。
+        KafkaLogbackConfig 会在应用启动后动态更新这些配置。
+    -->
     <springProperty scope="context" name="service" source="spring.application.name" defaultValue="data-archive"/>
     <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-data-archive"/>
     <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
@@ -8,19 +28,41 @@
                     defaultValue="192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092"/>
     <springProperty scope="context" name="hostPort" source="server.port" defaultValue="8080"/>
 
-    <!-- 从系统属性读取主机信息 -->
+    <!-- 
+        主机 IP 从环境变量读取
+        Windows: 由 KafkaLogbackConfig 在应用启动后设置
+        Linux/K8s: 可通过 POD_IP 环境变量注入
+    -->
     <property name="hostIp" value="${HOST_IP:-unknown}"/>
 
-    <!-- Kafka日志追加器配置 - 将日志事件发送到Kafka集群 -->
+    <!-- ==================== Kafka Appender 配置 ==================== -->
+    <!-- 
+        KafkaAppender 工作原理：
+        1. 使用 LoggingEventCompositeJsonEncoder 将日志格式化为 JSON
+        2. 通过 AsynchronousDeliveryStrategy 异步发送到 Kafka
+        3. 使用 HostNameKeyingStrategy 以主机名作为 Kafka 消息键（便于分区）
+        
+        性能考量：
+        - 异步发送不阻塞业务线程
+        - 批量发送（batch.size=32KB）减少网络开销
+        - 启用 snappy 压缩减少带宽占用
+    -->
     <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <!-- 使用LogstashEncoder将日志格式化为JSON格式 -->
+        
+        <!-- JSON 编码器配置 -->
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
-                <!--
-                    自定义JSON格式模式
-                    注意：timestamp格式需与 DateTimeFormatConstants.ISO_DATETIME_UTC_FORMAT 保持一致
-                    格式：yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-                    主机信息将在 KafkaLogbackConfig 中通过重启 Appender 更新
+                <!-- 
+                    JSON 字段说明：
+                    - env: 运行环境（dev/test/prod）
+                    - service: 服务名称
+                    - ip/port: 服务实例标识
+                    - level: 日志级别
+                    - thread: 线程名
+                    - logger: 日志器名称（类名）
+                    - timestamp: ISO 8601 格式时间戳
+                    - message: 日志消息
+                    - exception: 异常堆栈
                 -->
                 <pattern>
                     <pattern>
@@ -41,16 +83,35 @@
             </providers>
         </encoder>
 
-        <!-- Kafka主题名称 -->
+        <!-- Kafka 主题：每个服务使用独立主题便于隔离和管理 -->
         <topic>${topic}</topic>
 
-        <!-- 键策略：使用主机名作为键，便于分区和消费端识别 -->
+        <!-- 
+            键策略：使用主机名作为 Kafka 消息键
+            - 同一主机的日志会发送到同一分区，保证顺序性
+            - 便于按主机查询日志
+        -->
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy"/>
 
-        <!-- 传递策略：异步发送日志到Kafka -->
+        <!-- 
+            传递策略：异步发送
+            - 日志写入不阻塞业务线程
+            - 内部使用 Kafka Producer 的异步 API
+        -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
 
-        <!-- Kafka生产者配置 - 与Nacos配置保持一致 -->
+        <!-- ==================== Kafka Producer 配置 ==================== -->
+        <!-- 
+            配置说明（与 Nacos 配置中心保持一致）：
+            - acks=all: 等待所有副本确认，确保消息不丢失
+            - enable.idempotence=true: 启用幂等性，防止重复发送
+            - retries=MAX_INT: 无限重试，确保消息最终发送成功
+            - max.in.flight.requests.per.connection=5: 幂等性要求
+            - linger.ms=5: 等待 5ms 批量发送，提升吞吐量
+            - batch.size=32KB: 批量大小
+            - buffer.memory=64MB: 缓冲区大小
+            - compression.type=snappy: 启用压缩减少带宽
+        -->
         <producerConfig>bootstrap.servers=${bootstrapServers}</producerConfig>
         <producerConfig>acks=all</producerConfig>
         <producerConfig>retries=2147483647</producerConfig>
@@ -61,4 +122,5 @@
         <producerConfig>buffer.memory=67108864</producerConfig>
         <producerConfig>compression.type=snappy</producerConfig>
     </appender>
+
 </included>

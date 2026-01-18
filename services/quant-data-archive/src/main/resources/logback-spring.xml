@@ -1,107 +1,193 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- logback-spring.xml - Data Archive 日志配置 -->
-<configuration>
-    <!-- 定义日志文件路径 - 部署时在微服务根目录的logs下 -->
-    <property name="LOG_PATH" value="./logs"/>
+<!--
+    logback-spring.xml - quant-data-archive 日志配置
+    
+    配置规范版本: 1.0.0
+    最后更新: 2026-01-18
+    
+    结构说明：
+    1. Global Properties - 全局属性定义
+    2. Include Files - 外部配置引入
+    3. Console Appenders - 控制台输出（开发环境）
+    4. File Appenders - 滚动文件输出
+    5. Async Appenders - 异步包装器（提升性能）
+    6. Loggers - 包级别日志配置
+    7. Root & SpringProfile - 根日志器和环境配置
+-->
+<configuration scan="true" scanPeriod="60 seconds">
 
-    <!-- 引入Kafka Appender配置 -->
+    <!-- ==================== 1. 全局属性 ==================== -->
+    <!-- 
+        LOG_HOME: 日志根目录，使用相对路径便于 Docker/K8s 挂载卷统一管理
+        部署时只需挂载 ./logs 目录即可收集所有日志
+    -->
+    <property name="LOG_HOME" value="./logs"/>
+    
+    <!-- 日志格式模板：时间戳 [线程名] 级别 日志器(最长50字符) - 消息 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+    
+    <!-- 字符编码：统一使用 UTF-8 -->
+    <property name="LOG_CHARSET" value="UTF-8"/>
+    
+    <!-- 
+        滚动策略参数：
+        - MAX_FILE_SIZE: 单文件最大 100MB，超出创建新文件（避免单文件过大影响读取和传输）
+        - MAX_HISTORY: 保留 30 天历史（满足审计和问题排查需求）
+        - TOTAL_SIZE_CAP: 总容量限制 3GB（防止磁盘空间耗尽）
+    -->
+    <property name="MAX_FILE_SIZE" value="100MB"/>
+    <property name="MAX_HISTORY" value="30"/>
+    <property name="TOTAL_SIZE_CAP" value="3GB"/>
+
+    <!-- ==================== 2. 外部配置引入 ==================== -->
+    <!-- Kafka Appender 配置：用于将日志推送到 Kafka 集群进行集中收集 -->
     <include resource="kafka-appender.xml"/>
 
-    <!-- 控制台输出配置 -->
+    <!-- ==================== 3. 控制台输出（开发环境） ==================== -->
+    <!-- 
+        CONSOLE Appender：仅用于开发调试
+        生产环境建议通过 springProfile 关闭，避免 stdout 影响性能
+    -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>${LOG_CHARSET}</charset>
         </encoder>
     </appender>
 
-    <!-- 应用主日志 -->
+    <!-- ==================== 4. 文件输出 Appenders ==================== -->
+    
+    <!-- 4.1 应用主日志：记录所有级别的日志 -->
     <appender name="APPLICATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/application/application.log</file>
+        <file>${LOG_HOME}/application/application.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>${LOG_CHARSET}</charset>
         </encoder>
+        <!-- 
+            SizeAndTimeBasedRollingPolicy 策略说明：
+            - 按时间（每天）和大小（100MB）双重条件滚动
+            - %d{yyyy-MM-dd}: 按天分割文件
+            - %i: 同一天内超过 maxFileSize 时的序号
+            - .gz: 启用 gzip 压缩节省磁盘空间
+        -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/application/application.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
+            <fileNamePattern>${LOG_HOME}/application/application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
         </rollingPolicy>
     </appender>
 
-    <!-- 错误日志 -->
+    <!-- 4.2 错误日志：仅记录 ERROR 级别，便于快速定位问题 -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/error/error.log</file>
+        <file>${LOG_HOME}/error/error.log</file>
+        <!-- LevelFilter：精确过滤，只接受 ERROR 级别 -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/error/error.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 数据归档业务日志 -->
-    <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/business/data-archive.log</file>
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
-            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>${LOG_CHARSET}</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/business/data-archive.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>30</maxHistory>
+            <fileNamePattern>${LOG_HOME}/error/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
-    <!-- Nacos日志文件 -->
-    <appender name="FILE_NACOS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/third-party/nacos.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/third-party/nacos.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    <!-- 4.3 业务日志：记录本服务的业务逻辑日志 -->
+    <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/business/data-archive.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>${LOG_CHARSET}</charset>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/business/data-archive.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
     </appender>
 
-    <!-- 异步日志配置 -->
+    <!-- 4.4 第三方组件日志：隔离 Nacos、Kafka 等框架日志 -->
+    <appender name="THIRD_PARTY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/third-party/nacos.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>${LOG_CHARSET}</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/third-party/nacos.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ==================== 5. 异步 Appenders ==================== -->
+    <!-- 
+        AsyncAppender 性能优化说明：
+        - 日志写入操作在独立线程执行，不阻塞业务线程
+        - queueSize: 内存队列大小，满时根据 discardingThreshold 决定是否丢弃
+        - discardingThreshold: 设为 0 表示队列满时阻塞而非丢弃（确保日志完整性）
+        - includeCallerData: 是否保留调用栈信息，ERROR 日志需要为 true，其他 false 提升性能
+        - neverBlock: false 表示队列满时等待而非丢弃（生产环境日志完整性优先）
+    -->
     <appender name="ASYNC_APPLICATION" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="APPLICATION_FILE"/>
-        <queueSize>512</queueSize>
+        <queueSize>1024</queueSize>
         <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="APPLICATION_FILE"/>
     </appender>
 
     <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="ERROR_FILE"/>
         <queueSize>256</queueSize>
         <discardingThreshold>0</discardingThreshold>
+        <!-- ERROR 日志保留调用栈信息，便于问题定位 -->
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="ERROR_FILE"/>
     </appender>
 
-    <!-- 数据归档业务日志 -->
-    <logger name="com.hao.dataarchive" level="INFO" additivity="false">
+    <appender name="ASYNC_BUSINESS" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
         <appender-ref ref="BUSINESS_FILE"/>
+    </appender>
+
+    <!-- ==================== 6. Loggers 配置 ==================== -->
+    
+    <!-- 6.1 业务代码日志：使用业务专用 Appender -->
+    <logger name="com.quant.data.archive" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_BUSINESS"/>
         <appender-ref ref="ASYNC_ERROR"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <!-- 第三方库日志级别 -->
-    <logger name="org.apache.kafka" level="WARN"/>
-    <logger name="org.springframework" level="INFO"/>
+    <!-- 6.2 第三方框架日志：降低级别，使用专用 Appender -->
     <logger name="com.alibaba.nacos" level="WARN" additivity="false">
-        <appender-ref ref="FILE_NACOS"/>
+        <appender-ref ref="THIRD_PARTY_FILE"/>
     </logger>
+    
+    <!-- Kafka 客户端日志：避免日志循环，只记录警告以上 -->
+    <logger name="org.apache.kafka" level="WARN"/>
+    
+    <!-- Spring 框架日志 -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.boot" level="INFO"/>
 
-    <!-- 默认 root 配置（避免 springProfile 中 kafkaAppender 未引用警告） -->
+    <!-- ==================== 7. Root & SpringProfile ==================== -->
+    
+    <!-- 默认 root 配置：适用于所有环境 -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC_APPLICATION"/>
@@ -109,8 +195,13 @@
         <appender-ref ref="kafkaAppender"/>
     </root>
 
-    <!-- prod 环境降低日志级别 -->
+    <!-- prod 环境：关闭控制台，提升日志级别 -->
     <springProfile name="prod">
-        <root level="WARN"/>
+        <root level="WARN">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="kafkaAppender"/>
+        </root>
     </springProfile>
+
 </configuration>

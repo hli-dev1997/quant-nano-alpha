@@ -1,15 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- kafka-appender.xml - Kafka日志追加器配置 -->
+<!--
+    kafka-appender.xml - Kafka 日志追加器配置
+    配置规范版本: 1.0.0
+-->
 <included>
-    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="quant-stock-list"/>
+
+    <!-- ==================== Spring 属性注入 ==================== -->
+    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="stock-list"/>
     <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-stock-list"/>
     <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
     <springProperty scope="context" name="bootstrapServers" source="spring.kafka.bootstrap-servers"
                     defaultValue="192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092"/>
-    <springProperty scope="context" name="hostPort" source="server.port" defaultValue="8806"/>
+    <springProperty scope="context" name="hostPort" source="server.port" defaultValue="8080"/>
 
     <property name="hostIp" value="${HOST_IP:-unknown}"/>
 
+    <!-- ==================== Kafka Appender 配置 ==================== -->
     <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
@@ -31,10 +36,12 @@
                 </pattern>
             </providers>
         </encoder>
+
         <topic>${topic}</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy"/>
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy"/>
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
 
+        <!-- Kafka Producer 配置 -->
         <producerConfig>bootstrap.servers=${bootstrapServers}</producerConfig>
         <producerConfig>acks=all</producerConfig>
         <producerConfig>retries=2147483647</producerConfig>
@@ -45,4 +52,5 @@
         <producerConfig>buffer.memory=67108864</producerConfig>
         <producerConfig>compression.type=snappy</producerConfig>
     </appender>
+
 </included>
