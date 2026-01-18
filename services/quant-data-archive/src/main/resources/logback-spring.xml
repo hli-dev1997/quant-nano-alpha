@@ -101,32 +101,16 @@
         <appender-ref ref="FILE_NACOS"/>
     </logger>
 
-    <!-- dev/local 环境配置 -->
-    <springProfile name="dev,local">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ASYNC_APPLICATION"/>
-            <appender-ref ref="ASYNC_ERROR"/>
-            <appender-ref ref="kafkaAppender"/>
-        </root>
-    </springProfile>
+    <!-- 默认 root 配置（避免 springProfile 中 kafkaAppender 未引用警告） -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_APPLICATION"/>
+        <appender-ref ref="ASYNC_ERROR"/>
+        <appender-ref ref="kafkaAppender"/>
+    </root>
 
-    <!-- test 环境配置 -->
-    <springProfile name="test">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ASYNC_APPLICATION"/>
-            <appender-ref ref="ASYNC_ERROR"/>
-            <appender-ref ref="kafkaAppender"/>
-        </root>
-    </springProfile>
-
-    <!-- prod 环境配置 -->
+    <!-- prod 环境降低日志级别 -->
     <springProfile name="prod">
-        <root level="WARN">
-            <appender-ref ref="ASYNC_APPLICATION"/>
-            <appender-ref ref="ASYNC_ERROR"/>
-            <appender-ref ref="kafkaAppender"/>
-        </root>
+        <root level="WARN"/>
     </springProfile>
 </configuration>
