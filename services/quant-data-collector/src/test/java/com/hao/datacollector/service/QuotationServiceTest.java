@@ -107,18 +107,23 @@ class QuotationServiceTest {
 
     @Test
     void transferQuotationHistoryTrendMarketIndex() {
-        List<String> allIndexCodeList = new ArrayList<>(Arrays.asList(
-                RiskMarketIndexEnum.SHANGHAI_COMPOSITE.getCode(),
-                RiskMarketIndexEnum.SHENZHEN_COMPONENT.getCode(),
-                RiskMarketIndexEnum.CSI_300.getCode(),
-                RiskMarketIndexEnum.CSI_500.getCode(),
-                RiskMarketIndexEnum.CHINEXT.getCode(),
-                RiskMarketIndexEnum.STAR_50.getCode(),
-                RiskMarketIndexEnum.SSE_50.getCode()));
-        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+//        List<String> allIndexCodeList = new ArrayList<>(Arrays.asList(
+//                RiskMarketIndexEnum.SHANGHAI_COMPOSITE.getCode(),
+//                RiskMarketIndexEnum.SHENZHEN_COMPONENT.getCode(),
+//                RiskMarketIndexEnum.CSI_300.getCode(),
+//                RiskMarketIndexEnum.CSI_500.getCode(),
+//                RiskMarketIndexEnum.CHINEXT.getCode(),
+//                RiskMarketIndexEnum.STAR_50.getCode(),
+//                RiskMarketIndexEnum.SSE_50.getCode()));
+//        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        //"000985.CSI"
+        List<String> allIndexCodeList = new ArrayList<>(Arrays.asList("399006.SZ","399317.SZ","000688.SH","000852.SH","510300.SH","510500.OF","159915.SZ","588280.OF"));
+        List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.Year2024TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+
         //从当年已转档的最大日期(包含),并且剔除最大日期已经转档过的windCode,继续开始转档
-        String maxEndDate = quotationMapper.getMaxHistoryIndexTrendEndDate("2026");
-//        String maxEndDate = "20260105";
+//        String maxEndDate = quotationMapper.getMaxHistoryIndexTrendEndDate("2020");
+//        String maxEndDate = "20240102";
+        String maxEndDate = "20240207";
         List<String> completedWindCodes = quotationMapper.getCompletedIndexCodes(maxEndDate);
         int tradeDateIndexOf = yearTradeDateList.indexOf(maxEndDate);
         int batchSize = 100;

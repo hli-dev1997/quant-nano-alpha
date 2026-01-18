@@ -76,7 +76,7 @@ class StrategyPreparationServiceImplTest {
         
         // 构建测试Key
         String dateSuffix = testTradeDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        testRedisKey = StrategyRedisKeyEnum.NINE_TURN_PREHEAT.buildKey(dateSuffix);
+        testRedisKey = StrategyRedisKeyEnum.NINE_TURN_RED_PREHEAT.buildKey(dateSuffix);
         
         log.info("测试初始化|Test_setup,testTradeDate={},redisKey={}", testTradeDate, testRedisKey);
     }
@@ -324,7 +324,7 @@ class StrategyPreparationServiceImplTest {
     @Order(6)
     @DisplayName("单元测试_StrategyRedisKeyEnum")
     void testStrategyRedisKeyEnum() {
-        StrategyRedisKeyEnum config = StrategyRedisKeyEnum.NINE_TURN_PREHEAT;
+        StrategyRedisKeyEnum config = StrategyRedisKeyEnum.NINE_TURN_RED_PREHEAT;
 
         // 验证属性
         assertEquals("NINE_TURN", config.getStrategyId(), "策略ID应正确");

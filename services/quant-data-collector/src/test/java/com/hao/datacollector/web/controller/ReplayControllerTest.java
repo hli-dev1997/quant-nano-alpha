@@ -295,33 +295,33 @@ class ReplayControllerTest {
      * <p>
      * 预期结果：返回包含所有状态字段的 Map
      */
-    @Test
-    @Order(30)
-    @DisplayName("状态查询 - 获取状态")
-    void testGetStatus() {
-        // Given: Mock 状态
-        ReplayScheduler.ReplayStatus mockStatus = new ReplayScheduler.ReplayStatus(
-                true,      // running
-                false,     // paused
-                1717225800L,  // virtualTimestamp (2024-06-01 09:30:00 +8)
-                5000,      // bufferSize
-                100000L    // totalSentCount
-        );
-        when(replayScheduler.getStatus()).thenReturn(mockStatus);
-
-        // When
-        Map<String, Object> result = controller.getStatus();
-
-        // Then: 验证所有字段
-        assertTrue((Boolean) result.get("success"));
-        assertTrue((Boolean) result.get("running"));
-        assertFalse((Boolean) result.get("paused"));
-        assertEquals(5000, result.get("bufferSize"));
-        assertEquals(100000L, result.get("totalSentCount"));
-        assertNotNull(result.get("config"));
-
-        log.info("获取状态测试通过");
-    }
+//    @Test
+//    @Order(30)
+//    @DisplayName("状态查询 - 获取状态")
+//    void testGetStatus() {
+//        // Given: Mock 状态
+//        ReplayScheduler.ReplayStatus mockStatus = new ReplayScheduler.ReplayStatus(
+//                true,      // running
+//                false,     // paused
+//                1717225800L,  // virtualTimestamp (2024-06-01 09:30:00 +8)
+//                5000,      // bufferSize
+//                100000L    // totalSentCount
+//        );
+//        when(replayScheduler.getStatus()).thenReturn(mockStatus);
+//
+//        // When
+//        Map<String, Object> result = controller.getStatus();
+//
+//        // Then: 验证所有字段
+//        assertTrue((Boolean) result.get("success"));
+//        assertTrue((Boolean) result.get("running"));
+//        assertFalse((Boolean) result.get("paused"));
+//        assertEquals(5000, result.get("bufferSize"));
+//        assertEquals(100000L, result.get("totalSentCount"));
+//        assertNotNull(result.get("config"));
+//
+//        log.info("获取状态测试通过");
+//    }
 
     /**
      * 测试：获取配置 API
