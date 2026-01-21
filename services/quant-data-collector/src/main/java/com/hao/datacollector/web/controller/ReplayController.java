@@ -3,7 +3,6 @@ package com.hao.datacollector.web.controller;
 import com.hao.datacollector.dto.replay.ReplayParamsDTO;
 import com.hao.datacollector.properties.ReplayProperties;
 import com.hao.datacollector.replay.ReplayScheduler;
-import com.hao.datacollector.replay.TimeSliceBuffer;
 import constants.DateTimeFormatConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,33 +22,16 @@ import java.util.Map;
  * 提供回放服务的启动、暂停、恢复、停止等控制接口。
  * 支持通过全局配置或自定义参数启动回放任务。
  * <p>
- * <b>核心执行链路说明：</b>
+ * <b>核心执行链路：</b>
  * <ol>
- *     <li><b>启动回放 (start/startWithParams)</b>
- *         <ul>
- *             <li>参数校验：验证日期格式 (yyyyMMdd) 等输入合法性。</li>
- *             <li>参数封装：构建 {@link ReplayParamsDTO}，隔离单次运行参数与全局配置。</li>
- *             <li>任务调度：调用 {@link ReplayScheduler#startReplay(ReplayParamsDTO)} 异步启动回放。</li>
- *             <li>数据流转：
- *                 <ul>
- *                     <li><b>预加载：</b> {@link com.hao.datacollector.replay.DataLoader} 从 MySQL 批量加载历史行情。</li>
- *                     <li><b>缓存：</b> 数据存入 {@link TimeSliceBuffer} 内存队列。</li>
- *                     <li><b>推送：</b> 主循环按秒推进虚拟时间，将数据推送到 Kafka (Topic: quotation)。</li>
- *                 </ul>
- *             </li>
- *         </ul>
- *     </li>
- *     <li><b>运行时控制 (Runtime Control)</b>
- *         <ul>
- *             <li><b>暂停/恢复：</b> 修改 {@link ReplayScheduler} 中的 {@code paused} 标志位。</li>
- *             <li><b>调速：</b> 调用 {@link ReplayScheduler#updateSpeed(int)} 动态调整休眠时间，不影响全局配置。</li>
- *             <li><b>停止：</b> 设置 {@code running=false} 并清空缓冲区。</li>
- *         </ul>
- *     </li>
+ *     <li><b>启动回放</b>：参数校验 → 策略数据预热 → 加载历史行情 → 按时间分组推送</li>
+ *     <li><b>数据推送</b>：股票→quotation(策略模块)，指数→quotation_index(风控模块)</li>
+ *     <li><b>运行时控制</b>：暂停/恢复/停止/调速</li>
  * </ol>
  *
  * @author hli
- * @date 2026-01-01
+ * @date 2026-01-20
+ * @see ReplayScheduler
  */
 @Slf4j
 @RestController
@@ -85,72 +67,62 @@ public class ReplayController {
     }
 
     /**
-     * 启动回放（使用默认配置）
+     * 启动回放
      * <p>
-     * 使用 application.yml 中的全局配置启动回放任务。
-     * 如果全局配置 enabled=false，则拒绝启动。
-     *
-     * @return 操作结果 Map，包含 success 状态和 message 提示
-     */
-    @PostMapping("/start")
-    @Operation(summary = "启动回放", description = "启动行情回放服务，使用配置文件中的参数")
-    public Map<String, Object> start() {
-        log.info("收到启动回放请求|Replay_start_request");
-
-        if (!replayConfig.isEnabled()) {
-            return buildResponse(false, "回放模式未启用，请在配置文件中设置 replay.enabled=true");
-        }
-
-        replayScheduler.startReplay();
-        return buildResponse(true, "回放已启动");
-    }
-
-    /**
-     * 使用自定义参数启动回放
-     * <p>
-     * 允许用户在请求中指定回放时间段、速度和股票范围。
+     * 支持可选参数覆盖配置文件中的默认值：
+     * <ul>
+     *     <li>未传参数时，使用 application.yml 中的全局配置</li>
+     *     <li>传递部分参数时，仅覆盖指定参数，其余使用配置值</li>
+     * </ul>
      * <b>注意：</b> 此接口不修改全局配置，仅对本次回放任务生效。
      *
      * @param startDate       回放起始日期 (yyyyMMdd)，可选，默认使用配置值
      * @param endDate         回放结束日期 (yyyyMMdd)，可选，默认使用配置值
      * @param speedMultiplier 回放速度倍数 (0=最快)，可选，默认使用配置值
      * @param stockCodes      股票代码列表 (逗号分隔)，可选，默认使用配置值
-     * @return 操作结果 Map
+     * @return 操作结果 Map，包含 success 状态和 message 提示
      */
-    @PostMapping("/start-with-params")
-    @Operation(summary = "自定义参数启动回放", description = "使用请求参数覆盖配置启动回放")
-    public Map<String, Object> startWithParams(
+    @PostMapping("/start")
+    @Operation(summary = "启动回放", description = "启动行情回放服务，支持可选参数覆盖配置文件默认值")
+    public Map<String, Object> start(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) Integer speedMultiplier,
             @RequestParam(required = false) String stockCodes
     ) {
-        log.info("收到自定义参数启动回放请求|Replay_start_custom,startDate={},endDate={},speed={}",
-                startDate, endDate, speedMultiplier);
+        // TODO STOP 1: 回放启动入口 - 收到HTTP请求
+        log.info("收到启动回放请求|Replay_start_request,startDate={},endDate={},speed={},stockCodes={}",
+                startDate, endDate, speedMultiplier, stockCodes);
 
-        // 1. 参数校验
+        if (!replayConfig.isEnabled()) {
+            return buildResponse(false, "回放模式未启用，请在配置文件中设置 replay.enabled=true");
+        }
+
+        // 1. 参数校验 (仅校验传入的参数)
         try {
-            if (startDate != null) LocalDate.parse(startDate, DATE_FORMATTER);
-            if (endDate != null) LocalDate.parse(endDate, DATE_FORMATTER);
+            if (startDate != null) {
+                LocalDate.parse(startDate, DATE_FORMATTER);
+            }
+            if (endDate != null) {
+                LocalDate.parse(endDate, DATE_FORMATTER);
+            }
         } catch (DateTimeParseException e) {
             return buildResponse(false, "日期格式错误，请使用 yyyyMMdd 格式，例如 20260101");
         }
 
         // 2. 构建 DTO (合并默认配置与自定义参数)
-        ReplayParamsDTO params = ReplayParamsDTO.builder()
-                .startDate(startDate != null ? startDate : replayConfig.getStartDate())
-                .endDate(endDate != null ? endDate : replayConfig.getEndDate())
-                .speedMultiplier(speedMultiplier != null ? speedMultiplier : replayConfig.getSpeedMultiplier())
-                .stockCodes(stockCodes != null ? stockCodes : replayConfig.getStockCodes())
-                // 以下参数使用默认配置
-                .preloadMinutes(replayConfig.getPreloadMinutes())
-                .bufferMaxSize(replayConfig.getBufferMaxSize())
-                .build();
+        ReplayParamsDTO params = new ReplayParamsDTO();
+        params.setStartDate(startDate != null ? startDate : replayConfig.getStartDate());
+        params.setEndDate(endDate != null ? endDate : replayConfig.getEndDate());
+        params.setSpeedMultiplier(speedMultiplier != null ? speedMultiplier : replayConfig.getSpeedMultiplier());
+        params.setStockCodes(stockCodes != null ? stockCodes : replayConfig.getStockCodes());
+        params.setPreloadMinutes(replayConfig.getPreloadMinutes());
+        params.setBufferMaxSize(replayConfig.getBufferMaxSize());
 
         // 3. 启动回放 (不修改全局 config)
         replayScheduler.startReplay(params);
 
-        return buildResponse(true, "回放已启动（自定义参数）");
+        return buildResponse(true, "回放已启动");
     }
 
     /**

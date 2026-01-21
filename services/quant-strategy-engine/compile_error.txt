@@ -1,0 +1,53 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.hli:quant-strategy-engine >--------------------
+[INFO] Building quant-strategy-engine 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ quant-strategy-engine ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ quant-strategy-engine ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 11 source files with javac [debug release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/core/stream/strategy/impl/nineturn/AbstractNineTurnStrategy.java:[9,12] 找不到符号
+  符号:   类 TradingDateValidator
+  位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[3,49] 程序包com.hao.strategyengine.core.stream.engine不存在
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[59,19] 找不到符号
+  符号:   类 StreamDispatchEngine
+  位置: 类 com.hao.strategyengine.integration.kafka.KafkaConsumerService
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[32,1] 找不到符号
+  符号:   类 StreamDispatchEngine
+  位置: 类 com.hao.strategyengine.integration.kafka.KafkaConsumerService
+[INFO] 4 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.814 s
+[INFO] Finished at: 2026-01-20T20:57:56+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project quant-strategy-engine: Compilation failure: Compilation failure: 
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/core/stream/strategy/impl/nineturn/AbstractNineTurnStrategy.java:[9,12] 找不到符号
+[ERROR]   符号:   类 TradingDateValidator
+[ERROR]   位置: 程序包 util
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[3,49] 程序包com.hao.strategyengine.core.stream.engine不存在
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[59,19] 找不到符号
+[ERROR]   符号:   类 StreamDispatchEngine
+[ERROR]   位置: 类 com.hao.strategyengine.integration.kafka.KafkaConsumerService
+[ERROR] /E:/project/quant-nano-alpha/services/quant-strategy-engine/src/main/java/com/hao/strategyengine/integration/kafka/KafkaConsumerService.java:[32,1] 找不到符号
+[ERROR]   符号:   类 StreamDispatchEngine
+[ERROR]   位置: 类 com.hao.strategyengine.integration.kafka.KafkaConsumerService
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

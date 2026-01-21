@@ -1,6 +1,7 @@
 package com.hao.datacollector.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 策略数据预处理服务接口
@@ -23,7 +24,7 @@ import java.time.LocalDate;
 public interface StrategyPreparationService {
 
     /**
-     * 预热九转序列策略所需的历史数据
+     * 预热九转序列策略所需的历史数据（全量股票）
      *
      * 实现逻辑：
      * 1. 校验tradeDate是否为有效交易日。
@@ -38,4 +39,18 @@ public interface StrategyPreparationService {
      * @throws IllegalArgumentException 非交易日或跨年时抛出
      */
     int prepareNineTurnData(LocalDate tradeDate);
+
+    /**
+     * 预热九转序列策略所需的历史数据（指定股票列表）
+     *
+     * 股票列表优先级：
+     * 1. 使用传入的 stockCodes（如果非空）
+     * 2. 回退到 StockCache.allWindCode（如果 stockCodes 为空或null）
+     *
+     * @param tradeDate  当前交易日
+     * @param stockCodes 股票代码列表（null或空时使用全量）
+     * @return 预热成功返回处理的股票数量
+     * @throws IllegalArgumentException 非交易日或跨年时抛出
+     */
+    int prepareNineTurnData(LocalDate tradeDate, List<String> stockCodes);
 }

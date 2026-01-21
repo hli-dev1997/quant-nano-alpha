@@ -60,7 +60,7 @@ logging:
       include-caller-data: false
   # 日志级别配置
   level:
-    com.hao.datacollector: INFO
+    com.hao.datacollector: debug
     org.springframework.kafka: INFO
     com.github.danielwegener.logback.kafka: WARN
 

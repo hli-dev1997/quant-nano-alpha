@@ -1,8 +1,5 @@
 package util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -27,7 +24,6 @@ import java.math.RoundingMode;
  * @description: 数学计算工具类
  */
 public class MathUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(MathUtil.class);
 
     /**
      * 截取小数点后N位
@@ -96,17 +92,5 @@ public class MathUtil {
         }
         return value.doubleValue();
     }
-
-
-    public static void main(String[] args) {
-        // 实现思路：
-        // 1. 构造不同输入验证舍入策略。
-        // 2. 记录输出便于人工核对。
-        LOG.info("格式化结果示例|Format_decimal_example,value={}", formatDecimal(1453.5, 2, true));     // 应为 1424.0
-        LOG.info("格式化结果示例|Format_decimal_example,value={}", formatDecimal(1453.5, 2, false));    // 应为 1423.5
-        LOG.info("格式化结果示例|Format_decimal_example,value={}", formatDecimal(123456789, 5, true)); // 应为 1234.56790
-        LOG.info("格式化结果示例|Format_decimal_example,value={}", formatDecimal(123456789, 5, false));// 应为 1234.56789
-    }
-
 }
 

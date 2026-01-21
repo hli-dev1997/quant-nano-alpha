@@ -77,8 +77,7 @@ src/main/java
      ├── common
      │   ├── constants          // 常量定义
      │   ├── exception         // 统一异常定义
-     │   ├── util              // 通用工具类
-     │   └── docs              // 项目文档（新增）
+     │   └── util              // 通用工具类
      └── application           // 应用编排层（可选，用于复杂业务流程）
 
 目录设计解释（面试官口径）
@@ -99,10 +98,20 @@ common 不承载数据模型
 
 只放真正跨层、无业务语义的公共能力
 
-docs 放在 common 下（新增）
+项目文档统一放在根目录 docs/ 下
 
 明确：项目文档是公共资产，应随代码一同版本化管理。
-每个微服务可以在此目录下创建自己的子目录，存放特定文档。
+结构如下：
+  docs/
+  ├── modules/          // 各模块文档
+  │   ├── data-collector/
+  │   ├── data-archive/
+  │   ├── risk-control/
+  │   ├── stock-list/
+  │   ├── strategy-engine/
+  │   └── xxl-job/
+  ├── interview/        // 面试相关文档
+  └── kafka/            // 技术专题文档
 
 4.3 文件与编码规范
 

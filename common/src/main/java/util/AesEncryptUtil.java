@@ -1,8 +1,5 @@
 package util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -31,16 +28,11 @@ import java.util.Base64;
  * @Date 2024-08-09 14:35:31
  */
 public class AesEncryptUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(AesEncryptUtil.class);
 
     /**
      * 加密算法
      */
     private static final String ALGORITHM = "AES";
-    /**
-     * 编码方式
-     */
-    private static final String CHARSET = "UTF-8";
 
     /**
      * 生成随机密钥
@@ -125,26 +117,5 @@ public class AesEncryptUtil {
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         return new String(decryptedBytes, StandardCharsets.UTF_8);
-    }
-
-    public static void main(String[] args) {
-        try {
-            // 生成随机密钥
-            String key = generateKey();
-            LOG.info("生成随机密钥|Generate_random_key,key={}", key);
-
-            // 原始数据
-            String originalData = "Hello Spring Boot!";
-
-            // 加密
-            String encryptedData = encrypt(originalData, key);
-            LOG.info("加密结果|Encrypt_result,data={}", encryptedData);
-
-            // 解密
-            String decryptedData = decrypt(encryptedData, key);
-            LOG.info("解密结果|Decrypt_result,data={}", decryptedData);
-        } catch (Exception e) {
-            LOG.error("加解密异常|Encrypt_decrypt_error", e);
-        }
     }
 }

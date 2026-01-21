@@ -74,13 +74,13 @@ class ReplayControllerTest {
         // Given: 回放已启用
         replayConfig.setEnabled(true);
 
-        // When: 调用启动
-        Map<String, Object> result = controller.start();
+        // When: 调用启动（不传参数，使用配置默认值）
+        Map<String, Object> result = controller.start(null, null, null, null);
 
         // Then: 验证结果
         assertTrue((Boolean) result.get("success"));
         assertEquals("回放已启动", result.get("message"));
-        verify(replayScheduler).startReplay();
+        verify(replayScheduler).startReplay(any(com.hao.datacollector.dto.replay.ReplayParamsDTO.class));
 
         log.info("正常启动测试通过");
     }
@@ -100,12 +100,12 @@ class ReplayControllerTest {
         replayConfig.setEnabled(false);
 
         // When
-        Map<String, Object> result = controller.start();
+        Map<String, Object> result = controller.start(null, null, null, null);
 
         // Then
         assertFalse((Boolean) result.get("success"));
         assertTrue(result.get("message").toString().contains("未启用"));
-        verify(replayScheduler, never()).startReplay();
+        verify(replayScheduler, never()).startReplay(any());
 
         log.info("禁用模式启动测试通过");
     }
@@ -125,14 +125,14 @@ class ReplayControllerTest {
     @DisplayName("启动 API - 自定义参数")
     void testStartWithCustomParams() {
         // When: 使用自定义参数启动
-        Map<String, Object> result = controller.startWithParams(
+        Map<String, Object> result = controller.start(
                 "20251001",  // startDate
                 "20251031",  // endDate
                 50,          // speedMultiplier
                 "600519.SH,000001.SZ"  // stockCodes
         );
 
-        // Then: 验证返回成功（注意：startWithParams 不修改全局配置，只是通过 DTO 传递参数）
+        // Then: 验证返回成功（不修改全局配置，只是通过 DTO 传递参数）
         assertTrue((Boolean) result.get("success"));
 
         // 验证 replayScheduler.startReplay(ReplayParamsDTO) 被调用
@@ -157,7 +157,7 @@ class ReplayControllerTest {
         String originalEndDate = replayConfig.getEndDate();
 
         // When: 只传 startDate（其他参数为 null，会使用默认配置）
-        Map<String, Object> result = controller.startWithParams("20251201", null, null, null);
+        Map<String, Object> result = controller.start("20251201", null, null, null);
 
         // Then: 返回成功，同样不修改全局配置
         assertTrue((Boolean) result.get("success"));

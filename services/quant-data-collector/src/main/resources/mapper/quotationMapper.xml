@@ -198,4 +198,52 @@
         </if>
         ORDER BY trade_date ASC
     </select>
+
+    <!-- 查询指数历史分时数据（回放专用，返回 HistoryTrendDTO） -->
+    <!-- 与股票行情统一格式，便于 ReplayScheduler 统一处理 -->
+    <select id="selectIndexByTimeRange" resultMap="HistoryTrendDataMap">
+        SELECT
+            wind_code,
+            trade_date,
+            latest_price,
+            total_volume,
+            total_amount as average_price
+        FROM tb_quotation_index_history_trend
+        WHERE trade_date <![CDATA[>=]]> #{startTime}
+          AND trade_date <![CDATA[<=]]> #{endTime}
+        <if test="indexCodeList != null and indexCodeList.size() > 0">
+            AND wind_code IN
+            <foreach collection="indexCodeList" item="code" open="(" separator="," close=")">
+                #{code}
+            </foreach>
+        </if>
+        ORDER BY trade_date ASC
+    </select>
+
+    <!-- 查询指定交易日各指数的收盘价（即当日最后一条分时数据） -->
+    <!-- 用于昨收价缓存预热，返回交易日当天每个指数的收盘价 -->
+    <select id="selectIndexPreClosePrice" resultMap="HistoryTrendDataMap">
+        WITH RankedData AS (
+            SELECT
+                wind_code,
+                trade_date,
+                latest_price,
+                ROW_NUMBER() OVER (PARTITION BY wind_code ORDER BY trade_date DESC) as rn
+            FROM tb_quotation_index_history_trend
+            WHERE DATE(trade_date) = STR_TO_DATE(#{tradeDate}, '%Y%m%d')
+              AND status = 1
+            <if test="indexCodeList != null and indexCodeList.size() > 0">
+                AND wind_code IN
+                <foreach collection="indexCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+        )
+        SELECT
+            wind_code,
+            trade_date,
+            latest_price
+        FROM RankedData
+        WHERE rn = 1
+    </select>
 </mapper>

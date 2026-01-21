@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.EnableRetry;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * 数据采集服务启动类
@@ -72,8 +71,12 @@ public class DataCollectorApplication {
                 @Override
                 public Executor getExecutor() {
                     // 实现思路：
-                    // 1. 使用独立线程池处理配置回调。
-                    return Executors.newFixedThreadPool(2);
+                    // 1. 使用ThreadPoolExecutor替代Executors（阿里巴巴规范）
+                    return new java.util.concurrent.ThreadPoolExecutor(
+                            2, 2, 60L, java.util.concurrent.TimeUnit.SECONDS,
+                            new java.util.concurrent.LinkedBlockingQueue<>(100),
+                            new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy()
+                    );
                 }
 
                 @Override

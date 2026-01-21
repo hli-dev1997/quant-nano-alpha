@@ -738,6 +738,46 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     /**
+     * 根据精确时间区间获取指定指数列表的历史分时数据（回放专用）
+     * <p>
+     * 与股票回放方法 {@link #getHistoryTrendDataByTimeRange} 对应，用于指数行情回放。
+     * 复用 {@link HistoryTrendDTO} 作为返回类型，便于统一处理和推送到 Kafka。
+     * <p>
+     * 指标表不分冷热，直接查询 tb_quotation_index_history_trend 表。
+     *
+     * @param startTime 起始时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param endTime   结束时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param indexList 指数代码列表（如 000300.SH, 000905.SH）
+     * @return 历史分时数据
+     */
+    @Override
+    public List<HistoryTrendDTO> getIndexHistoryTrendDataByTimeRange(String startTime, String endTime, List<String> indexList) {
+        // 参数校验
+        if (!StringUtils.hasLength(startTime) || !StringUtils.hasLength(endTime)) {
+            log.warn("指数回放查询时间参数为空|Index_replay_time_params_empty");
+            return Collections.emptyList();
+        }
+
+        log.debug("回放查询指数分时数据|Replay_query_index,range={}-{},indexCount={}",
+                startTime, endTime, indexList == null ? "all" : indexList.size());
+
+        List<HistoryTrendDTO> result = quotationMapper.selectIndexByTimeRange(
+                startTime,
+                endTime,
+                indexList == null ? Collections.emptyList() : indexList
+        );
+
+        // Null safety
+        if (result == null) {
+            log.warn("指数Mapper返回null，返回空列表|Index_mapper_returns_null");
+            return Collections.emptyList();
+        }
+
+        log.debug("指数回放查询完成|Index_replay_query_done,resultCount={}", result.size());
+        return result;
+    }
+
+    /**
      * 获取指定时间区间内每只股票每日的收盘价（最后一条分时数据）
      * <p>
      * 专为策略预热优化，仅返回 windCode, tradeDate, latestPrice 字段。
@@ -807,5 +847,42 @@ public class QuotationServiceImpl implements QuotationService {
         }
         // 默认返回空列表
         return Collections.emptyList();
+    }
+
+    /**
+     * 获取指定交易日各指数的收盘价（即当日最后一条分时数据）
+     * <p>
+     * 用于昨收价缓存预热，返回交易日当天每个指数的收盘价。
+     * 结果可作为下一个交易日的"昨收价"缓存到 Redis。
+     *
+     * @param tradeDate 交易日期（格式 yyyyMMdd）
+     * @param indexList 指数代码列表（如 000300.SH, 000905.SH）
+     * @return 指数收盘价列表（windCode + latestPrice）
+     */
+    @Override
+    public List<HistoryTrendDTO> getIndexPreClosePrice(String tradeDate, List<String> indexList) {
+        // 参数校验
+        if (!StringUtils.hasLength(tradeDate)) {
+            log.warn("查询指数收盘价交易日期为空|Index_pre_close_tradeDate_empty");
+            return Collections.emptyList();
+        }
+
+        if (indexList == null || indexList.isEmpty()) {
+            log.warn("查询指数收盘价指数列表为空|Index_pre_close_indexList_empty");
+            return Collections.emptyList();
+        }
+
+        log.info("查询指数收盘价|Query_index_pre_close,tradeDate={},indexCount={}", tradeDate, indexList.size());
+
+        List<HistoryTrendDTO> result = quotationMapper.selectIndexPreClosePrice(tradeDate, indexList);
+
+        // Null safety
+        if (result == null) {
+            log.warn("指数收盘价Mapper返回null|Index_pre_close_mapper_returns_null");
+            return Collections.emptyList();
+        }
+
+        log.info("指数收盘价查询完成|Index_pre_close_query_done,resultCount={}", result.size());
+        return result;
     }
 }

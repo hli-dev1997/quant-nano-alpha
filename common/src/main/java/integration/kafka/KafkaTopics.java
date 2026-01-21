@@ -10,8 +10,11 @@ import java.util.Optional;
  * - 业务代码在运行期可使用本枚举提供的 displayName/desc/category 等元信息。
  */
 public enum KafkaTopics {
-    /** 行情报价主题（生产者侧发布，供策略/审计消费） */
-    QUOTATION("quotation", "分时行情", "行情数据主题，供策略/风控/日志模块消费", Category.BOTH),
+    /** 股票分时行情主题（供策略模块消费） */
+    QUOTATION("quotation", "股票分时行情", "股票行情数据主题，供策略模块消费", Category.BOTH),
+
+    /** 指数分时行情主题（供风控模块计算市场情绪） */
+    QUOTATION_INDEX("quotation-index", "指数分时行情", "指数行情数据主题，供风控模块计算市场情绪", Category.BOTH),
 
     /** 各服务日志主题 */
     LOG_SERVICE_ORDER("log-service-order", "订单服务日志", "（预留）订单服务运行日志", Category.BOTH),

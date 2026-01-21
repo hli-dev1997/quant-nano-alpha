@@ -199,3 +199,17 @@ replay_pid*
 *.rej
 *.patch
 .shelf/
+
+# --------------------------------------------------------------------------------
+# 项目特定忽略 - 策略实现和敏感枚举
+# --------------------------------------------------------------------------------
+# 策略实现目录 (包含交易策略具体逻辑)
+services/quant-strategy-engine/src/main/java/com/hao/strategyengine/core/stream/strategy/impl/
+
+# 策略枚举目录 (包含策略元信息)
+common/src/main/java/enums/strategy/
+
+# 其他敏感枚举
+common/src/main/java/enums/CloudCommandEnum.java
+common/src/main/java/enums/SpeedIndicatorEnum.java
+

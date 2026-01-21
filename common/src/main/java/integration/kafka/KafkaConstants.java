@@ -15,8 +15,10 @@ public final class KafkaConstants {
     private KafkaConstants() {}
 
     // ======================== 编译期常量（注解/配置使用） ========================
-    // 主题编码（业务数据）
+    // 主题编码（股票行情）
     public static final String TOPIC_QUOTATION = "quotation";
+    // 主题编码（指数行情）
+    public static final String TOPIC_QUOTATION_INDEX = "quotation-index";
 
     // 主题编码（各服务日志流）
     public static final String TOPIC_LOG_SERVICE_ORDER = "log-service-order";
@@ -27,8 +29,10 @@ public final class KafkaConstants {
     public static final String TOPIC_LOG_QUANT_STOCK_LIST = "log-quant-stock-list"; // 新增：股票列表服务日志
     public static final String TOPIC_LOG_QUANT_DATA_ARCHIVE = "log-quant-data-archive";
 
-    // 消费组（示例：审计服务）
+    // 消费组（审计服务）
     public static final String GROUP_DATA_ARCHIVE = "data-archive-group";
+    // 消费组（风控服务）
+    public static final String GROUP_RISK_CONTROL = "risk-control-group";
     // 可按需扩展：public static final String GROUP_STRATEGY_ENGINE = "strategy-engine-group";
 
     // Bean 名称
@@ -88,12 +92,19 @@ public final class KafkaConstants {
     public static final Map<String, TopicMeta> TOPIC_META_REGISTRY;
     static {
         Map<String, TopicMeta> m = new LinkedHashMap<>();
-        // 业务主题
+        // 股票行情主题
         m.put(TOPIC_QUOTATION, new TopicMeta(
                 TOPIC_QUOTATION,
-                "行情报价",
-                "行情数据主题，供策略/审计消费",
-                KafkaTopics.Category.PRODUCER
+                "股票分时行情",
+                "股票行情数据主题，供策略模块消费",
+                KafkaTopics.Category.BOTH
+        ));
+        // 指数行情主题
+        m.put(TOPIC_QUOTATION_INDEX, new TopicMeta(
+                TOPIC_QUOTATION_INDEX,
+                "指数分时行情",
+                "指数行情数据主题，供风控模块计算市场情绪",
+                KafkaTopics.Category.BOTH
         ));
         // 日志主题：各服务产生应用日志
         m.put(TOPIC_LOG_SERVICE_ORDER, new TopicMeta(

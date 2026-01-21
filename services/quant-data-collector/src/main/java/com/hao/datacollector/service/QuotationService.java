@@ -74,6 +74,19 @@ public interface QuotationService {
     List<HistoryTrendDTO> getHistoryTrendDataByTimeRange(String startTime, String endTime, List<String> stockList);
 
     /**
+     * 根据精确时间区间获取指定指数列表的历史分时数据（回放专用）
+     * <p>
+     * 与股票回放方法 {@link #getHistoryTrendDataByTimeRange} 对应，用于指数行情回放。
+     * 复用 {@link HistoryTrendDTO} 作为返回类型，便于统一处理和推送到 Kafka。
+     *
+     * @param startTime 起始时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param endTime   结束时间（格式 yyyy-MM-dd HH:mm:ss）
+     * @param indexList 指数代码列表（如 000300.SH, 000905.SH）
+     * @return 历史分时数据
+     */
+    List<HistoryTrendDTO> getIndexHistoryTrendDataByTimeRange(String startTime, String endTime, List<String> indexList);
+
+    /**
      * 根据时间区间获取指定指标列表的历史分时数据
      *
      * @param startDate  起始日期（格式 yyyyMMdd）
@@ -94,4 +107,16 @@ public interface QuotationService {
      * @return 包含每日收盘价的历史数据列表
      */
     List<HistoryTrendDTO> getDailyClosePriceByStockList(String startDate, String endDate, List<String> stockList);
+
+    /**
+     * 获取指定交易日各指数的收盘价（即当日最后一条分时数据）
+     * <p>
+     * 用于昨收价缓存预热，返回交易日当天每个指数的收盘价。
+     * 结果可作为下一个交易日的"昨收价"缓存到 Redis。
+     *
+     * @param tradeDate 交易日期（格式 yyyyMMdd）
+     * @param indexList 指数代码列表（如 000300.SH, 000905.SH）
+     * @return 指数收盘价列表（windCode + latestPrice）
+     */
+    List<HistoryTrendDTO> getIndexPreClosePrice(String tradeDate, List<String> indexList);
 }

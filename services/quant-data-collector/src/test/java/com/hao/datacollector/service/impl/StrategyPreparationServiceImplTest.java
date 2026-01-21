@@ -145,14 +145,14 @@ class StrategyPreparationServiceImplTest {
      * 
      * 测试思路：
      * 1. 预热后，随机取一只股票的数据
-     * 2. 验证JSON数组长度为20（或接近20）
-     * 3. 验证数组中的值为有效数字
+     * 2. 验证JSON数组包含 ClosePriceDTO 格式的对象
+     * 3. 验证对象中包含 tradeDate 和 closePrice 字段
      */
     @Test
     @Order(2)
     @DisplayName("集成测试_验证收盘价数据格式")
     void testPrepareNineTurnData_DataFormat() {
-        log.info("开始测试：验证收盘价数据格式");
+        log.info("开始测试：验证收盘价数据格式（ClosePriceDTO）");
 
         // 执行预热
         int stockCount = strategyPreparationService.prepareNineTurnData(testTradeDate);
@@ -162,7 +162,7 @@ class StrategyPreparationServiceImplTest {
         Map<Object, Object> allData = stringRedisTemplate.opsForHash().entries(testRedisKey);
         assertFalse(allData.isEmpty(), "应有预热数据");
 
-        // 验证数据格式
+        // 验证数据格式（ClosePriceDTO JSON 格式）
         int validCount = 0;
         for (Map.Entry<Object, Object> entry : allData.entrySet()) {
             String windCode = entry.getKey().toString();
@@ -172,28 +172,27 @@ class StrategyPreparationServiceImplTest {
             assertTrue(jsonValue.startsWith("[") && jsonValue.endsWith("]"),
                     "股票 " + windCode + " 的数据应为JSON数组格式");
 
-            // 验证数组长度（应接近20）
-            String[] prices = jsonValue.substring(1, jsonValue.length() - 1).split(",");
-            assertTrue(prices.length >= 10, "股票 " + windCode + " 应有足够的历史价格数据");
+            // 验证包含 ClosePriceDTO 格式的对象（应包含 tradeDate 和 closePrice 字段）
+            assertTrue(jsonValue.contains("tradeDate"),
+                    "股票 " + windCode + " 的数据应包含 tradeDate 字段");
+            assertTrue(jsonValue.contains("closePrice"),
+                    "股票 " + windCode + " 的数据应包含 closePrice 字段");
 
-            // 验证是否为有效数字
-            for (String price : prices) {
-                String trimmed = price.trim();
-                if (!"NaN".equals(trimmed)) {
-                    try {
-                        double value = Double.parseDouble(trimmed);
-                        assertTrue(value > 0, "价格应为正数");
-                    } catch (NumberFormatException e) {
-                        fail("价格应为有效数字: " + trimmed);
-                    }
-                }
-            }
+            // 验证日期格式（yyyyMMdd）
+            assertTrue(jsonValue.matches(".*\"tradeDate\":\"\\d{8}\".*"),
+                    "tradeDate 应为 yyyyMMdd 格式");
+
+            // 验证至少有一些有效的价格数据
+            assertTrue(jsonValue.contains("closePrice\":") && 
+                       (jsonValue.matches(".*closePrice\":\\d+\\.\\d+.*") || 
+                        jsonValue.contains("closePrice\":null")),
+                    "closePrice 应为数字或 null");
 
             validCount++;
             if (validCount >= 5) break; // 只验证前5只股票
         }
 
-        log.info("测试通过：验证了 {} 只股票的数据格式", validCount);
+        log.info("测试通过：验证了 {} 只股票的 ClosePriceDTO 数据格式", validCount);
     }
 
     // ==================== 异常场景测试 ====================

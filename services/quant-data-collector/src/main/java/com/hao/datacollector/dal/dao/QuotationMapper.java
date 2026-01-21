@@ -117,4 +117,35 @@ public interface QuotationMapper {
             @Param("endDate") String endDate,
             @Param("indexCodeList") List<String> indexCodeList
     );
+
+    /**
+     * 查询指数历史分时数据（回放专用，返回 HistoryTrendDTO）
+     * <p>
+     * 与 {@link #selectByWindCodeListAndDate} 对应，用于指数行情回放。
+     * 复用 HistoryTrendDTO 便于与股票行情统一处理。
+     *
+     * @param startTime     起始时间（精确到秒）
+     * @param endTime       结束时间（精确到秒）
+     * @param indexCodeList 指数代码集合
+     * @return 指数历史分时数据
+     */
+    List<HistoryTrendDTO> selectIndexByTimeRange(
+            @Param("startTime") String startTime,
+            @Param("endTime") String endTime,
+            @Param("indexCodeList") List<String> indexCodeList
+    );
+
+    /**
+     * 查询指定交易日各指数的收盘价（即当日最后一条分时数据）
+     * <p>
+     * 用于昨收价缓存预热，返回交易日当天每个指数的最后一条数据的 latestPrice。
+     *
+     * @param tradeDate     交易日期（格式 yyyyMMdd）
+     * @param indexCodeList 指数代码集合
+     * @return 指数收盘价列表（windCode + latestPrice）
+     */
+    List<HistoryTrendDTO> selectIndexPreClosePrice(
+            @Param("tradeDate") String tradeDate,
+            @Param("indexCodeList") List<String> indexCodeList
+    );
 }

@@ -2,19 +2,16 @@ package com.hao.quant.stocklist;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * 稳定精选股票查询服务入口。
- * <p>
- * 应用通过 Spring Boot 启动,整合缓存、Kafka 与调度能力,用于提供稳定策略股票列表的查询能力。
- * </p>
+ * 类说明 / Class Description:
+ * 中文：股票精选列表服务启动入口。
+ * English: Startup entry for stock picks list service.
+ *
+ * 使用场景 / Use Cases:
+ * 中文：提供基础的股票列表查询能力，待其他模块产出数据后完善。
+ * English: Provides basic stock list query capability; to be enhanced after other modules produce data.
  */
-@EnableKafka
-@EnableCaching
-@EnableScheduling
 @SpringBootApplication
 public class StockListApplication {
 

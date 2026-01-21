@@ -1,6 +1,8 @@
 package com.hao.strategyengine.integration.kafka;
 
-import com.hao.strategyengine.core.stream.engine.StreamDispatchEngine;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hao.strategyengine.core.stream.strategy.StrategyDispatcher;
+import dto.HistoryTrendDTO;
 import integration.kafka.KafkaConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,17 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Kafka行情消息消费服务
  *
  * 设计目的：
- * 1. 消费Kafka行情消息，驱动流式计算引擎。
- * 2. 统计消息吞吐量，便于监控和性能调优。
- * 3. 通过StreamDispatchEngine解耦消息消费与业务处理。
- *
- * 实现思路：
- * - 接收消息后立即分发到StreamDispatchEngine
- * - StreamDispatchEngine负责解析和路由到Worker线程
- * - 采用手动ACK模式，保证消息可靠消费
+ * 1. 消费Kafka行情消息，解析为通用 DTO。
+ * 2. 调用 StrategyDispatcher 异步分发给所有策略。
+ * 3. 职责单一：只负责消息接收和解析，策略执行由 StrategyDispatcher 负责。
  *
  * @author hli
- * @date 2026-01-02
+ * @date 2026-01-20
  */
 @Slf4j
 @Service
@@ -43,32 +40,22 @@ public class KafkaConsumerService {
     private volatile long windowStart = System.currentTimeMillis();
 
     /**
-     * 本窗口第一条消息（用于日志采样）
+     * JSON 解析器
      */
-    private volatile String firstMessage = null;
+    private final ObjectMapper objectMapper;
 
     /**
-     * 本窗口最后一条消息（用于日志采样）
+     * 策略调度器（统一入口）
      */
-    private volatile String lastMessage = null;
-
-    /**
-     * 流式分发引擎
-     * 负责将消息解析为Tick并分发到计算引擎
-     */
-    private final StreamDispatchEngine streamDispatchEngine;
+    private final StrategyDispatcher strategyDispatcher;
 
     /**
      * 消费行情消息
-     *
+     * <p>
      * 实现逻辑：
-     * 1. 更新吞吐量统计（每秒输出一次）
-     * 2. 将消息分发到流式计算引擎
-     * 3. 手动提交offset
-     *
-     * 异常处理：
-     * - 消费异常不提交offset，消息将被重试
-     * - StreamDispatchEngine内部已做异常隔离
+     * 1. 解析 JSON 为 HistoryTrendDTO
+     * 2. 调用 StrategyDispatcher 分发给所有策略
+     * 3. 手动提交 offset（无论成功失败）
      *
      * @param record Kafka消息记录
      * @param ack    手动提交句柄
@@ -79,54 +66,37 @@ public class KafkaConsumerService {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
+        String message = null;
+        HistoryTrendDTO dto = null;
         try {
-            String message = record.value();
+            message = record.value();
             long now = System.currentTimeMillis();
 
-            // 保留原 ReplayDataConsumer 的日志逻辑 (建议仅在调试或低频场景开启，高频场景请注意日志量)
-            if (log.isDebugEnabled()) {
-                log.debug("策略引擎收到数据|Strategy_received_data,offset={},valueLength={},content={}",
-                        record.offset(), message.length(), message);
-            }
-
-            // 中文：记录第一条消息用于日志采样
-            // English: Record first message for log sampling
-            if (firstMessage == null) {
-                firstMessage = message;
-                // 采样打印一条详细日志，保留原 ReplayDataConsumer 的关键信息
-                log.info("策略引擎收到数据(采样)|Strategy_received_data_sample,offset={},valueLength={},content={}",
-                        record.offset(), message.length(), message);
-            }
-            // 中文：每条消息都更新lastMessage
-            // English: Update lastMessage for each message
-            lastMessage = message;
-
-            // 中文：增加计数
-            // English: Increment counter
+            // 增加计数
             int count = counter.incrementAndGet();
 
-            // 中文：每秒输出一次吞吐量统计
-            // English: Output throughput stats every second
+            // 每秒输出一次吞吐量统计
             if (now - windowStart >= 1000) {
-                // 中文：重置计数器和窗口
-                // English: Reset counter and window
+                log.debug("策略引擎吞吐量|Strategy_throughput,count={}", count);
                 counter.set(0);
-                firstMessage = null;
-                lastMessage = null;
                 windowStart = now;
             }
 
-            // 中文：分发消息到流式计算引擎（核心变更）
-            // English: Dispatch message to stream compute engine (core change)
-            streamDispatchEngine.dispatchJson(message);
+            // TODO STOP 6: 策略模块Kafka消费入口 - 收到股票行情数据
+            // 解析消息为 HistoryTrendDTO
+            dto = objectMapper.readValue(message, HistoryTrendDTO.class);
 
-            // 中文：手动提交offset
-            // English: Manual commit offset
-            ack.acknowledge();
+            // 调用策略调度器分发给所有策略（异步并行执行）
+            strategyDispatcher.dispatch(dto);
+
         } catch (Exception e) {
-            log.error("消息处理异常|Message_processing_error", e);
-            // 中文：不提交offset，消息会被重试
-            // English: Don't commit offset, message will be retried
+            // 记录详细的异常信息
+            String windCode = dto != null ? dto.getWindCode() : "unknown";
+            log.error("消息处理异常|Message_processing_error,code={},offset={},partition={},error={}",
+                    windCode, record.offset(), record.partition(), e.getMessage(), e);
+        } finally {
+            // 无论成功失败都提交 offset
+            ack.acknowledge();
         }
     }
 }
