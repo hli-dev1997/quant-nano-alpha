@@ -2,6 +2,8 @@ package com.quant.data.archive.integration.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.quant.data.archive.model.es.LogDocument;
+import com.quant.data.archive.repository.LogEsRepository;
 import constants.DateTimeFormatConstants;
 import integration.kafka.KafkaConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +53,10 @@ public class LogConsumerService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    /** Elasticsearch 日志 Repository */
+    @Autowired
+    private LogEsRepository logEsRepository;
 
     /** 消费计数器 */
     private final AtomicLong consumeCounter = new AtomicLong(0);
@@ -281,19 +287,78 @@ public class LogConsumerService {
                     truncateMessage(logMessage.getException(), 500));
         }
         
-        // TODO: [ES接入] 在此处实现将日志批量写入 Elasticsearch 的逻辑
-        // 建议：
-        // 1. 使用 BulkProcessor 或批量接口提高写入性能
-        // 2. 按天或按月分索引存储（如 log-2025.07.22）
-        // 3. 确保 logMessage 实体字段与 ES Mapping 兼容
-        // 示例代码：
-        // elasticsearchService.indexLog(logMessage);
+        // 写入 Elasticsearch
+        try {
+            LogDocument doc = convertToEsDoc(logMessage);
+            logEsRepository.save(doc);
+            log.debug("ES写入成功|ES_write_success,instanceId={}", logMessage.getInstanceId());
+        } catch (Exception e) {
+            // ES 写入失败不影响主业务流程，仅记录错误日志
+            log.error("ES写入失败|ES_write_failed,instanceId={}", logMessage.getInstanceId(), e);
+        }
         
         // TODO: [告警接入] 在此处实现基于日志级别的实时告警
         // 建议：
         // 1. 过滤 ERROR 级别日志
         // 2. 对接钉钉/飞书/邮件通知
         // 3. 实现告警抑制（防止刷屏）
+    }
+
+    /**
+     * 转换 LogMessage 为 ES 文档
+     *
+     * 实现逻辑：
+     * 1. 复制所有日志字段到 ES 文档实体
+     * 2. 保留 Kafka 元信息用于追溯
+     *
+     * @param msg 日志消息实体
+     * @return ES 文档实体
+     */
+    private LogDocument convertToEsDoc(LogMessage msg) {
+        LogDocument doc = new LogDocument();
+        doc.setService(msg.getService());
+        doc.setEnv(msg.getEnv());
+        doc.setLevel(msg.getLevel());
+        doc.setMessage(msg.getMessage());
+        doc.setException(msg.getException());
+        doc.setThread(msg.getThread());
+        doc.setLogger(msg.getLogger());
+        doc.setHostname(msg.getHostname());
+        doc.setIp(msg.getIp());
+        doc.setPort(msg.getPort());
+        doc.setInstanceId(msg.getInstanceId());
+        doc.setTimestamp(msg.getTimestamp());
+        doc.setConsumeTime(msg.getConsumeTime());
+        doc.setKafkaTopic(msg.getKafkaTopic());
+        doc.setKafkaPartition(msg.getKafkaPartition());
+        doc.setKafkaOffset(msg.getKafkaOffset());
+        doc.setKafkaKey(sanitizeKafkaKey(msg.getKafkaKey()));
+        return doc;
+    }
+
+    /**
+     * 清洗 Kafka Key
+     *
+     * 实现逻辑：
+     * 1. 过滤 null 和空字符串
+     * 2. 检查是否包含非可打印字符（二进制数据）
+     * 3. 二进制数据转换为 Base64 格式，有效字符串原样返回
+     *
+     * @param key 原始 Kafka Key
+     * @return 清洗后的 Key
+     */
+    private String sanitizeKafkaKey(String key) {
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
+        // 检查是否包含非可打印 ASCII 字符（控制字符等二进制数据）
+        for (char c : key.toCharArray()) {
+            if (c < 32 && c != '\t' && c != '\n' && c != '\r') {
+                // 包含控制字符，转换为 Base64 格式
+                return "base64:" + java.util.Base64.getEncoder().encodeToString(key.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        }
+        return key;
     }
 
     /**

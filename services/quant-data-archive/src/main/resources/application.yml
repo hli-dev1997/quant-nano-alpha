@@ -10,6 +10,13 @@ server:
 spring:
   application:
     name: quant-data-archive
+  # Elasticsearch 配置
+  elasticsearch:
+    uris: https://localhost:9200
+    username: elastic
+    password: "Q836184425"
+    connection-timeout: 5s
+    socket-timeout: 30s
   cloud:
     nacos:
       #nacos服务端地址及端口
