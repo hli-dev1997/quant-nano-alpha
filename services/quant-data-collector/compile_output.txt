@@ -1,0 +1,70 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.hli:quant-data-collector >--------------------
+[INFO] Building quant-data-collector 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/com/hli/common/1.0-SNAPSHOT/maven-metadata.xml
+[WARNING] Could not transfer metadata com.hli:common:1.0-SNAPSHOT/maven-metadata.xml from/to aliyunmaven (https://maven.aliyun.com/repository/public): Remote host terminated the handshake
+[WARNING] com.hli:common:1.0-SNAPSHOT/maven-metadata.xml failed to transfer from https://maven.aliyun.com/repository/public during a previous attempt. This failure was cached in the local repository and resolution will not be reattempted until the update interval of aliyunmaven has elapsed or updates are forced. Original error: Could not transfer metadata com.hli:common:1.0-SNAPSHOT/maven-metadata.xml from/to aliyunmaven (https://maven.aliyun.com/repository/public): Remote host terminated the handshake
+Downloading from aliyunmaven: https://maven.aliyun.com/repository/public/com/hli/quant-nano-alpha/1.0-SNAPSHOT/maven-metadata.xml
+[WARNING] Could not transfer metadata com.hli:quant-nano-alpha:1.0-SNAPSHOT/maven-metadata.xml from/to aliyunmaven (https://maven.aliyun.com/repository/public): Remote host terminated the handshake
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ quant-data-collector ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 15 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ quant-data-collector ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 169 source files with javac [debug release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[72,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[91,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/param/topic/TopicInfoParam.java:[94,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/ActiveSeatsRankVO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicStockVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/TopicInfoVO.java:[6,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/limitup/ResultObjectVO.java:[9,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/dto/table/topic/TopicStockDTO.java:[8,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[WARNING] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/web/vo/abnormal/AbnormalIndexVO.java:[7,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[INFO] 9 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[9,11] 找不到符号
+  符号:   类 ClosePriceDTO
+  位置: 程序包 dto
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[237,30] 找不到符号
+  符号:   类 ClosePriceDTO
+  位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[319,67] 找不到符号
+  符号:   类 ClosePriceDTO
+  位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[INFO] 3 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.991 s
+[INFO] Finished at: 2026-01-22T10:00:55+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project quant-data-collector: Compilation failure: Compilation failure: 
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[9,11] 找不到符号
+[ERROR]   符号:   类 ClosePriceDTO
+[ERROR]   位置: 程序包 dto
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[237,30] 找不到符号
+[ERROR]   符号:   类 ClosePriceDTO
+[ERROR]   位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[ERROR] /E:/project/quant-nano-alpha/services/quant-data-collector/src/main/java/com/hao/datacollector/service/impl/StrategyPreparationServiceImpl.java:[319,67] 找不到符号
+[ERROR]   符号:   类 ClosePriceDTO
+[ERROR]   位置: 类 com.hao.datacollector.service.impl.StrategyPreparationServiceImpl
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

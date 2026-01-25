@@ -1,8 +1,7 @@
 package com.hao.riskcontrol.service;
 
 import com.hao.riskcontrol.common.enums.market.MarketSentimentScorer;
-
-import java.time.LocalDateTime;
+import com.hao.riskcontrol.dto.quotation.IndexQuotationDTO;
 
 /**
  * 市场情绪评分服务接口
@@ -21,11 +20,9 @@ public interface MarketSentimentService {
      * <p>
      * 由 Kafka 消费者调用，每次收到指数行情数据时更新。
      *
-     * @param windCode    指数代码（如 000300.SH）
-     * @param latestPrice 最新价格
-     * @param tradeTime   交易时间
+     * @param dto 指数行情数据传输对象
      */
-    void updateIndexPrice(String windCode, Double latestPrice, LocalDateTime tradeTime);
+    void updateIndexPrice(IndexQuotationDTO dto);
 
     /**
      * 获取当前综合市场情绪评估结果

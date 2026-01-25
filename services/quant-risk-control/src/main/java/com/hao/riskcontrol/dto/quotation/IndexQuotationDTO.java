@@ -23,8 +23,8 @@ public class IndexQuotationDTO {
     @Schema(description = "指数代码", example = "000300.SH")
     private String windCode;
 
-    @Schema(description = "交易日期时间", example = "2026-01-18 13:01:01")
-    @JsonFormat(pattern = DateTimeFormatConstants.DEFAULT_DATETIME_FORMAT)
+    @Schema(description = "交易日期时间", example = "2026-01-18T13:01:01")
+    @JsonFormat(pattern = DateTimeFormatConstants.ISO_DATETIME_FORMAT)
     private LocalDateTime tradeDate;
 
     @Schema(description = "最新价", example = "3850.25")
