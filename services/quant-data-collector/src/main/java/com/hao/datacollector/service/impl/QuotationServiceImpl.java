@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -954,6 +955,68 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
         log.info("当日最高最低价查询完成|Daily_high_low_query_done,resultCount={}", resultMap.size());
+        return resultMap;
+    }
+
+    /**
+     * 获取指定股票列表在指定日期列表中每天的收盘价（当日最后一条分时数据）
+     * <p>
+     * 遍历日期列表，对每个日期查询指定股票的最后一条分时数据。
+     *
+     * @param stockList 股票代码列表
+     * @param dateList  日期列表（格式 yyyyMMdd）
+     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为当日收盘价对应的完整分时数据
+     */
+    @Override
+    public Map<String, Map<String, HistoryTrendDTO>> getDailyClosePriceByDateList(List<String> stockList, List<String> dateList) {
+        // 参数校验
+        if (stockList == null || stockList.isEmpty()) {
+            log.warn("查询多日收盘价股票列表为空|Daily_close_stockList_empty");
+            return Collections.emptyMap();
+        }
+        if (dateList == null || dateList.isEmpty()) {
+            log.warn("查询多日收盘价日期列表为空|Daily_close_dateList_empty");
+            return Collections.emptyMap();
+        }
+
+        log.info("查询多日收盘价|Query_daily_close_by_dateList,stockCount={},dateCount={}", stockList.size(), dateList.size());
+
+        Map<String, Map<String, HistoryTrendDTO>> resultMap = new LinkedHashMap<>(dateList.size());
+
+        // 遍历每个日期，查询当天的收盘价
+        for (String date : dateList) {
+            if (!StringUtils.hasLength(date)) {
+                continue;
+            }
+
+            // 复用现有方法获取当天的分时数据
+            List<HistoryTrendDTO> trendDataList = getHistoryTrendDataByStockList(date, date, stockList);
+            if (trendDataList == null || trendDataList.isEmpty()) {
+                log.debug("日期 {} 无分时数据|No_trend_data_for_date", date);
+                resultMap.put(date, Collections.emptyMap());
+                continue;
+            }
+
+            // 按 windCode 分组，取每只股票当天最后一条数据（按 tradeDate 降序取第一条）
+            Map<String, HistoryTrendDTO> dailyCloseMap = trendDataList.stream()
+                    .filter(dto -> dto != null && dto.getWindCode() != null && dto.getTradeDate() != null)
+                    .collect(Collectors.groupingBy(HistoryTrendDTO::getWindCode))
+                    .entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().stream()
+                                    .max(Comparator.comparing(HistoryTrendDTO::getTradeDate))
+                                    .orElse(null)
+                    ));
+
+            // 移除可能的 null 值
+            dailyCloseMap.values().removeIf(v -> v == null);
+
+            resultMap.put(date, dailyCloseMap);
+            log.debug("日期 {} 查询到 {} 只股票的收盘价|Date_close_count", date, dailyCloseMap.size());
+        }
+
+        log.info("多日收盘价查询完成|Daily_close_by_dateList_done,dateCount={}", resultMap.size());
         return resultMap;
     }
 }

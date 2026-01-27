@@ -133,4 +133,15 @@ public interface QuotationService {
      * @return Map，key 为股票代码，value 为包含最高价和最低价分时数据的 DTO
      */
     Map<String, DailyHighLowDTO> getDailyHighLowByStockList(String startDate, String endDate, List<String> stockList);
+
+    /**
+     * 获取指定股票列表在指定日期列表中每天的收盘价（当日最后一条分时数据）
+     * <p>
+     * 遍历日期列表，对每个日期查询指定股票的最后一条分时数据。
+     *
+     * @param stockList 股票代码列表
+     * @param dateList  日期列表（格式 yyyyMMdd）
+     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为当日收盘价对应的完整分时数据
+     */
+    Map<String, Map<String, HistoryTrendDTO>> getDailyClosePriceByDateList(List<String> stockList, List<String> dateList);
 }

@@ -112,5 +112,17 @@ public class QuotationController {
     ) {
         return quotationService.getDailyHighLowByStockList(startDate, endDate, stockList);
     }
+
+    @Operation(summary = "获取指定股票列表在多个日期的收盘价", description = "根据日期列表获取指定股票列表每天的收盘价（最后一条分时数据）")
+    @GetMapping("/get_daily_close_by_dates")
+    public Map<String, Map<String, HistoryTrendDTO>> getDailyClosePriceByDateList(
+            @Parameter(description = "股票代码列表", required = true)
+            @RequestParam List<String> stockList,
+            @Parameter(description = "日期列表，格式yyyyMMdd", required = true)
+            @RequestParam List<String> dateList
+    ) {
+        return quotationService.getDailyClosePriceByDateList(stockList, dateList);
+    }
 }
+
 
