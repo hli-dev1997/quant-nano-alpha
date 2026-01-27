@@ -1,9 +1,11 @@
 package com.hao.datacollector.service;
 
+import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author hli
@@ -89,9 +91,9 @@ public interface QuotationService {
     /**
      * 根据时间区间获取指定指标列表的历史分时数据
      *
-     * @param startDate  起始日期（格式 yyyyMMdd）
-     * @param endDate    结束日期（格式 yyyyMMdd）
-     * @param indexList  指标代码列表（为空时查询所有指标）
+     * @param startDate 起始日期（格式 yyyyMMdd）
+     * @param endDate   结束日期（格式 yyyyMMdd）
+     * @param indexList 指标代码列表（为空时查询所有指标）
      * @return 指标历史分时数据
      */
     List<HistoryTrendIndexDTO> getIndexHistoryTrendDataByIndexList(String startDate, String endDate, List<String> indexList);
@@ -119,4 +121,16 @@ public interface QuotationService {
      * @return 指数收盘价列表（windCode + latestPrice）
      */
     List<HistoryTrendDTO> getIndexPreClosePrice(String tradeDate, List<String> indexList);
+
+    /**
+     * 获取指定时间区间内指定股票列表的当日最高价和最低价
+     * <p>
+     * 复用 {@link #getHistoryTrendDataByStockList} 获取分时数据，在内存中筛选每只股票的最高价和最低价。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return Map，key 为股票代码，value 为包含最高价和最低价分时数据的 DTO
+     */
+    Map<String, DailyHighLowDTO> getDailyHighLowByStockList(String startDate, String endDate, List<String> stockList);
 }

@@ -1,5 +1,6 @@
 package com.hao.datacollector.service.impl;
 
+import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.service.QuotationService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,10 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -120,4 +123,54 @@ class QuotationServiceImplTest {
 
         log.info("测试通过：成功获取 {} 条跨表数据，且排序正确", result.size());
     }
+
+    /**
+     * 测试场景：查询指定股票列表在2026年1月5日的当日最高价和最低价
+     * 预期：应返回每只股票的最高价和最低价对应的完整分时数据
+     */
+    @Test
+    @DisplayName("集成测试_查询当日最高最低价_601606和600519_20260105")
+    void testGetDailyHighLowByStockList_20260105() {
+        String startDate = "20260105";
+        String endDate = "20260105";
+        List<String> stockList = Arrays.asList("601606.SH", "600519.SH");
+
+        log.info("开始测试：查询当日最高最低价，日期 {}，股票列表 {}", startDate, stockList);
+        Map<String, DailyHighLowDTO> result = quotationService.getDailyHighLowByStockList(startDate, endDate, stockList);
+
+        assertNotNull(result, "结果 Map 不应为 null");
+        assertFalse(result.isEmpty(), "结果 Map 不应为空");
+
+        // 验证每只股票的结果
+        for (String windCode : stockList) {
+            if (result.containsKey(windCode)) {
+                DailyHighLowDTO dailyHighLow = result.get(windCode);
+                assertNotNull(dailyHighLow, windCode + " 的 DailyHighLowDTO 不应为 null");
+                
+                HistoryTrendDTO highData = dailyHighLow.getHighPriceData();
+                HistoryTrendDTO lowData = dailyHighLow.getLowPriceData();
+                
+                assertNotNull(highData, windCode + " 的最高价数据不应为 null");
+                assertNotNull(lowData, windCode + " 的最低价数据不应为 null");
+                
+                // 验证股票代码一致性
+                assertEquals(windCode, highData.getWindCode(), "最高价数据的股票代码应匹配");
+                assertEquals(windCode, lowData.getWindCode(), "最低价数据的股票代码应匹配");
+                
+                // 验证最高价 >= 最低价
+                assertTrue(highData.getLatestPrice() >= lowData.getLatestPrice(),
+                        windCode + " 的最高价应大于等于最低价");
+                
+                log.info("股票 {} 最高价: {} (时间: {}), 最低价: {} (时间: {})",
+                        windCode,
+                        highData.getLatestPrice(), highData.getTradeDate(),
+                        lowData.getLatestPrice(), lowData.getTradeDate());
+            } else {
+                log.warn("股票 {} 在数据库中没有 {} 的分时数据", windCode, startDate);
+            }
+        }
+
+        log.info("测试通过：成功获取 {} 只股票的当日最高最低价", result.size());
+    }
 }
+

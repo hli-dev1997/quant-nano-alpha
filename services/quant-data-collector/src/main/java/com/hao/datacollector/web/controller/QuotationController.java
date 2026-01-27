@@ -1,5 +1,6 @@
 package com.hao.datacollector.web.controller;
 
+import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.service.QuotationService;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author hli
@@ -97,4 +99,18 @@ public class QuotationController {
     ) {
         return quotationService.getIndexHistoryTrendDataByIndexList(startDate, endDate, indexList);
     }
+
+    @Operation(summary = "获取指定股票列表的当日最高价和最低价", description = "根据时间区间获取指定股票列表的当日最高价和最低价分时数据")
+    @GetMapping("/get_daily_high_low")
+    public Map<String, DailyHighLowDTO> getDailyHighLowByStockList(
+            @Parameter(description = "起始日期，格式yyyyMMdd", required = true)
+            @RequestParam String startDate,
+            @Parameter(description = "结束日期，格式yyyyMMdd", required = true)
+            @RequestParam String endDate,
+            @Parameter(description = "股票列表", required = true)
+            @RequestParam List<String> stockList
+    ) {
+        return quotationService.getDailyHighLowByStockList(startDate, endDate, stockList);
+    }
 }
+

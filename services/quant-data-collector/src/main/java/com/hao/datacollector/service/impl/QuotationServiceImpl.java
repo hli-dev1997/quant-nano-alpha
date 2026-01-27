@@ -3,6 +3,7 @@ package com.hao.datacollector.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.hao.datacollector.common.utils.HttpUtil;
 import com.hao.datacollector.dal.dao.QuotationMapper;
+import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.dto.table.quotation.QuotationStockBaseDTO;
@@ -31,10 +32,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 /**
  * 行情数据同步实现，涵盖基础行情与分时走势的抓取、解析与落库。
@@ -885,4 +889,72 @@ public class QuotationServiceImpl implements QuotationService {
         log.info("指数收盘价查询完成|Index_pre_close_query_done,resultCount={}", result.size());
         return result;
     }
+
+    /**
+     * 获取指定时间区间内指定股票列表的当日最高价和最低价
+     * <p>
+     * 复用 {@link #getHistoryTrendDataByStockList} 获取分时数据，在内存中筛选每只股票的最高价和最低价。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return Map，key 为股票代码，value 为包含最高价和最低价分时数据的 DTO
+     */
+    @Override
+    public Map<String, DailyHighLowDTO> getDailyHighLowByStockList(String startDate, String endDate, List<String> stockList) {
+        // 参数校验
+        if (!StringUtils.hasLength(startDate) || !StringUtils.hasLength(endDate)) {
+            log.warn("查询当日最高最低价日期参数为空|Daily_high_low_date_params_empty");
+            return Collections.emptyMap();
+        }
+        if (stockList == null || stockList.isEmpty()) {
+            log.warn("查询当日最高最低价股票列表为空|Daily_high_low_stockList_empty");
+            return Collections.emptyMap();
+        }
+
+        log.info("查询当日最高最低价|Query_daily_high_low,range={}-{},stockCount={}", startDate, endDate, stockList.size());
+
+        // 复用现有方法获取分时数据
+        List<HistoryTrendDTO> trendDataList = getHistoryTrendDataByStockList(startDate, endDate, stockList);
+        if (trendDataList == null || trendDataList.isEmpty()) {
+            log.warn("分时数据为空，无法计算最高最低价|Trend_data_empty_for_high_low");
+            return Collections.emptyMap();
+        }
+
+        // 在内存中按 windCode 分组，筛选最高价和最低价
+        Map<String, DailyHighLowDTO> resultMap = new HashMap<>(stockList.size());
+
+        // 按股票代码分组
+        Map<String, List<HistoryTrendDTO>> groupedByWindCode = trendDataList.stream()
+                .filter(dto -> dto != null && dto.getWindCode() != null && dto.getLatestPrice() != null)
+                .collect(Collectors.groupingBy(HistoryTrendDTO::getWindCode));
+
+        for (Map.Entry<String, List<HistoryTrendDTO>> entry : groupedByWindCode.entrySet()) {
+            String windCode = entry.getKey();
+            List<HistoryTrendDTO> stockTrendList = entry.getValue();
+
+            if (stockTrendList.isEmpty()) {
+                continue;
+            }
+
+            // 找出最高价和最低价对应的分时数据
+            HistoryTrendDTO highPriceData = stockTrendList.stream()
+                    .max(Comparator.comparingDouble(HistoryTrendDTO::getLatestPrice))
+                    .orElse(null);
+
+            HistoryTrendDTO lowPriceData = stockTrendList.stream()
+                    .min(Comparator.comparingDouble(HistoryTrendDTO::getLatestPrice))
+                    .orElse(null);
+
+            DailyHighLowDTO dailyHighLowDTO = new DailyHighLowDTO();
+            dailyHighLowDTO.setHighPriceData(highPriceData);
+            dailyHighLowDTO.setLowPriceData(lowPriceData);
+
+            resultMap.put(windCode, dailyHighLowDTO);
+        }
+
+        log.info("当日最高最低价查询完成|Daily_high_low_query_done,resultCount={}", resultMap.size());
+        return resultMap;
+    }
 }
+
