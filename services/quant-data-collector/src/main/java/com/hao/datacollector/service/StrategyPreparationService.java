@@ -53,4 +53,31 @@ public interface StrategyPreparationService {
      * @throws IllegalArgumentException 非交易日或跨年时抛出
      */
     int prepareNineTurnData(LocalDate tradeDate, List<String> stockCodes);
+
+    // ==================== 多周期均线策略 ====================
+
+    /**
+     * 预热多周期均线策略所需的历史数据（全量股票）
+     * <p>
+     * 用于计算 MA5/MA20/MA60 多头/空头排列信号。
+     * <p>
+     * 实现逻辑：
+     * 1. 获取前59个交易日的日期列表。
+     * 2. 调用 getDailyClosePriceByDateList 批量查询收盘价。
+     * 3. 按股票代码组织为 List&lt;ClosePriceDTO&gt; 结构。
+     * 4. 以 MA:PREHEAT: 前缀存入 Redis Hash。
+     *
+     * @param tradeDate 当前交易日
+     * @return 预热成功返回处理的股票数量
+     */
+    int prepareMovingAverageData(LocalDate tradeDate);
+
+    /**
+     * 预热多周期均线策略所需的历史数据（指定股票列表）
+     *
+     * @param tradeDate  当前交易日
+     * @param stockCodes 股票代码列表（null或空时使用全量）
+     * @return 预热成功返回处理的股票数量
+     */
+    int prepareMovingAverageData(LocalDate tradeDate, List<String> stockCodes);
 }

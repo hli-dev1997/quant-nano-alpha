@@ -76,5 +76,16 @@ public class RedisKeyConstants {
      * 说明：红九和绿九共用同一份历史收盘价数据，只是判断公式不同。
      */
     public static final String NINE_TURN_PREHEAT_PREFIX = "NINE_TURN:PREHEAT:";
+
+    /**
+     * 多周期均线策略预热数据 Key 前缀
+     * <p>
+     * Key格式: MA:PREHEAT:{yyyyMMdd}
+     * Value类型: Hash
+     * - Field: windCode (股票代码)
+     * - Value: JSON数组，存储前59个交易日收盘价（用于计算 MA5/MA20/MA60）
+     * 过期时间: 24小时
+     */
+    public static final String MA_PREHEAT_PREFIX = "MA:PREHEAT:";
 }
 

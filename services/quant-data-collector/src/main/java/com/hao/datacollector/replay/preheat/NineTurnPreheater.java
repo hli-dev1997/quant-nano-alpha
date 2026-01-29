@@ -1,6 +1,7 @@
 package com.hao.datacollector.replay.preheat;
 
 import com.hao.datacollector.service.StrategyPreparationService;
+import enums.strategy.StrategyMetaEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,13 +23,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NineTurnPreheater implements StrategyPreheater {
 
-    private static final String STRATEGY_ID = "NINE_TURN";
-
     private final StrategyPreparationService preparationService;
 
     @Override
     public String getStrategyId() {
-        return STRATEGY_ID;
+        return StrategyMetaEnum.PREHEATER_NINE_TURN.getId();
     }
 
     @Override

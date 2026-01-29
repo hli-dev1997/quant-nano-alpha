@@ -160,7 +160,7 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
      * 获取前N个交易日列表
      * <p>
      * 实现逻辑：
-     * 1. 根据日期年份动态选择交易日历。
+     * 1. 使用全量交易日历 AllTradeDateList（支持跨年查询）。
      * 2. 从交易日历中找到tradeDate的位置。
      * 3. 向前取N个交易日（不包括当天）。
      *
@@ -169,16 +169,25 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
      * @return 前N个交易日列表（按时间倒序，0=昨日）
      */
     private List<LocalDate> getLastNTradeDates(LocalDate tradeDate, int historyDays) {
-        // 根据日期年份动态获取交易日历
-        List<LocalDate> allTradeDates = getTradeDateListForYear(tradeDate.getYear());
+        // 使用全量交易日历（支持跨年查询）
+        List<LocalDate> allTradeDates = DateCache.AllTradeDateList;
+
+        if (allTradeDates == null || allTradeDates.isEmpty()) {
+            throw new IllegalArgumentException("全量交易日历未初始化|AllTradeDateList_not_initialized");
+        }
 
         // 找到当前交易日在列表中的位置
         int currentIndex = allTradeDates.indexOf(tradeDate);
 
-        if (currentIndex < historyDays) {
-            // 如果今年交易日不足，需要跨年处理（暂不支持）
+        if (currentIndex < 0) {
             throw new IllegalArgumentException(
-                    String.format("年初交易日不足|Insufficient_trade_days,tradeDate=%s,required=%d,available=%d",
+                    String.format("交易日不在日历中|Trade_date_not_found,tradeDate=%s", tradeDate));
+        }
+
+        if (currentIndex < historyDays) {
+            // 全量交易日历仍不足（极端情况：从2020年初开始的前几天）
+            throw new IllegalArgumentException(
+                    String.format("历史交易日不足|Insufficient_trade_days,tradeDate=%s,required=%d,available=%d",
                             tradeDate, historyDays, currentIndex));
         }
 
@@ -337,6 +346,171 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
             stringRedisTemplate.expire(redisKey, NINE_TURN_CONFIG.getTtlHours(), TimeUnit.HOURS);
 
             log.info("九转预热_Redis写入完成|Nine_turn_preheat_redis_saved,key={},fieldCount={}",
+                    redisKey, hashMap.size());
+        }
+
+        return hashMap.size();
+    }
+
+    // ==================== 多周期均线策略预热 ====================
+
+    /**
+     * 多周期均线策略 Redis 配置
+     */
+    private static final StrategyRedisKeyEnum MA_CONFIG = StrategyRedisKeyEnum.MA_PREHEAT;
+
+    @Override
+    public int prepareMovingAverageData(LocalDate tradeDate) {
+        return prepareMovingAverageData(tradeDate, null);
+    }
+
+    /**
+     * 预热多周期均线策略所需的历史数据
+     * <p>
+     * 实现逻辑：
+     * 1. 校验交易日有效性。
+     * 2. 获取前59个交易日列表（MA60需要前59天+当天=60天）。
+     * 3. 调用 getDailyClosePriceByDateList 获取批量收盘价。
+     * 4. 转换为 List&lt;ClosePriceDTO&gt; 格式，按时间倒序排列。
+     * 5. 存入 Redis Hash，Key 格式：MA:PREHEAT:{yyyyMMdd}。
+     * <p>
+     * 停牌处理：如发现 null 收盘价，打印 error 日志，该股票不参与 MA 计算。
+     *
+     * @param tradeDate  当前交易日
+     * @param stockCodes 股票代码列表（null或空时使用全量）
+     * @return 预热成功的股票数量
+     */
+    @Override
+    public int prepareMovingAverageData(LocalDate tradeDate, List<String> stockCodes) {
+        // Step 1: 校验交易日有效性
+        validateTradeDate(tradeDate);
+
+        // Step 2: 获取前59个交易日列表
+        List<LocalDate> tradeDates = getLastNTradeDates(tradeDate, MA_CONFIG.getHistoryDays());
+        log.info("MA预热_获取交易日列表|MA_preheat_get_trade_dates,tradeDate={},dateCount={}",
+                tradeDate, tradeDates.size());
+
+        // Step 3: 准备查询参数
+        List<String> targetStockCodes = (stockCodes != null && !stockCodes.isEmpty())
+                ? stockCodes
+                : StockCache.allWindCode;
+        log.info("MA预热_目标股票|MA_preheat_target_stocks,count={},source={}",
+                targetStockCodes.size(), (stockCodes != null && !stockCodes.isEmpty()) ? "params" : "StockCache");
+
+        // 将 LocalDate 转换为 yyyyMMdd 格式
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        List<String> dateList = tradeDates.stream()
+                .map(d -> d.format(dateFormatter))
+                .toList();
+
+        // Step 4: 调用 getDailyClosePriceByDateList 批量查询
+        Map<String, Map<String, HistoryTrendDTO>> dailyClosePriceMap =
+                quotationService.getDailyClosePriceByDateList(targetStockCodes, dateList);
+
+        log.info("MA预热_查询历史数据|MA_preheat_query_history,dateCount={},resultDateCount={}",
+                dateList.size(), dailyClosePriceMap.size());
+
+        if (dailyClosePriceMap.isEmpty()) {
+            log.warn("MA预热_历史数据为空|MA_preheat_no_data,tradeDate={}", tradeDate);
+            return 0;
+        }
+
+        // Step 5: 转换数据格式为 Map<windCode, List<ClosePriceDTO>>
+        Map<String, List<ClosePriceDTO>> stockClosePrices =
+                convertToClosePriceFormat(dailyClosePriceMap, dateList, targetStockCodes);
+
+        // Step 6: 存入 Redis
+        int savedCount = saveToRedisForMA(tradeDate, stockClosePrices);
+
+        log.info("MA预热完成|MA_preheat_complete,tradeDate={},stockCount={},savedCount={}",
+                tradeDate, stockClosePrices.size(), savedCount);
+
+        return savedCount;
+    }
+
+    /**
+     * 转换 getDailyClosePriceByDateList 返回格式为 Map&lt;windCode, List&lt;ClosePriceDTO&gt;&gt;
+     * <p>
+     * 输入格式：Map&lt;日期, Map&lt;股票代码, HistoryTrendDTO&gt;&gt;
+     * 输出格式：Map&lt;股票代码, List&lt;ClosePriceDTO&gt;&gt;（按时间倒序，index 0 = 昨日）
+     * <p>
+     * 停牌处理：如果某日无数据，closePrice 为 null，打印 error 日志。
+     */
+    private Map<String, List<ClosePriceDTO>> convertToClosePriceFormat(
+            Map<String, Map<String, HistoryTrendDTO>> dailyClosePriceMap,
+            List<String> dateList,
+            List<String> targetStockCodes) {
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateTimeFormatConstants.DEFAULT_DATETIME_FORMAT);
+        Map<String, List<ClosePriceDTO>> result = new HashMap<>(targetStockCodes.size());
+
+        for (String stockCode : targetStockCodes) {
+            List<ClosePriceDTO> closePrices = new ArrayList<>(dateList.size());
+            boolean hasNullPrice = false;
+
+            // dateList 已按时间倒序（index 0 = 昨日）
+            for (String date : dateList) {
+                Map<String, HistoryTrendDTO> dayData = dailyClosePriceMap.get(date);
+                HistoryTrendDTO trendDTO = (dayData != null) ? dayData.get(stockCode) : null;
+
+                String tradeDateTime;
+                Double closePrice;
+
+                if (trendDTO != null && trendDTO.getLatestPrice() != null) {
+                    tradeDateTime = trendDTO.getTradeDate().format(dateTimeFormatter);
+                    closePrice = trendDTO.getLatestPrice();
+                } else {
+                    // TODO: 停牌处理 - 后续可考虑用前一有效值填充或跳过
+                    tradeDateTime = date + " 15:00:00";
+                    closePrice = null;
+                    hasNullPrice = true;
+                }
+
+                closePrices.add(new ClosePriceDTO(tradeDateTime, closePrice));
+            }
+
+            // 停牌日志：如有 null 值，打印 warn 日志（策略端会过滤 null）
+            if (hasNullPrice) {
+                long nullCount = closePrices.stream()
+                        .filter(dto -> dto.getClosePrice() == null)
+                        .count();
+                // 改为 warn 级别，有 null 的股票仍保存到 Redis，由策略端过滤处理
+                log.warn("MA预热_存在缺失数据|MA_preheat_null_data,stockCode={},nullCount={},totalDays={},策略端将过滤null值",
+                        stockCode, nullCount, dateList.size());
+            }
+
+            result.put(stockCode, closePrices);
+        }
+
+        log.info("MA预热_数据转换完成|MA_preheat_convert_done,totalStocks={},validStocks={}",
+                targetStockCodes.size(), result.size());
+
+        return result;
+    }
+
+    /**
+     * 保存多周期均线数据到 Redis Hash
+     *
+     * @param tradeDate        交易日
+     * @param stockClosePrices 股票收盘价数据
+     * @return 保存的股票数量
+     */
+    private int saveToRedisForMA(LocalDate tradeDate, Map<String, List<ClosePriceDTO>> stockClosePrices) {
+        String dateSuffix = tradeDate.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        String redisKey = MA_CONFIG.buildKey(dateSuffix);
+
+        Map<String, String> hashMap = new HashMap<>(stockClosePrices.size());
+
+        for (Map.Entry<String, List<ClosePriceDTO>> entry : stockClosePrices.entrySet()) {
+            String jsonValue = JsonUtil.toJson(entry.getValue());
+            hashMap.put(entry.getKey(), jsonValue);
+        }
+
+        if (!hashMap.isEmpty()) {
+            stringRedisTemplate.opsForHash().putAll(redisKey, hashMap);
+            stringRedisTemplate.expire(redisKey, MA_CONFIG.getTtlHours(), TimeUnit.HOURS);
+
+            log.info("MA预热_Redis写入完成|MA_preheat_redis_saved,key={},fieldCount={}",
                     redisKey, hashMap.size());
         }
 
