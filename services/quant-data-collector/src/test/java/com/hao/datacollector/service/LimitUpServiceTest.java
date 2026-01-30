@@ -33,9 +33,7 @@ class LimitUpServiceTest {
 
         List<String> yearTradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         //剔除已经转档过的日期
-//        String maxDate = limitUpService.getTransferLimitUpDataMaxDate();
-
-        String maxDate = "20260102";
+        String maxDate = limitUpService.getTransferLimitUpDataMaxDate();
         yearTradeDateList = yearTradeDateList.stream()
                 // 逻辑：保留(filter) 大于或等于 maxDate 的元素
                 .filter(date -> date.compareTo(maxDate) >= 0)
