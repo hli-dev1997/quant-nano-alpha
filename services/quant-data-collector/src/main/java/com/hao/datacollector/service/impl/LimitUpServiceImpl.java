@@ -78,7 +78,7 @@ public class LimitUpServiceImpl implements LimitUpService {
             }
             //非交易日无数据。
             // Corrected DateCache usage if it was incorrect
-            if (!DateCache.ThisYearTradeDateList.contains(DateUtil.parseToLocalDate(tradeTime, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT))) {
+            if (!DateCache.AllTradeDateList.contains(DateUtil.parseToLocalDate(tradeTime, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT))) {
                 log.warn("非交易日|Not_a_trade_date,tradeTime={}", tradeTime);
                 throw new BusinessException(4003, "非交易日_无数据|Not_a_trade_date,tradeTime=" + tradeTime);
             }
