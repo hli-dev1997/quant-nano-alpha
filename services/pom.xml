@@ -21,6 +21,7 @@
         <module>quant-risk-control</module>
         <module>quant-stock-list</module>
         <module>quant-strategy-engine</module>
+        <module>quant-signal-center</module>
         <module>quant-xxl-job</module>
     </modules>
 

@@ -75,7 +75,8 @@ public class LogConsumerService {
                     KafkaConstants.TOPIC_LOG_QUANT_DATA_COLLECTOR,
                     KafkaConstants.TOPIC_LOG_QUANT_STRATEGY_ENGINE,
                     KafkaConstants.TOPIC_LOG_QUANT_RISK_CONTROL,
-                    KafkaConstants.TOPIC_LOG_QUANT_STOCK_LIST, // 新增：股票列表服务日志
+                    KafkaConstants.TOPIC_LOG_QUANT_SIGNAL_CENTER, // 新增：信号中心服务日志
+                    KafkaConstants.TOPIC_LOG_QUANT_STOCK_LIST,
                     KafkaConstants.TOPIC_LOG_QUANT_DATA_ARCHIVE
             },
             groupId = KafkaConstants.GROUP_DATA_ARCHIVE,
@@ -418,8 +419,9 @@ public class LogConsumerService {
      * - 便于在消费链路中传递完整上下文。
      *
      * 核心实现思路：
-     * - 使用字段承载日志与元信息，提供访问器方法。
+     * - 使用字段承载日志与元信息，通过 Lombok 自动生成访问器方法。
      */
+    @lombok.Data
     public static class LogMessage {
         private String env;
         private String service;
@@ -440,57 +442,5 @@ public class LogConsumerService {
         private long kafkaOffset;
         private String kafkaKey;
         private LocalDateTime consumeTime;
-
-        // 访问器方法
-        public String getEnv() { return env; }
-        public void setEnv(String env) { this.env = env; }
-        
-        public String getService() { return service; }
-        public void setService(String service) { this.service = service; }
-        
-        public String getHostname() { return hostname; }
-        public void setHostname(String hostname) { this.hostname = hostname; }
-        
-        public String getIp() { return ip; }
-        public void setIp(String ip) { this.ip = ip; }
-        
-        public String getPort() { return port; }
-        public void setPort(String port) { this.port = port; }
-        
-        public String getLevel() { return level; }
-        public void setLevel(String level) { this.level = level; }
-        
-        public String getThread() { return thread; }
-        public void setThread(String thread) { this.thread = thread; }
-        
-        public String getLogger() { return logger; }
-        public void setLogger(String logger) { this.logger = logger; }
-        
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        
-        public String getException() { return exception; }
-        public void setException(String exception) { this.exception = exception; }
-        
-        public LocalDateTime getTimestamp() { return timestamp; }
-        public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-        
-        public String getInstanceId() { return instanceId; }
-        public void setInstanceId(String instanceId) { this.instanceId = instanceId; }
-        
-        public String getKafkaTopic() { return kafkaTopic; }
-        public void setKafkaTopic(String kafkaTopic) { this.kafkaTopic = kafkaTopic; }
-        
-        public int getKafkaPartition() { return kafkaPartition; }
-        public void setKafkaPartition(int kafkaPartition) { this.kafkaPartition = kafkaPartition; }
-        
-        public long getKafkaOffset() { return kafkaOffset; }
-        public void setKafkaOffset(long kafkaOffset) { this.kafkaOffset = kafkaOffset; }
-        
-        public String getKafkaKey() { return kafkaKey; }
-        public void setKafkaKey(String kafkaKey) { this.kafkaKey = kafkaKey; }
-        
-        public LocalDateTime getConsumeTime() { return consumeTime; }
-        public void setConsumeTime(LocalDateTime consumeTime) { this.consumeTime = consumeTime; }
     }
 }

@@ -87,5 +87,19 @@ public class RedisKeyConstants {
      * 过期时间: 24小时
      */
     public static final String MA_PREHEAT_PREFIX = "MA:PREHEAT:";
+
+    // ==================== 信号中心 Redis Key ====================
+
+    /**
+     * 市场情绪分数缓存 Key
+     * 由 quant-risk-control 更新，信号中心查询
+     */
+    public static final String MARKET_SENTIMENT_SCORE = "market:sentiment:score";
+
+    /**
+     * 股票信号列表缓存 Key 前缀
+     * 格式：stock:signal:list:{策略名}:{交易日}
+     */
+    public static final String STOCK_SIGNAL_LIST_PREFIX = "stock:signal:list:";
 }
 

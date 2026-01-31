@@ -1,47 +1,116 @@
 package com.hao.quant.stocklist.controller.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 类说明 / Class Description:
- * 中文：返回给前端的股票视图对象。
- * English: Stock view object returned to frontend.
+ * 中文：股票信号视图对象，用于 API 返回。
+ * English: Stock signal view object for API response.
  *
  * 设计目的 / Design Purpose:
- * 中文：通过值对象封装，避免外部修改内部结构。VO 放在 controller 下，表示是展示层的数据结构。
- * English: Encapsulated as value object to prevent external modification. VO under controller indicates presentation layer data structure.
+ * 中文：与信号中心的 StockSignal 实体字段兼容，支持从 Redis 缓存反序列化。
+ * English: Compatible with StockSignal entity fields from signal center, supporting deserialization from Redis cache.
+ *
+ * 字段说明：
+ * - 基础字段：直接对应 StockSignal 实体
+ * - 扩展字段：预留给股票基本面数据（如行业、市值等）
  */
-@Value
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StablePicksVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** 策略标识 */
-    String strategyId;
-    /** 股票代码 */
-    String stockCode;
-    /** 股票名称 */
-    String stockName;
-    /** 所属行业 */
-    String industry;
-    /** 综合得分 */
-    BigDecimal score;
-    /** 排名 */
-    Integer ranking;
-    /** 流通市值 */
-    BigDecimal marketCap;
-    /** 市盈率 */
-    BigDecimal peRatio;
-    /** 交易日期 */
-    LocalDate tradeDate;
-    /** 扩展信息 JSON 字符串 */
-    String extraData;
+    // ==================== 来自 StockSignal 实体的核心字段 ====================
+
+    /**
+     * 主键ID
+     */
+    private Long id;
+
+    /**
+     * 股票代码
+     * 格式如：000001.SZ、600519.SH
+     */
+    private String windCode;
+
+    /**
+     * 股票名称
+     */
+    private String stockName;
+
+    /**
+     * 策略名称
+     * 如：RED_NINE_TURN、BULLISH_MA
+     */
+    private String strategyName;
+
+    /**
+     * 信号类型
+     * BUY-买入 / SELL-卖出
+     */
+    private String signalType;
+
+    /**
+     * 触发价格
+     */
+    private Double triggerPrice;
+
+    /**
+     * 信号触发时间
+     */
+    private LocalDateTime signalTime;
+
+    /**
+     * 交易日
+     */
+    private LocalDate tradeDate;
+
+    /**
+     * 展示状态
+     * 1-通过 / 0-拦截 / -1-中性
+     */
+    private Integer showStatus;
+
+    /**
+     * 风控分数快照
+     */
+    private Integer riskSnapshot;
+
+    // ==================== 预留扩展字段（股票基本面数据） ====================
+
+    /**
+     * 所属行业
+     * 预留字段，后续从股票基本面数据补充
+     */
+    private String industry;
+
+    /**
+     * 流通市值（亿元）
+     * 预留字段
+     */
+    private Double marketCap;
+
+    /**
+     * 市盈率
+     * 预留字段
+     */
+    private Double peRatio;
+
+    /**
+     * 综合评分
+     * 预留字段，可扩展为多因子打分
+     */
+    private Double score;
 }

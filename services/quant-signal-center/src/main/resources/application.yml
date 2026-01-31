@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: quant-signal-center
+  profiles:
+    active: dev
+  # 虚拟线程开启
+  threads:
+    virtual:
+      enabled: true
+  # ==================== Nacos 配置 ====================
+  cloud:
+    nacos:
+      # nacos 服务端地址及端口
+      server-addr: 127.0.0.1:7000
+      # 登录页面账号和密码
+      username: nacos
+      password: nacos
+      config:
+        # nacos 可以以命名空间作为不同环境依据 (默认 dev)
+        namespace: ${spring.profiles.active:dev}
+        group: quant-signal-center
+      discovery:
+        namespace: ${spring.profiles.active:dev}
+    sentinel:
+      transport:
+        dashboard: localhost:7003
+        # 强制指定本机 IP，解决 Dashboard 连不上微服务的问题
+        client-ip: 127.0.0.1
+      # 默认懒加载机制，这里显式指定直接连接就显示在控制台
+      eager: true
+  config:
+    import:
+      - nacos:application-dev.yml
+
+# 应用上下文
+server:
+  servlet:
+    context-path: /signal-center
+  port: 8807

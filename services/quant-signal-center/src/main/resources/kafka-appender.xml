@@ -1,0 +1,56 @@
+<!--
+    kafka-appender.xml - Kafka 日志追加器配置 (信号中心)
+    配置规范版本: 1.0.0
+-->
+<included>
+
+    <!-- ==================== Spring 属性注入 ==================== -->
+    <springProperty scope="context" name="service" source="spring.application.name" defaultValue="signal-center"/>
+    <springProperty scope="context" name="topic" source="logging.kafka.topic" defaultValue="log-quant-signal-center"/>
+    <springProperty scope="context" name="env" source="spring.profiles.active" defaultValue="dev"/>
+    <springProperty scope="context" name="bootstrapServers" source="spring.kafka.bootstrap-servers"
+                    defaultValue="192.168.254.2:9092,192.168.254.3:9092,192.168.254.4:9092"/>
+    <springProperty scope="context" name="hostPort" source="server.port" defaultValue="8807"/>
+
+    <property name="hostIp" value="${HOST_IP:-unknown}"/>
+
+    <!-- ==================== Kafka Appender 配置 ==================== -->
+    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers class="net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders">
+                <pattern>
+                    <pattern>
+                        {
+                        "env": "${env}",
+                        "service": "${service}",
+                        "ip": "${hostIp}",
+                        "port": "${hostPort}",
+                        "level": "%level",
+                        "thread": "%thread",
+                        "logger": "%logger{36}",
+                        "timestamp": "%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}",
+                        "message": "%msg",
+                        "exception": "%exception"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+
+        <topic>${topic}</topic>
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy"/>
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+
+        <!-- Kafka Producer 配置 -->
+        <producerConfig>bootstrap.servers=${bootstrapServers}</producerConfig>
+        <producerConfig>acks=all</producerConfig>
+        <producerConfig>retries=2147483647</producerConfig>
+        <producerConfig>enable.idempotence=true</producerConfig>
+        <producerConfig>max.in.flight.requests.per.connection=5</producerConfig>
+        <producerConfig>linger.ms=5</producerConfig>
+        <producerConfig>batch.size=32768</producerConfig>
+        <producerConfig>buffer.memory=67108864</producerConfig>
+        <producerConfig>compression.type=snappy</producerConfig>
+    </appender>
+
+</included>

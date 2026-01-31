@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hao.signalcenter.mapper.StockSignalMapper">
+
+    <!-- 通用结果映射 -->
+    <resultMap id="BaseResultMap" type="com.hao.signalcenter.model.StockSignal">
+        <id property="id" column="id"/>
+        <result property="windCode" column="wind_code"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="strategyName" column="strategy_name"/>
+        <result property="signalType" column="signal_type"/>
+        <result property="triggerPrice" column="trigger_price"/>
+        <result property="signalTime" column="signal_time"/>
+        <result property="tradeDate" column="trade_date"/>
+        <result property="showStatus" column="show_status"/>
+        <result property="riskSnapshot" column="risk_snapshot"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, wind_code, stock_name, strategy_name, signal_type,
+        trigger_price, signal_time, trade_date, show_status, risk_snapshot,
+        create_time, update_time
+    </sql>
+
+    <!-- 幂等插入/更新信号 -->
+    <insert id="upsert" parameterType="com.hao.signalcenter.model.StockSignal">
+        INSERT INTO quant_stock_signal (
+            wind_code, stock_name, strategy_name, signal_type,
+            trigger_price, signal_time, trade_date, show_status, risk_snapshot
+        ) VALUES (
+            #{windCode}, #{stockName}, #{strategyName}, #{signalType},
+            #{triggerPrice}, #{signalTime}, #{tradeDate}, #{showStatus}, #{riskSnapshot}
+        ) ON DUPLICATE KEY UPDATE
+            stock_name = VALUES(stock_name),
+            signal_type = VALUES(signal_type),
+            trigger_price = VALUES(trigger_price),
+            signal_time = VALUES(signal_time),
+            show_status = VALUES(show_status),
+            risk_snapshot = VALUES(risk_snapshot),
+            update_time = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 查询指定策略和交易日通过的信号列表 -->
+    <select id="selectPassedSignals" resultMap="BaseResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM quant_stock_signal
+        WHERE strategy_name = #{strategyName}
+          AND trade_date = #{tradeDate}
+          AND show_status = 1
+        ORDER BY signal_time DESC
+    </select>
+
+    <!-- 查询指定交易日所有通过的信号列表 -->
+    <select id="selectAllPassedSignalsByDate" resultMap="BaseResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>
+        FROM quant_stock_signal
+        WHERE trade_date = #{tradeDate}
+          AND show_status = 1
+        ORDER BY signal_time DESC
+    </select>
+
+</mapper>

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.lang.NonNull;
 
 /**
  * 主机名初始化监听器
@@ -22,7 +23,7 @@ public class HostnameInitListener implements ApplicationListener<ApplicationEnvi
     private static volatile boolean initialized = false;
 
     @Override
-    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+    public void onApplicationEvent(@NonNull ApplicationEnvironmentPreparedEvent event) {
         if (initialized) {
             return;
         }

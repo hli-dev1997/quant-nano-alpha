@@ -100,11 +100,14 @@ public class DateTimeFormatConstants {
     public static final String YEAR_FORMAT = "yyyy";
 
     /**
+     * 上海时区标识
+     */
+    public static final String SHANG_HAI = "Asia/Shanghai";
+
+    /**
      * 私有构造函数，防止实例化
      */
     private DateTimeFormatConstants() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }
-
-    public static final String SHANG_HAI = "Asia/Shanghai";
 }

@@ -20,12 +20,16 @@ public final class KafkaConstants {
     // 主题编码（指数行情）
     public static final String TOPIC_QUOTATION_INDEX = "quotation-index";
 
+    // 主题编码（策略信号）- 策略引擎发送，信号中心消费
+    public static final String TOPIC_STRATEGY_SIGNAL = "stock-strategy-signal";
+
     // 主题编码（各服务日志流）
     public static final String TOPIC_LOG_SERVICE_ORDER = "log-service-order";
     public static final String TOPIC_LOG_QUANT_XXL_JOB = "log-quant-xxl-job";
     public static final String TOPIC_LOG_QUANT_DATA_COLLECTOR = "log-quant-data-collector";
     public static final String TOPIC_LOG_QUANT_STRATEGY_ENGINE = "log-quant-strategy-engine";
     public static final String TOPIC_LOG_QUANT_RISK_CONTROL = "log-quant-risk-control";
+    public static final String TOPIC_LOG_QUANT_SIGNAL_CENTER = "log-quant-signal-center"; // 新增：信号中心服务日志
     public static final String TOPIC_LOG_QUANT_STOCK_LIST = "log-quant-stock-list"; // 新增：股票列表服务日志
     public static final String TOPIC_LOG_QUANT_DATA_ARCHIVE = "log-quant-data-archive";
 
@@ -33,6 +37,8 @@ public final class KafkaConstants {
     public static final String GROUP_DATA_ARCHIVE = "data-archive-group";
     // 消费组（风控服务）
     public static final String GROUP_RISK_CONTROL = "risk-control-group";
+    // 消费组（信号中心）
+    public static final String GROUP_SIGNAL_CENTER = "signal-center-group";
     // 可按需扩展：public static final String GROUP_STRATEGY_ENGINE = "strategy-engine-group";
 
     // Bean 名称
@@ -135,6 +141,12 @@ public final class KafkaConstants {
                 TOPIC_LOG_QUANT_RISK_CONTROL,
                 "风控服务日志",
                 "quant-risk-control 服务运行日志与风控事件",
+                KafkaTopics.Category.BOTH
+        ));
+        m.put(TOPIC_LOG_QUANT_SIGNAL_CENTER, new TopicMeta(
+                TOPIC_LOG_QUANT_SIGNAL_CENTER,
+                "信号中心服务日志",
+                "quant-signal-center 服务运行日志与信号处理事件",
                 KafkaTopics.Category.BOTH
         ));
         m.put(TOPIC_LOG_QUANT_STOCK_LIST, new TopicMeta(

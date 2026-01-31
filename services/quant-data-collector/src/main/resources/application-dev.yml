@@ -63,32 +63,3 @@ logging:
     com.hao.datacollector: debug
     org.springframework.kafka: INFO
     com.github.danielwegener.logback.kafka: WARN
-
-# ==================== Replay 配置 ====================
-replay:
-  # 是否启用回放模式（默认关闭）
-  enabled: false
-
-  # 回放起始日期（格式：yyyyMMdd）
-  start-date: "20250101"
-
-  # 回放结束日期（格式：yyyyMMdd）
-  end-date: "20250101"
-
-  # 回放速度倍数
-  # 1 = 实时（1秒推送1秒的数据）
-  # 10 = 10倍速（1秒推送10秒的数据）
-  # 0 = 最快速度（无延迟持续推送）
-  speed-multiplier: 10
-
-  # 每次预加载的时间片长度（分钟）
-  # 建议值：5-10分钟
-  preload-minutes: 5
-
-  # 缓冲区最大数据条数
-  # 超过此值时预加载线程将暂停等待
-  buffer-max-size: 100000
-
-  # 指定股票代码（可选，逗号分隔）
-  # 为空时回放全市场数据
-  # stock-codes: "600519.SH,000001.SZ"

@@ -9,8 +9,10 @@ import enums.market.RiskMarketIndexEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *     <li>缓存各指数当天第一条行情作为基准价（替代 Redis 昨收价）</li>
  *     <li>调用 RiskMarketIndexEnum 计算综合涨跌幅</li>
  *     <li>调用 MarketSentimentScorer 评估风险区间</li>
+ *     <li>定时推送市场情绪分数到 Redis（供信号中心使用）</li>
  * </ol>
  *
  * @author hli
@@ -37,6 +40,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MarketSentimentServiceImpl implements MarketSentimentService {
 
     private final StringRedisTemplate redisTemplate;
+
+    /**
+     * Redis Key：市场情绪分数
+     * 与信号中心的 RiskControlClient 保持一致
+     */
+    private static final String REDIS_KEY_SENTIMENT_SCORE = "market:sentiment:score";
+
+    /**
+     * 分数缓存过期时间：5 分钟
+     * 即使定时任务失败，最多 5 分钟后 Key 过期
+     */
+    private static final Duration SCORE_TTL = Duration.ofMinutes(5);
 
     /**
      * 当前各指数实时价格缓存
@@ -121,6 +136,46 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
         currentTradeDate = null;
         lastUpdateTime = null;
         log.info("市场情绪服务已重置|Market_sentiment_service_reset");
+    }
+
+    /**
+     * 定时推送市场情绪分数到 Redis
+     * <p>
+     * 定时任务间隔：每 10 秒执行一次
+     * <p>
+     * 推送目的：
+     * 供信号中心（quant-signal-center）实时读取，用于风控判断。
+     * 使用 Redis 作为中间层实现跨服务的实时数据共享。
+     * <p>
+     * 容错设计：
+     * 1. 无数据时不推送（避免覆盖有效数据）
+     * 2. 设置 5 分钟过期时间（任务失败时自动降级）
+     * 3. 推送失败只记录日志，不抛出异常
+     */
+    @Scheduled(fixedRate = 10000)
+    public void pushScoreToRedis() {
+        try {
+            // 无数据时不推送
+            if (currentPriceMap.isEmpty()) {
+                return;
+            }
+
+            int score = calculateCurrentScore();
+
+            // 推送到 Redis
+            redisTemplate.opsForValue().set(
+                    REDIS_KEY_SENTIMENT_SCORE,
+                    String.valueOf(score),
+                    SCORE_TTL
+            );
+
+            log.debug("市场情绪分数已推送|Sentiment_score_pushed,score={},zone={}",
+                    score, ScoreZone.matchZone(score).getName());
+
+        } catch (Exception e) {
+            log.error("市场情绪分数推送失败|Sentiment_score_push_failed", e);
+            // 不抛出异常，避免定时任务中断
+        }
     }
 
     /**

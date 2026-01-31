@@ -11,30 +11,48 @@
     </parent>
 
     <groupId>com.hli</groupId>
-    <artifactId>quant-stock-list</artifactId>
+    <artifactId>quant-signal-center</artifactId>
     <packaging>jar</packaging>
-    <name>quant-stock-list</name>
-    <description>量化交易-股票精选查询服务（基础版）</description>
+    <name>quant-signal-center</name>
+    <description>量化交易-信号中心（核心枢纽）
+        职责：
+        - 消费 Kafka 策略信号
+        - 旁路查询风控分数
+        - 幂等落库 MySQL
+        - 主动推送 Redis 缓存
+    </description>
 
     <dependencies>
-        <!-- ==================== Redis 基础集成 ==================== -->
+        <!-- ==================== Web 框架 ==================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- ==================== MySQL/MyBatis 基础集成 ==================== -->
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+        <!-- ==================== 数据访问与缓存 ==================== -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        <!-- Redisson 分布式锁 -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+        </dependency>
 
-        <!-- ==================== Kafka 基础集成 ==================== -->
+        <!-- ==================== 消息队列 ==================== -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -50,32 +68,11 @@
             <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
 
-        <!-- ==================== 文档与API ==================== -->
+        <!-- ==================== 公共模块 ==================== -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-        </dependency>
-
-        <!-- ==================== 工具类 ==================== -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-        <!-- ==================== 本地缓存（Caffeine L1） ==================== -->
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-        </dependency>
-
-        <!-- ==================== 分布式锁（Redisson） ==================== -->
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
+            <groupId>com.hli</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
