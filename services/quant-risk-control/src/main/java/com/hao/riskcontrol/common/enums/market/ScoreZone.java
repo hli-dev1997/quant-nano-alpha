@@ -196,11 +196,17 @@ public enum ScoreZone {
      * @return 匹配的评分区间
      */
     public static ScoreZone matchZone(int compositeScore) {
-        return Arrays.stream(values())
+        ScoreZone zone = Arrays.stream(values())
                 .sorted(Comparator.comparingInt(ScoreZone::getLowerBound).reversed())
-                .filter(zone -> zone.contains(compositeScore))
+                .filter(z -> z.contains(compositeScore))
                 .findFirst()
                 .orElse(STRONG_BEARISH);
+        
+        // [TRACE-13] 区间匹配
+        log.info("[TRACE-13] 区间匹配|Zone_matched,compositeScore={},zone={},hint={}",
+                compositeScore, zone.getName(), zone.getOperationHint());
+        
+        return zone;
     }
 
     /**

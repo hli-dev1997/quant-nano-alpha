@@ -1,8 +1,11 @@
 package com.hao.riskcontrol.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hao.riskcontrol.common.enums.market.MarketSentimentScorer;
 import com.hao.riskcontrol.common.enums.market.ScoreZone;
 import com.hao.riskcontrol.dto.quotation.IndexQuotationDTO;
+import com.hao.riskcontrol.dto.sentiment.MarketSentimentDTO;
 import com.hao.riskcontrol.service.MarketSentimentService;
 import constants.RedisKeyConstants;
 import enums.market.RiskMarketIndexEnum;
@@ -40,12 +43,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MarketSentimentServiceImpl implements MarketSentimentService {
 
     private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
 
     /**
      * Redis Key：市场情绪分数
      * 与信号中心的 RiskControlClient 保持一致
      */
-    private static final String REDIS_KEY_SENTIMENT_SCORE = "market:sentiment:score";
+    private static final String REDIS_KEY_SENTIMENT_SCORE = RedisKeyConstants.MARKET_SENTIMENT_SCORE;
 
     /**
      * 分数缓存过期时间：5 分钟
@@ -73,14 +77,27 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
     private volatile LocalDate currentTradeDate;
 
     /**
+     * 价格更新标记
+     * true：价格已更新，需要重新计算并推送
+     * false：价格未更新，跳过本次定时任务
+     */
+    private volatile boolean priceUpdated = false;
+
+    /**
      * 最后更新时间
      */
     private volatile LocalDateTime lastUpdateTime;
 
     @Override
     public void updateIndexPrice(IndexQuotationDTO dto) {
+        // [TRACE-04] 价格更新开始
+        log.info("[TRACE-04] 价格更新开始|Price_update_start,windCode={},latestPrice={},tradeDate={}",
+                dto != null ? dto.getWindCode() : "null",
+                dto != null ? dto.getLatestPrice() : "null",
+                dto != null ? dto.getTradeDate() : "null");
+
         if (dto == null || dto.getWindCode() == null || dto.getLatestPrice() == null) {
-            log.warn("更新指数价格参数无效|Update_index_price_invalid,dto={}", dto);
+            log.warn("[TRACE-WARN] 更新指数价格参数无效|Update_index_price_invalid,dto={}", dto);
             return;
         }
 
@@ -90,7 +107,7 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
 
         // 判断是否跨交易日，如果是则清空缓存
         if (currentTradeDate == null || !currentTradeDate.equals(tradeDate)) {
-            log.info("检测到新交易日|New_trade_date_detected,oldDate={},newDate={}", currentTradeDate, tradeDate);
+            log.info("[TRACE-INFO] 检测到新交易日|New_trade_date_detected,oldDate={},newDate={}", currentTradeDate, tradeDate);
             firstPriceMap.clear();
             currentPriceMap.clear();
             currentTradeDate = tradeDate;
@@ -99,23 +116,28 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
         // 缓存当天第一条行情作为基准价（只存第一条）
         if (!firstPriceMap.containsKey(windCode)) {
             firstPriceMap.put(windCode, latestPrice);
-            log.info("第一条指数行情已缓存|First_index_price_cached,windCode={},price={},date={},totalCached={}",
+            log.info("[TRACE-INFO] 第一条指数行情已缓存|First_index_price_cached,windCode={},price={},date={},totalCached={}",
                     windCode, latestPrice, tradeDate, firstPriceMap.size());
         }
 
         // 更新当前实时价格
         currentPriceMap.put(windCode, latestPrice);
         lastUpdateTime = dto.getTradeDate();
+        priceUpdated = true;  // 标记价格已更新
 
-        // 计算涨跌幅并输出
+        // [TRACE-05] 价格缓存更新完成
         Double basePrice = firstPriceMap.get(windCode);
+        double changePercent = 0.0;
         if (basePrice != null && basePrice > 0) {
-            double changePercent = (latestPrice - basePrice) / basePrice * 100;
-            log.info("指数行情更新|Index_update,windCode={},base={},current={},change={}",
-                    windCode, String.format("%.2f", basePrice), 
-                    String.format("%.2f", latestPrice), 
-                    String.format("%.2f%%", changePercent));
+            changePercent = (latestPrice - basePrice) / basePrice * 100;
         }
+        log.info("[TRACE-05] 价格缓存更新|Price_cached,windCode={},base={},current={},change={}%,currentMapSize={},firstMapSize={}",
+                windCode,
+                basePrice != null ? String.format("%.2f", basePrice) : "N/A",
+                String.format("%.2f", latestPrice),
+                String.format("%.2f", changePercent),
+                currentPriceMap.size(),
+                firstPriceMap.size());
     }
 
     @Override
@@ -141,7 +163,7 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
     /**
      * 定时推送市场情绪分数到 Redis
      * <p>
-     * 定时任务间隔：每 10 秒执行一次
+     * 定时任务间隔：每 1 秒执行一次
      * <p>
      * 推送目的：
      * 供信号中心（quant-signal-center）实时读取，用于风控判断。
@@ -152,28 +174,62 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
      * 2. 设置 5 分钟过期时间（任务失败时自动降级）
      * 3. 推送失败只记录日志，不抛出异常
      */
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 1000)
     public void pushScoreToRedis() {
         try {
             // 无数据时不推送
             if (currentPriceMap.isEmpty()) {
+                log.debug("[TRACE-06] 定时任务跳过|Scheduled_skip,reason=no_price_data");
                 return;
             }
 
-            int score = calculateCurrentScore();
+            // 价格未更新时跳过推送
+            if (!priceUpdated) {
+                log.debug("[TRACE-06] 定时任务跳过|Scheduled_skip,reason=price_not_updated");
+                return;
+            }
 
-            // 推送到 Redis
+            // [TRACE-06] 定时任务触发
+            log.info("[TRACE-06] 定时任务触发|Scheduled_push_triggered,currentPriceCount={},firstPriceCount={}",
+                    currentPriceMap.size(), firstPriceMap.size());
+
+            long startTime = System.currentTimeMillis();
+            int rawChange = calculateCurrentScore();
+            long calcElapsed = System.currentTimeMillis() - startTime;
+
+            // 转换为百分制分数并获取区间信息
+            int percentageScore = MarketSentimentScorer.convertToPercentageScore(rawChange);
+            ScoreZone zone = ScoreZone.matchZone(rawChange);
+
+            // 构建 DTO
+            MarketSentimentDTO dto = MarketSentimentDTO.builder()
+                    .score(percentageScore)
+                    .rawChange(rawChange)
+                    .zoneName(zone.getName())
+                    .suggestion(zone.getOperationHint())
+                    .timestamp(System.currentTimeMillis())
+                    .formattedChange(String.format("%+.2f%%", rawChange / 100.0))
+                    .build();
+
+            // 序列化为 JSON 并推送到 Redis
+            String jsonValue = objectMapper.writeValueAsString(dto);
             redisTemplate.opsForValue().set(
                     REDIS_KEY_SENTIMENT_SCORE,
-                    String.valueOf(score),
+                    jsonValue,
                     SCORE_TTL
             );
 
-            log.debug("市场情绪分数已推送|Sentiment_score_pushed,score={},zone={}",
-                    score, ScoreZone.matchZone(score).getName());
+            // 重置更新标记
+            priceUpdated = false;
 
+            // [TRACE-09] Redis 推送完成
+            log.info("[TRACE-09] Redis推送完成|Redis_push_done,key={},score={},rawChange={},zone={},hint={},calcElapsedMs={}",
+                    REDIS_KEY_SENTIMENT_SCORE, percentageScore, rawChange, zone.getName(), zone.getOperationHint(), calcElapsed);
+
+        } catch (JsonProcessingException e) {
+            log.error("[TRACE-ERROR] JSON序列化失败|Json_serialization_failed", e);
         } catch (Exception e) {
-            log.error("市场情绪分数推送失败|Sentiment_score_push_failed", e);
+            log.error("[TRACE-ERROR] 市场情绪分数推送失败|Sentiment_score_push_failed", e);
             // 不抛出异常，避免定时任务中断
         }
     }
@@ -189,7 +245,7 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
      */
     private int calculateCurrentScore() {
         if (currentPriceMap.isEmpty()) {
-            log.info("当前无指数价格数据，返回0|No_index_price_data");
+            log.info("[TRACE-07] 当前无指数价格数据，返回0|No_index_price_data");
             return 0;
         }
 
@@ -208,18 +264,21 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
         }
 
         if (indexPreCloseMap.isEmpty()) {
-            log.warn("无法获取基准价数据，返回0|No_base_price_data");
+            log.warn("[TRACE-WARN] 无法获取基准价数据，返回0|No_base_price_data");
             return 0;
         }
 
-        log.info("开始计算综合评分|Calc_score_start,date={},indexCount={},basePriceCount={}",
+        // [TRACE-07] 开始计算综合分数
+        log.info("[TRACE-07] 开始计算综合分数|Score_calc_start,date={},indexCount={},basePriceCount={}",
                 today, indexPriceMap.size(), indexPreCloseMap.size());
 
         // 调用核心计算方法
         int score = RiskMarketIndexEnum.calculateCompositeScore(today, indexPriceMap, indexPreCloseMap);
-        String zone = ScoreZone.matchZone(score).getName();
+        ScoreZone zone = ScoreZone.matchZone(score);
 
-        log.info("综合评分计算完成|Score_calculated,score={},zone={},date={}", score, zone, today);
+        // [TRACE-08] 综合分数计算完成
+        log.info("[TRACE-08] 综合分数计算完成|Score_calc_done,score={},zone={},hint={},date={}",
+                score, zone.getName(), zone.getOperationHint(), today);
 
         return score;
     }

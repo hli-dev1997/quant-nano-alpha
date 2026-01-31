@@ -46,19 +46,32 @@ public class IndexQuotationConsumer {
             containerFactory = KafkaConstants.LISTENER_CONTAINER_FACTORY
     )
     public void consume(ConsumerRecord<String, String> record, Acknowledgment ack) {
+        long startTime = System.currentTimeMillis();
         IndexQuotationDTO dto = null;
         try {
+            // [TRACE-01] Kafka 消息接收
+            log.info("[TRACE-01] 收到Kafka消息|Kafka_msg_received,topic={},partition={},offset={},key={}",
+                    record.topic(), record.partition(), record.offset(), record.key());
+
             String message = record.value();
 
             // 解析 JSON 为 IndexQuotationDTO
             dto = objectMapper.readValue(message, IndexQuotationDTO.class);
-            log.info("收到指数行情消息|Index_quotation_received,dto={}", objectMapper.writeValueAsString(dto));
+
+            // [TRACE-02] 消息解析完成
+            log.info("[TRACE-02] 消息解析完成|Msg_parsed,windCode={},latestPrice={},tradeDate={}",
+                    dto.getWindCode(), dto.getLatestPrice(), dto.getTradeDate());
 
             // 更新指数价格（直接传递 DTO 对象）
             marketSentimentService.updateIndexPrice(dto);
+
+            // [TRACE-03] 下游调用完成
+            long elapsed = System.currentTimeMillis() - startTime;
+            log.info("[TRACE-03] 价格更新完成|UpdateIndexPrice_done,windCode={},elapsedMs={}",
+                    dto.getWindCode(), elapsed);
         } catch (Exception e) {
             String windCode = dto != null ? dto.getWindCode() : "unknown";
-            log.error("处理指数行情失败|Index_quotation_process_error,windCode={},offset={},partition={},error={}",
+            log.error("[TRACE-ERROR] 处理指数行情失败|Index_quotation_process_error,windCode={},offset={},partition={},error={}",
                     windCode, record.offset(), record.partition(), e.getMessage(), e);
         } finally {
             // 无论成功失败都提交 offset
