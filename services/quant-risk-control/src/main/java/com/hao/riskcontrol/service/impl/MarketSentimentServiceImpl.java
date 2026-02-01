@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hao.riskcontrol.common.enums.market.MarketSentimentScorer;
 import com.hao.riskcontrol.common.enums.market.ScoreZone;
 import com.hao.riskcontrol.dto.quotation.IndexQuotationDTO;
-import com.hao.riskcontrol.dto.sentiment.MarketSentimentDTO;
+import dto.risk.MarketSentimentDTO;
 import com.hao.riskcontrol.service.MarketSentimentService;
 import constants.RedisKeyConstants;
 import enums.market.RiskMarketIndexEnum;
@@ -201,17 +201,20 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
             int percentageScore = MarketSentimentScorer.convertToPercentageScore(rawChange);
             ScoreZone zone = ScoreZone.matchZone(rawChange);
 
-            // 构建 DTO
+            // 构建 DTO（设置过期时间 = 当前时间 + 3秒）
+            long now = System.currentTimeMillis();
             MarketSentimentDTO dto = MarketSentimentDTO.builder()
                     .score(percentageScore)
                     .rawChange(rawChange)
                     .zoneName(zone.getName())
                     .suggestion(zone.getOperationHint())
-                    .timestamp(System.currentTimeMillis())
+                    .timestamp(now)
+                    .expireTimestamp(now + MarketSentimentDTO.DEFAULT_TTL_MS)
                     .formattedChange(String.format("%+.2f%%", rawChange / 100.0))
                     .build();
 
-            // 序列化为 JSON 并推送到 Redis
+            // [FULL_CHAIN_STEP_11] 推送市场情绪分数到 Redis → 信号中心查询
+            // @see docs/architecture/FullChainDataFlow.md
             String jsonValue = objectMapper.writeValueAsString(dto);
             redisTemplate.opsForValue().set(
                     REDIS_KEY_SENTIMENT_SCORE,

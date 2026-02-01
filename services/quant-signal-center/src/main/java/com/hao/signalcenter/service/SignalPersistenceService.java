@@ -11,21 +11,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * 信号持久化服务 (Signal Persistence Service)
  * <p>
  * 类职责：
- * 将策略信号幂等写入 MySQL 数据库。
+ * 将策略信号追加写入 MySQL 数据库（流水模式）。
  * <p>
  * 使用场景：
  * Kafka 消费者收到信号后，经过风控判断，调用此服务落库。
  * <p>
  * 核心设计：
- * 1. 使用 INSERT ON DUPLICATE KEY UPDATE 实现幂等
- * 2. 即使同一股票同一策略重复信号也不会产生重复记录
- * 3. 更新时仅覆盖动态字段，保留首次创建时间
+ * 1. 追加模式 (Insert Mode)：同一股票+策略在同一天可多次触发
+ * 2. 唯一键 (wind_code, strategy_id, signal_time) 防止同一毫秒内并发重复
+ * 3. 保留完整信号流水，支持历史回测和信号稳定性分析
  *
  * @author hli
  * @date 2026-01-30
@@ -62,11 +63,11 @@ public class SignalPersistenceService {
         // 构建实体
         StockSignal signal = buildEntity(signalDTO, status, riskScore);
 
-        // 幂等落库
-        int affected = stockSignalMapper.upsert(signal);
+        // 追加落库（流水模式）
+        int affected = stockSignalMapper.insert(signal);
 
-        log.info("信号落库完成|Signal_persisted,code={},strategy={},status={},riskScore={},affected={}",
-                signal.getWindCode(), signal.getStrategyName(),
+        log.info("信号落库完成|Signal_persisted,code={},strategyId={},status={},riskScore={},affected={}",
+                signal.getWindCode(), signal.getStrategyId(),
                 status.getName(), riskScore, affected);
 
         return signal;
@@ -111,19 +112,22 @@ public class SignalPersistenceService {
         StockSignal signal = new StockSignal();
 
         signal.setWindCode(dto.getWindCode());
-        signal.setStockName(dto.getStockName());
-        signal.setStrategyName(dto.getStrategyName());
+        signal.setStrategyId(dto.getStrategyId());
         signal.setSignalType(dto.getSignalType());
         signal.setTriggerPrice(dto.getTriggerPrice());
-        signal.setSignalTime(dto.getSignalTime());
+        
+        // signalTime 必须非空（数据库 NOT NULL 约束）
+        LocalDateTime signalTime = dto.getSignalTime();
+        if (signalTime == null) {
+            signalTime = LocalDateTime.now();
+        }
+        signal.setSignalTime(signalTime);
 
-        // 解析交易日
+        // 解析交易日（从 signalTime 衍生）
         if (dto.getTradeDate() != null && !dto.getTradeDate().isBlank()) {
             signal.setTradeDate(LocalDate.parse(dto.getTradeDate(), DATE_FORMATTER));
-        } else if (dto.getSignalTime() != null) {
-            signal.setTradeDate(dto.getSignalTime().toLocalDate());
         } else {
-            signal.setTradeDate(LocalDate.now());
+            signal.setTradeDate(signalTime.toLocalDate());
         }
 
         signal.setShowStatus(status.getCode());

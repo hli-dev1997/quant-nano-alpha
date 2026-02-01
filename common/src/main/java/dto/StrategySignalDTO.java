@@ -35,17 +35,11 @@ public class StrategySignalDTO implements Serializable {
     private String windCode;
 
     /**
-     * 股票名称
-     * 如：平安银行、贵州茅台
+     * 策略ID
+     * 对应 StrategyMetaEnum.id
+     * 如：NINE_TURN_RED、NINE_TURN_GREEN、MA_BULLISH
      */
-    private String stockName;
-
-    /**
-     * 策略名称
-     * 对应 StrategyMetaEnum 中的策略标识
-     * 如：RED_NINE_TURN、GREEN_NINE_TURN、BULLISH_MA
-     */
-    private String strategyName;
+    private String strategyId;
 
     /**
      * 信号类型
@@ -82,6 +76,16 @@ public class StrategySignalDTO implements Serializable {
     private String tradeDate;
 
     /**
+     * 链路追踪ID
+     * <p>
+     * 格式: yyyyMMdd_HHmmss（如: 20260101_093000）
+     * 从行情DTO中透传，用于全链路日志追踪
+     *
+     * @see docs/architecture/FullChainDataFlow.md
+     */
+    private String traceId;
+
+    /**
      * 默认构造函数
      */
     public StrategySignalDTO() {
@@ -97,20 +101,12 @@ public class StrategySignalDTO implements Serializable {
         this.windCode = windCode;
     }
 
-    public String getStockName() {
-        return stockName;
+    public String getStrategyId() {
+        return strategyId;
     }
 
-    public void setStockName(String stockName) {
-        this.stockName = stockName;
-    }
-
-    public String getStrategyName() {
-        return strategyName;
-    }
-
-    public void setStrategyName(String strategyName) {
-        this.strategyName = strategyName;
+    public void setStrategyId(String strategyId) {
+        this.strategyId = strategyId;
     }
 
     public String getSignalType() {
@@ -153,17 +149,25 @@ public class StrategySignalDTO implements Serializable {
         this.tradeDate = tradeDate;
     }
 
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
     @Override
     public String toString() {
         return "StrategySignalDTO{" +
                 "windCode='" + windCode + '\'' +
-                ", stockName='" + stockName + '\'' +
-                ", strategyName='" + strategyName + '\'' +
+                ", strategyId='" + strategyId + '\'' +
                 ", signalType='" + signalType + '\'' +
                 ", signalTime=" + signalTime +
                 ", triggerPrice=" + triggerPrice +
                 ", riskLevel='" + riskLevel + '\'' +
                 ", tradeDate='" + tradeDate + '\'' +
+                ", traceId='" + traceId + '\'' +
                 '}';
     }
 
@@ -185,13 +189,8 @@ public class StrategySignalDTO implements Serializable {
             return this;
         }
 
-        public Builder stockName(String stockName) {
-            dto.setStockName(stockName);
-            return this;
-        }
-
-        public Builder strategyName(String strategyName) {
-            dto.setStrategyName(strategyName);
+        public Builder strategyId(String strategyId) {
+            dto.setStrategyId(strategyId);
             return this;
         }
 
@@ -217,6 +216,11 @@ public class StrategySignalDTO implements Serializable {
 
         public Builder tradeDate(String tradeDate) {
             dto.setTradeDate(tradeDate);
+            return this;
+        }
+
+        public Builder traceId(String traceId) {
+            dto.setTraceId(traceId);
             return this;
         }
 

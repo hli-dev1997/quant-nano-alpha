@@ -82,11 +82,11 @@ public class KafkaConsumerService {
                 windowStart = now;
             }
 
-            // TODO STOP 6: 策略模块Kafka消费入口 - 收到股票行情数据
-            // 解析消息为 HistoryTrendDTO
+            // [FULL_CHAIN_STEP_06] 策略引擎消费股票行情 - 解析 Kafka 消息
+            // @see docs/architecture/FullChainDataFlow.md
             dto = objectMapper.readValue(message, HistoryTrendDTO.class);
 
-            // 调用策略调度器分发给所有策略（异步并行执行）
+            // [FULL_CHAIN_STEP_07] 策略调度器并行分发给所有策略
             strategyDispatcher.dispatch(dto);
 
         } catch (Exception e) {

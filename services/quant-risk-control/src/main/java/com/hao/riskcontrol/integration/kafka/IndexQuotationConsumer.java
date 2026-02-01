@@ -55,7 +55,8 @@ public class IndexQuotationConsumer {
 
             String message = record.value();
 
-            // 解析 JSON 为 IndexQuotationDTO
+            // [FULL_CHAIN_STEP_10] 风控模块消费指数行情 - 解析并更新内存价格
+            // @see docs/architecture/FullChainDataFlow.md
             dto = objectMapper.readValue(message, IndexQuotationDTO.class);
 
             // [TRACE-02] 消息解析完成

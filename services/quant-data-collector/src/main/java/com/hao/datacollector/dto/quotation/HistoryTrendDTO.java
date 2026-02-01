@@ -26,4 +26,7 @@ public class HistoryTrendDTO {
 
     @Schema(description = "79.均价", example = "142.50")
     private Double averagePrice;
+
+    @Schema(description = "链路追踪ID，格式: yyyyMMdd_HHmmss", example = "20260101_093000")
+    private String traceId;
 }

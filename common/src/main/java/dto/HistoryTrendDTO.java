@@ -50,4 +50,14 @@ public class HistoryTrendDTO {
      * 当日成交均价 = 成交额 / 成交量
      */
     private Double averagePrice;
+
+    /**
+     * 链路追踪ID
+     * <p>
+     * 格式: yyyyMMdd_HHmmss（如: 20260101_093000）
+     * 用于全链路日志追踪，从数据采集→策略引擎→信号中心透传
+     *
+     * @see docs/architecture/FullChainDataFlow.md
+     */
+    private String traceId;
 }

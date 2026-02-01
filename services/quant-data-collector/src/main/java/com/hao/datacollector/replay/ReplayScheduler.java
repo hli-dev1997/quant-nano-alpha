@@ -149,13 +149,12 @@ public class ReplayScheduler {
         LocalDate startDate = LocalDate.parse(currentParams.getStartDate(), COMPACT_FORMATTER);
         LocalDate endDate = LocalDate.parse(currentParams.getEndDate(), COMPACT_FORMATTER);
 
-        // TODO STOP 2: 策略数据预热 - 预缓存九转等策略所需历史数据到Redis
-        // 1. 策略数据预热
+        // [FULL_CHAIN_STEP_02] 策略数据预热 - 预缓存九转等策略所需历史数据到 Redis
+        // @see docs/architecture/FullChainDataFlow.md
         List<String> stockCodes = parseStockCodes(currentParams.getStockCodes());
         preheaterManager.preheatAll(startDate, stockCodes);
 
-        // TODO STOP 3: 加载历史行情数据到内存
-        // 2. 加载全部数据到内存
+        // [FULL_CHAIN_STEP_03] 加载历史行情数据到内存 (MySQL → TreeMap)
         loadAllData(startDate, endDate);
 
         // 3. 主循环：按秒推送
@@ -178,16 +177,14 @@ public class ReplayScheduler {
                 continue;
             }
 
-            // TODO STOP 4: 推送股票行情到Kafka (策略模块消费)
-            // 发送股票行情
+            // [FULL_CHAIN_STEP_04] 推送股票行情到 Kafka → 策略引擎消费
             List<HistoryTrendDTO> stocks = stockBuffer.remove(virtualTime);
             if (stocks != null && !stocks.isEmpty()) {
                 kafkaProducer.sendBatchHighPerformance(KafkaTopics.QUOTATION.code(), stocks);
                 totalSentCount += stocks.size();
             }
 
-            // TODO STOP 5: 推送指数行情到Kafka (风控模块消费)
-            // 发送指数行情
+            // [FULL_CHAIN_STEP_05] 推送指数行情到 Kafka → 风控模块消费
             List<HistoryTrendDTO> indices = indexBuffer.remove(virtualTime);
             if (indices != null && !indices.isEmpty()) {
                 kafkaProducer.sendBatchHighPerformance(KafkaTopics.QUOTATION_INDEX.code(), indices);
@@ -230,6 +227,9 @@ public class ReplayScheduler {
         for (HistoryTrendDTO dto : data) {
             if (dto.getTradeDate() != null) {
                 long ts = dto.getTradeDate().toEpochSecond(BEIJING_ZONE);
+                // 设置 traceId 用于全链路追踪（格式: yyyyMMdd_HHmmss）
+                String traceId = dto.getTradeDate().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                dto.setTraceId(traceId);
                 buffer.computeIfAbsent(ts, k -> new ArrayList<>()).add(dto);
             }
         }

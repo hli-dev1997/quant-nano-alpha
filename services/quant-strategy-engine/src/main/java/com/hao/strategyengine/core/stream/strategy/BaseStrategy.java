@@ -104,10 +104,12 @@ public abstract class BaseStrategy {
      * @param dto 触发信号的行情数据
      */
     public void onSignalTriggered(HistoryTrendDTO dto) {
+        // [FULL_CHAIN_STEP_08] 策略信号触发 - isMatch() 返回 true 后执行
         log.info("{}信号触发|Signal_triggered,code={},date={},price={}",
                 getId(), dto.getWindCode(), dto.getTradeDate(), dto.getLatestPrice());
 
-        // 构建信号 DTO 并发送到 Kafka
+        // [FULL_CHAIN_STEP_09] 构建信号 DTO 并发送到 Kafka → 信号中心消费
+        // @see docs/architecture/FullChainDataFlow.md
         StrategySignalDTO signal = buildSignalDTO(dto);
         strategySignalProducer.sendSignal(signal);
     }
@@ -121,20 +123,22 @@ public abstract class BaseStrategy {
      * @return 策略信号 DTO
      */
     protected StrategySignalDTO buildSignalDTO(HistoryTrendDTO dto) {
+        // signalTime 必须非空（数据库 NOT NULL 约束）
         LocalDateTime signalTime = dto.getTradeDate();
-        String tradeDate = signalTime != null 
-                ? signalTime.toLocalDate().format(DATE_FORMATTER) 
-                : LocalDate.now().format(DATE_FORMATTER);
+        if (signalTime == null) {
+            signalTime = LocalDateTime.now();
+        }
+        String tradeDate = signalTime.toLocalDate().format(DATE_FORMATTER);
 
         return StrategySignalDTO.builder()
                 .windCode(dto.getWindCode())
-                .stockName(null)  // HistoryTrendDTO 中无股票名称，信号中心落库时可通过 windCode 查询
-                .strategyName(getId())
+                .strategyId(getId())
                 .signalType(getSignalType().getCode())
                 .signalTime(signalTime)
                 .triggerPrice(dto.getLatestPrice())
                 .riskLevel(getRiskLevel().getCode())
                 .tradeDate(tradeDate)
+                .traceId(dto.getTraceId())  // 透传 traceId 用于全链路追踪
                 .build();
     }
 

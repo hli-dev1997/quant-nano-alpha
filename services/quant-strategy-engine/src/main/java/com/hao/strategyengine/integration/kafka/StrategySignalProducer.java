@@ -67,7 +67,7 @@ public class StrategySignalProducer {
             if (ex != null) {
                 // 发送失败（极少情况，因为配置了无限重试）
                 log.error("信号发送失败|Signal_send_failed,code={},strategy={},error={}",
-                        signal.getWindCode(), signal.getStrategyName(), ex.getMessage());
+                        signal.getWindCode(), signal.getStrategyId(), ex.getMessage());
             } else {
                 // 发送成功
                 if (log.isDebugEnabled()) {
@@ -76,14 +76,14 @@ public class StrategySignalProducer {
                             result.getRecordMetadata().partition(),
                             result.getRecordMetadata().offset(),
                             signal.getWindCode(),
-                            signal.getStrategyName());
+                            signal.getStrategyId());
                 }
             }
         });
 
         // 记录发送日志（无论成功失败都记录，便于追踪）
         log.info("信号已投递|Signal_submitted,code={},strategy={},type={},price={}",
-                signal.getWindCode(), signal.getStrategyName(),
+                signal.getWindCode(), signal.getStrategyId(),
                 signal.getSignalType(), signal.getTriggerPrice());
     }
 
@@ -109,12 +109,12 @@ public class StrategySignalProducer {
         try {
             SendResult<String, String> result = signalKafkaTemplate.send(topic, key, json).get();
             log.info("信号同步发送成功|Signal_sync_sent,code={},strategy={},offset={}",
-                    signal.getWindCode(), signal.getStrategyName(),
+                    signal.getWindCode(), signal.getStrategyId(),
                     result.getRecordMetadata().offset());
             return result;
         } catch (Exception e) {
             log.error("信号同步发送失败|Signal_sync_failed,code={},strategy={}",
-                    signal.getWindCode(), signal.getStrategyName(), e);
+                    signal.getWindCode(), signal.getStrategyId(), e);
             return null;
         }
     }

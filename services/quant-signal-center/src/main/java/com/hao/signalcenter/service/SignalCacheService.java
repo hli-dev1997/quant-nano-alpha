@@ -34,7 +34,7 @@ public class SignalCacheService {
 
     /**
      * Redis Key 前缀：股票信号列表
-     * 格式：stock:signal:list:{策略名}:{交易日}
+     * 格式：stock:signal:list:{strategyId}:{tradeDate}
      */
     private static final String REDIS_KEY_PREFIX = RedisKeyConstants.STOCK_SIGNAL_LIST_PREFIX;
 
@@ -68,7 +68,7 @@ public class SignalCacheService {
             return;
         }
 
-        String key = buildRedisKey(signal.getStrategyName(),
+        String key = buildRedisKey(signal.getStrategyId(),
                 signal.getTradeDate().format(DATE_FORMATTER));
         String value = JsonUtil.toJson(signal);
 
@@ -92,12 +92,12 @@ public class SignalCacheService {
      * <p>
      * 将整个列表替换为新数据（先删后写）。
      *
-     * @param strategyName 策略名称
-     * @param tradeDate    交易日字符串
-     * @param signals      信号列表
+     * @param strategyId 策略ID
+     * @param tradeDate  交易日字符串
+     * @param signals    信号列表
      */
-    public void refreshSignalCache(String strategyName, String tradeDate, List<StockSignal> signals) {
-        String key = buildRedisKey(strategyName, tradeDate);
+    public void refreshSignalCache(String strategyId, String tradeDate, List<StockSignal> signals) {
+        String key = buildRedisKey(strategyId, tradeDate);
 
         try {
             // 删除旧数据
@@ -123,11 +123,11 @@ public class SignalCacheService {
     /**
      * 构建 Redis Key
      *
-     * @param strategyName 策略名称
-     * @param tradeDate    交易日字符串
+     * @param strategyId 策略ID
+     * @param tradeDate  交易日字符串
      * @return Redis Key
      */
-    private String buildRedisKey(String strategyName, String tradeDate) {
-        return REDIS_KEY_PREFIX + strategyName + ":" + tradeDate;
+    private String buildRedisKey(String strategyId, String tradeDate) {
+        return REDIS_KEY_PREFIX + strategyId + ":" + tradeDate;
     }
 }

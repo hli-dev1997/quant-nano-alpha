@@ -36,15 +36,10 @@ public class StockSignal implements Serializable {
     private String windCode;
 
     /**
-     * 股票名称
+     * 策略ID
+     * 对应 StrategyMetaEnum.id，如：NINE_TURN_RED、MA_BULLISH
      */
-    private String stockName;
-
-    /**
-     * 策略名称
-     * 如：RED_NINE_TURN、BULLISH_MA
-     */
-    private String strategyName;
+    private String strategyId;
 
     /**
      * 信号类型
@@ -80,6 +75,12 @@ public class StockSignal implements Serializable {
     private Integer riskSnapshot;
 
     /**
+     * 记录状态
+     * 0-无效 / 1-有效
+     */
+    private Integer status;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;
@@ -107,20 +108,12 @@ public class StockSignal implements Serializable {
         this.windCode = windCode;
     }
 
-    public String getStockName() {
-        return stockName;
+    public String getStrategyId() {
+        return strategyId;
     }
 
-    public void setStockName(String stockName) {
-        this.stockName = stockName;
-    }
-
-    public String getStrategyName() {
-        return strategyName;
-    }
-
-    public void setStrategyName(String strategyName) {
-        this.strategyName = strategyName;
+    public void setStrategyId(String strategyId) {
+        this.strategyId = strategyId;
     }
 
     public String getSignalType() {
@@ -171,6 +164,14 @@ public class StockSignal implements Serializable {
         this.riskSnapshot = riskSnapshot;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -192,14 +193,14 @@ public class StockSignal implements Serializable {
         return "StockSignal{" +
                 "id=" + id +
                 ", windCode='" + windCode + '\'' +
-                ", stockName='" + stockName + '\'' +
-                ", strategyName='" + strategyName + '\'' +
+                ", strategyId='" + strategyId + '\'' +
                 ", signalType='" + signalType + '\'' +
                 ", triggerPrice=" + triggerPrice +
                 ", signalTime=" + signalTime +
                 ", tradeDate=" + tradeDate +
                 ", showStatus=" + showStatus +
                 ", riskSnapshot=" + riskSnapshot +
+                ", status=" + status +
                 '}';
     }
 }

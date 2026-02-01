@@ -6,62 +6,79 @@
     <resultMap id="BaseResultMap" type="com.hao.signalcenter.model.StockSignal">
         <id property="id" column="id"/>
         <result property="windCode" column="wind_code"/>
-        <result property="stockName" column="stock_name"/>
-        <result property="strategyName" column="strategy_name"/>
+        <result property="strategyId" column="strategy_id"/>
         <result property="signalType" column="signal_type"/>
         <result property="triggerPrice" column="trigger_price"/>
         <result property="signalTime" column="signal_time"/>
         <result property="tradeDate" column="trade_date"/>
         <result property="showStatus" column="show_status"/>
         <result property="riskSnapshot" column="risk_snapshot"/>
+        <result property="status" column="status"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
-        id, wind_code, stock_name, strategy_name, signal_type,
-        trigger_price, signal_time, trade_date, show_status, risk_snapshot,
+        id, wind_code, strategy_id, signal_type,
+        trigger_price, signal_time, trade_date, show_status, risk_snapshot, status,
         create_time, update_time
     </sql>
 
-    <!-- 幂等插入/更新信号 -->
-    <insert id="upsert" parameterType="com.hao.signalcenter.model.StockSignal">
-        INSERT INTO quant_stock_signal (
-            wind_code, stock_name, strategy_name, signal_type,
-            trigger_price, signal_time, trade_date, show_status, risk_snapshot
+    <!-- 插入信号（幂等模式，重复则更新） -->
+    <insert id="insert" parameterType="com.hao.signalcenter.model.StockSignal" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_quant_stock_signal (
+            wind_code, strategy_id, signal_type,
+            trigger_price, signal_time, trade_date, show_status, risk_snapshot, status
         ) VALUES (
-            #{windCode}, #{stockName}, #{strategyName}, #{signalType},
-            #{triggerPrice}, #{signalTime}, #{tradeDate}, #{showStatus}, #{riskSnapshot}
-        ) ON DUPLICATE KEY UPDATE
-            stock_name = VALUES(stock_name),
-            signal_type = VALUES(signal_type),
+            #{windCode}, #{strategyId}, #{signalType},
+            #{triggerPrice}, #{signalTime}, #{tradeDate}, #{showStatus}, #{riskSnapshot}, IFNULL(#{status}, 1)
+        )
+        ON DUPLICATE KEY UPDATE
             trigger_price = VALUES(trigger_price),
-            signal_time = VALUES(signal_time),
             show_status = VALUES(show_status),
             risk_snapshot = VALUES(risk_snapshot),
-            update_time = CURRENT_TIMESTAMP
+            update_time = NOW()
     </insert>
 
-    <!-- 查询指定策略和交易日通过的信号列表 -->
+    <!-- 查询指定策略和交易日通过的信号列表（全量流水） -->
     <select id="selectPassedSignals" resultMap="BaseResultMap">
         SELECT
             <include refid="Base_Column_List"/>
-        FROM quant_stock_signal
-        WHERE strategy_name = #{strategyName}
+        FROM tb_quant_stock_signal
+        WHERE strategy_id = #{strategyId}
           AND trade_date = #{tradeDate}
           AND show_status = 1
+          AND status = 1
         ORDER BY signal_time DESC
     </select>
 
-    <!-- 查询指定交易日所有通过的信号列表 -->
+    <!-- 查询指定交易日所有通过的信号列表（全量流水） -->
     <select id="selectAllPassedSignalsByDate" resultMap="BaseResultMap">
         SELECT
             <include refid="Base_Column_List"/>
-        FROM quant_stock_signal
+        FROM tb_quant_stock_signal
         WHERE trade_date = #{tradeDate}
           AND show_status = 1
+          AND status = 1
         ORDER BY signal_time DESC
     </select>
 
+    <!-- 查询指定策略和交易日的最新信号（每只股票只取最新一条） -->
+    <select id="selectLatestSignals" resultMap="BaseResultMap">
+        SELECT * FROM (
+            SELECT
+                <include refid="Base_Column_List"/>,
+                ROW_NUMBER() OVER (PARTITION BY wind_code ORDER BY signal_time DESC) as rn
+            FROM tb_quant_stock_signal
+            WHERE strategy_id = #{strategyId}
+              AND trade_date = #{tradeDate}
+              AND show_status = 1
+              AND status = 1
+        ) t
+        WHERE t.rn = 1
+        ORDER BY t.signal_time DESC
+    </select>
+
 </mapper>
+

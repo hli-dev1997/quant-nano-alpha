@@ -90,8 +90,9 @@ public class ReplayController {
             @RequestParam(required = false) Integer speedMultiplier,
             @RequestParam(required = false) String stockCodes
     ) {
-        // TODO STOP 1: 回放启动入口 - 收到HTTP请求
-        log.info("收到启动回放请求|Replay_start_request,startDate={},endDate={},speed={},stockCodes={}",
+        // [FULL_CHAIN_STEP_01] 回放启动入口 - 收到 HTTP 请求
+        // 全链路文档：docs/architecture/FullChainDataFlow.md
+        log.info("[STEP_01] 收到启动回放请求|Replay_start_request,startDate={},endDate={},speed={},stockCodes={}",
                 startDate, endDate, speedMultiplier, stockCodes);
 
         if (!replayConfig.isEnabled()) {
