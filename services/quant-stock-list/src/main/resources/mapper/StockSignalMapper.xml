@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hao.quant.stocklist.mapper.StockSignalMapper">
+
+    <!-- 股票信号结果映射 -->
+    <resultMap id="stockSignalResultMap" type="com.hao.quant.stocklist.model.StockSignal">
+        <id property="id" column="id"/>
+        <result property="windCode" column="wind_code"/>
+        <result property="strategyId" column="strategy_id"/>
+        <result property="signalType" column="signal_type"/>
+        <result property="triggerPrice" column="trigger_price"/>
+        <result property="signalTime" column="signal_time"/>
+        <result property="tradeDate" column="trade_date"/>
+        <result property="showStatus" column="show_status"/>
+        <result property="riskSnapshot" column="risk_snapshot"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 查询已通过的信号列表 -->
+    <select id="selectPassedSignals" resultMap="stockSignalResultMap">
+        SELECT id, wind_code, strategy_id, signal_type, trigger_price,
+               signal_time, trade_date, show_status, risk_snapshot, status,
+               create_time, update_time
+        FROM tb_quant_stock_signal
+        WHERE strategy_id = #{strategyId}
+          AND trade_date = #{tradeDate}
+          AND show_status = 1
+        ORDER BY signal_time DESC
+    </select>
+
+</mapper>

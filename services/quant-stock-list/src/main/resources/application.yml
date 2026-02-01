@@ -3,7 +3,13 @@ server:
   servlet:
     context-path: /quant-stock-list
 
-# DataSource Config
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+# Spring 配置
 spring:
   application:
     name: quant-stock-list

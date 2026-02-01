@@ -33,4 +33,13 @@ public final class SentinelResourceConstants {
      * 用于交易日历查询的限流保护
      */
     public static final String DATA_COLLECTOR_GET_TRADE_DATE = "getTradeDateListByTime";
+
+    // ==================== 股票精选模块 (Stock-List) ====================
+
+    /**
+     * L3 数据库查询信号
+     * <p>
+     * Sentinel 限流 QPS=1，防止大量请求同时穿透到数据库
+     */
+    public static final String STOCK_LIST_L3_QUERY = "stockSignal:L3:dbQuery";
 }

@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
  * English: Use @MapperScan to specify DAO interface package path; Spring auto-generates proxy implementations.
  */
 @Configuration
-@MapperScan("com.hao.quant.stocklist.dal.dao")
+@MapperScan({"com.hao.quant.stocklist.dal.dao", "com.hao.quant.stocklist.mapper"})
 public class MyBatisConfig {
     // TODO: 待其他模块产出数据后添加 Mapper 配置
 }

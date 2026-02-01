@@ -101,5 +101,19 @@ public class RedisKeyConstants {
      * 格式：stock:signal:list:{策略名}:{交易日}
      */
     public static final String STOCK_SIGNAL_LIST_PREFIX = "stock:signal:list:";
+
+    // ==================== 股票列表模块 Redis Key ====================
+
+    /**
+     * 股票信号查询分布式锁 Key 前缀
+     * 格式：lock:stock:signal:{type}:{strategyId}:{tradeDate}
+     */
+    public static final String STOCK_SIGNAL_LOCK_PREFIX = "lock:stock:signal:";
+
+    /**
+     * 空值标记，用于缓存击穿保护
+     * 当查询结果为空时，缓存此标记而非空列表
+     */
+    public static final String CACHE_EMPTY_MARKER = "__EMPTY__";
 }
 

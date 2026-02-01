@@ -67,7 +67,7 @@ public class StablePicksController {
      * 3. 分页处理并返回
      *
      * @param tradeDate    交易日期
-     * @param strategyName 策略名称（可选，默认查询所有策略）
+     * @param strategyId   策略ID（可选，默认查询所有策略）
      * @param pageNum      页码（默认1）
      * @param pageSize     每页数量（默认20）
      * @return 分页结果
@@ -77,7 +77,7 @@ public class StablePicksController {
     public Result<PageResult<StablePicksVO>> queryDailyPicks(
             @RequestParam @NotNull(message = "交易日期不能为空")
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate tradeDate,
-            @RequestParam(required = false, defaultValue = "ALL") String strategyName,
+            @RequestParam(required = false, defaultValue = "ALL") String strategyId,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "20") Integer pageSize) {
 
@@ -85,15 +85,15 @@ public class StablePicksController {
         String tradeDateStr = tradeDate.format(DATE_FORMATTER);
 
         log.info("查询每日精选|Daily_picks_query,tradeDate={},strategy={},pageNum={},pageSize={}",
-                tradeDateStr, strategyName, pageNum, pageSize);
+                tradeDateStr, strategyId, pageNum, pageSize);
 
         try {
             // 1. 从多级缓存查询
-            List<String> signalJsonList = multiLevelCacheService.querySignals(strategyName, tradeDateStr);
+            List<String> signalJsonList = multiLevelCacheService.querySignals(strategyId, tradeDateStr);
 
             if (signalJsonList == null || signalJsonList.isEmpty()) {
                 log.info("查询结果为空|Query_result_empty,tradeDate={},strategy={}",
-                        tradeDateStr, strategyName);
+                        tradeDateStr, strategyId);
                 return Result.success(PageResult.empty());
             }
 

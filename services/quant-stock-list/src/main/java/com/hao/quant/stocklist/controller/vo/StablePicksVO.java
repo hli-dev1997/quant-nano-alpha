@@ -46,15 +46,10 @@ public class StablePicksVO implements Serializable {
     private String windCode;
 
     /**
-     * 股票名称
+     * 策略ID
+     * 如：NINE_TURN_RED、MA_BULLISH
      */
-    private String stockName;
-
-    /**
-     * 策略名称
-     * 如：RED_NINE_TURN、BULLISH_MA
-     */
-    private String strategyName;
+    private String strategyId;
 
     /**
      * 信号类型
@@ -113,4 +108,22 @@ public class StablePicksVO implements Serializable {
      * 预留字段，可扩展为多因子打分
      */
     private Double score;
+
+    // ==================== 来自 StockSignal 的其他字段（用于 JSON 反序列化） ====================
+
+    /**
+     * 记录状态
+     * 0-无效 / 1-有效
+     */
+    private Integer status;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updateTime;
 }
