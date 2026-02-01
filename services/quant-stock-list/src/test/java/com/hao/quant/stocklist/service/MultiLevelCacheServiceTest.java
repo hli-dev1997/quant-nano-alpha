@@ -11,10 +11,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.redisson.api.RList;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -57,13 +56,10 @@ class MultiLevelCacheServiceTest {
     private Cache<String, List<String>> caffeineCache;
 
     @Mock
-    private StringRedisTemplate redisTemplate;
-
-    @Mock
-    private ListOperations<String, String> listOperations;
-
-    @Mock
     private RedissonClient redissonClient;
+
+    @Mock
+    private RList<String> rList;
 
     @Mock
     private RLock rLock;
@@ -77,7 +73,7 @@ class MultiLevelCacheServiceTest {
     @BeforeEach
     void setUp() throws InterruptedException {
         // 基础 Mock 设置
-        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        doReturn(rList).when(redissonClient).getList(anyString());
         when(redissonClient.getLock(anyString())).thenReturn(rLock);
         when(rLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(true);
         when(rLock.isHeldByCurrentThread()).thenReturn(true);
@@ -102,7 +98,7 @@ class MultiLevelCacheServiceTest {
             // Then
             assertEquals(cachedData, result);
             verify(caffeineCache, times(1)).getIfPresent(CACHE_KEY);
-            verify(redisTemplate, never()).opsForList();  // 不应查询 Redis
+            verify(redissonClient, never()).getList(anyString());  // 不应查询 Redis
         }
 
         @Test
@@ -111,7 +107,7 @@ class MultiLevelCacheServiceTest {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> redisData = List.of("{\"windCode\":\"600519.SH\"}");
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(redisData);
+            when(rList.readAll()).thenReturn(redisData);
 
             // When
             List<String> result = multiLevelCacheService.querySignals(STRATEGY_ID, TRADE_DATE);
@@ -134,7 +130,7 @@ class MultiLevelCacheServiceTest {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> redisData = List.of("{\"windCode\":\"000001.SZ\"}", "{\"windCode\":\"600519.SH\"}");
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(redisData);
+            when(rList.readAll()).thenReturn(redisData);
 
             // When
             List<String> result = multiLevelCacheService.querySignals(STRATEGY_ID, TRADE_DATE);
@@ -150,7 +146,7 @@ class MultiLevelCacheServiceTest {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> emptyMarker = List.of(RedisKeyConstants.CACHE_EMPTY_MARKER);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(emptyMarker);
+            when(rList.readAll()).thenReturn(emptyMarker);
 
             // When
             List<String> result = multiLevelCacheService.querySignals(STRATEGY_ID, TRADE_DATE);
@@ -165,7 +161,7 @@ class MultiLevelCacheServiceTest {
         void testL2CacheMissGoToL3() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(Collections.emptyList());
+            when(rList.readAll()).thenReturn(Collections.emptyList());
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE))
                     .thenReturn(createMockSignals(3));
 
@@ -182,7 +178,7 @@ class MultiLevelCacheServiceTest {
         void testL2RedisException() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenThrow(new RuntimeException("Redis connection failed"));
+            when(rList.readAll()).thenThrow(new RuntimeException("Redis connection failed"));
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE))
                     .thenReturn(createMockSignals(2));
 
@@ -205,7 +201,7 @@ class MultiLevelCacheServiceTest {
         void testL3QuerySuccess() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             List<StockSignal> dbSignals = createMockSignals(5);
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE)).thenReturn(dbSignals);
 
@@ -214,7 +210,7 @@ class MultiLevelCacheServiceTest {
 
             // Then
             assertEquals(5, result.size());
-            verify(listOperations).rightPushAll(eq(CACHE_KEY), any(String[].class));  // 回填 Redis
+            verify(rList).addAll(anyList());  // 回填 Redis
             verify(caffeineCache).put(eq(CACHE_KEY), anyList());  // 回填 L1
         }
 
@@ -223,7 +219,7 @@ class MultiLevelCacheServiceTest {
         void testL3QueryEmpty() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE))
                     .thenReturn(Collections.emptyList());
 
@@ -232,7 +228,7 @@ class MultiLevelCacheServiceTest {
 
             // Then
             assertTrue(result.isEmpty());
-            verify(listOperations).rightPush(CACHE_KEY, RedisKeyConstants.CACHE_EMPTY_MARKER);  // 缓存空标记
+            verify(rList).add(RedisKeyConstants.CACHE_EMPTY_MARKER);  // 缓存空标记
         }
 
         @Test
@@ -240,7 +236,7 @@ class MultiLevelCacheServiceTest {
         void testL3DatabaseException() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE))
                     .thenThrow(new RuntimeException("Database connection failed"));
 
@@ -268,7 +264,7 @@ class MultiLevelCacheServiceTest {
             when(rLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(true);
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> redisData = List.of("{\"windCode\":\"000001.SZ\"}");
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(redisData);
+            when(rList.readAll()).thenReturn(redisData);
 
             // When
             List<String> result = multiLevelCacheService.querySignals(STRATEGY_ID, TRADE_DATE);
@@ -285,7 +281,7 @@ class MultiLevelCacheServiceTest {
             when(rLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(false);
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> redisData = List.of("{\"windCode\":\"000001.SZ\"}");
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(redisData);
+            when(rList.readAll()).thenReturn(redisData);
 
             // When
             List<String> result = multiLevelCacheService.querySignals(STRATEGY_ID, TRADE_DATE);
@@ -310,7 +306,7 @@ class MultiLevelCacheServiceTest {
 
             // Then
             assertEquals(1, result.size());
-            verify(listOperations, never()).range(anyString(), anyLong(), anyLong());  // 不查 Redis
+            verify(rList, never()).readAll();  // 不查 Redis
         }
     }
 
@@ -326,7 +322,7 @@ class MultiLevelCacheServiceTest {
             // Given
             String emptyStrategy = "";
             when(caffeineCache.getIfPresent(anyString())).thenReturn(null);
-            when(listOperations.range(anyString(), anyLong(), anyLong())).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             when(stockSignalMapper.selectPassedSignals(emptyStrategy, TRADE_DATE))
                     .thenReturn(Collections.emptyList());
 
@@ -343,7 +339,7 @@ class MultiLevelCacheServiceTest {
             // Given
             String weekendDate = "2026-02-07";  // 假设是周六
             when(caffeineCache.getIfPresent(anyString())).thenReturn(null);
-            when(listOperations.range(anyString(), anyLong(), anyLong())).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, weekendDate))
                     .thenReturn(Collections.emptyList());
 
@@ -359,7 +355,7 @@ class MultiLevelCacheServiceTest {
         void testLargeDataSet() {
             // Given
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(null);
+            when(rList.readAll()).thenReturn(null);
             List<StockSignal> largeSignals = createMockSignals(1000);
             when(stockSignalMapper.selectPassedSignals(STRATEGY_ID, TRADE_DATE)).thenReturn(largeSignals);
 
@@ -395,7 +391,7 @@ class MultiLevelCacheServiceTest {
 
             when(caffeineCache.getIfPresent(CACHE_KEY)).thenReturn(null);
             List<String> cachedData = List.of("{\"windCode\":\"000001.SZ\"}");
-            when(listOperations.range(CACHE_KEY, 0, -1)).thenReturn(cachedData);
+            when(rList.readAll()).thenReturn(cachedData);
 
             ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
@@ -445,7 +441,7 @@ class MultiLevelCacheServiceTest {
             }
 
             executor.shutdown();
-            verify(redisTemplate, never()).opsForList();  // 从不查 Redis
+            verify(redissonClient, never()).getList(anyString());  // 从不查 Redis
         }
     }
 
