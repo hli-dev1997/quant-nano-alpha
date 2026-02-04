@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.hao.datacollector.common.utils.HttpUtil;
 import com.hao.datacollector.dal.dao.QuotationMapper;
 import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
+import com.hao.datacollector.dto.quotation.DailyOhlcDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.dto.table.quotation.QuotationStockBaseDTO;
@@ -12,6 +13,8 @@ import com.hao.datacollector.service.QuotationService;
 import constants.DataSourceConstants;
 import constants.DateTimeFormatConstants;
 import enums.SpeedIndicatorEnum;
+import exception.DataException;
+import exception.ExternalServiceException;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,20 +26,12 @@ import org.springframework.util.StringUtils;
 import util.DateUtil;
 import util.JsonUtil;
 import util.MathUtil;
-import exception.DataException;
-import exception.ExternalServiceException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -669,15 +664,15 @@ public class QuotationServiceImpl implements QuotationService {
             String warmEndDateStr = DateUtil.appendEndOfDayTime(warmEnd.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT)));
             // 定义热表查询范围
             String hotStartDateStr = HOT_DATA_START_DATE.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
-            
+
             // 修正跨表边界：如果 startTime 在热表范围内，则温表查询为空；反之亦然。
             // 简单起见，这里直接并行查，Mapper 会根据时间过滤
-            
-            CompletableFuture<List<HistoryTrendDTO>> warmFuture = CompletableFuture.supplyAsync(() -> 
-                quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startTime, warmEndDateStr, stockList), ioTaskExecutor);
-                
-            CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() -> 
-                quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endTime, stockList), ioTaskExecutor);
+
+            CompletableFuture<List<HistoryTrendDTO>> warmFuture = CompletableFuture.supplyAsync(() ->
+                    quotationMapper.selectByWindCodeListAndDate(TABLE_WARM, startTime, warmEndDateStr, stockList), ioTaskExecutor);
+
+            CompletableFuture<List<HistoryTrendDTO>> hotFuture = CompletableFuture.supplyAsync(() ->
+                    quotationMapper.selectByWindCodeListAndDate(TABLE_HOT, hotStartDateStr, endTime, stockList), ioTaskExecutor);
 
             CompletableFuture.allOf(warmFuture, hotFuture).join();
             try {
@@ -700,9 +695,9 @@ public class QuotationServiceImpl implements QuotationService {
      * <p>
      * 指标表不分冷热，直接查询 tb_quotation_index_history_trend 表
      *
-     * @param startDate  起始日期（格式 yyyyMMdd）
-     * @param endDate    结束日期（格式 yyyyMMdd）
-     * @param indexList  指标代码列表（为空时查询所有指标）
+     * @param startDate 起始日期（格式 yyyyMMdd）
+     * @param endDate   结束日期（格式 yyyyMMdd）
+     * @param indexList 指标代码列表（为空时查询所有指标）
      * @return 指标历史分时数据
      */
     @Override
@@ -1019,5 +1014,73 @@ public class QuotationServiceImpl implements QuotationService {
         log.info("多日收盘价查询完成|Daily_close_by_dateList_done,dateCount={}", resultMap.size());
         return resultMap;
     }
-}
 
+    // ==============================================================================
+    // 跨表查询新接口（使用 TableRouter + ParallelQueryExecutor）
+    // ==============================================================================
+
+    @Autowired
+    private com.hao.datacollector.core.query.TableRouter tableRouter;
+
+    @Autowired
+    private com.hao.datacollector.core.query.ParallelQueryExecutor parallelQueryExecutor;
+
+    /**
+     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价
+     * <p>
+     * 使用 TableRouter + ParallelQueryExecutor 实现跨表查询。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为每日 OHLC 数据
+     */
+    @Override
+    public Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(
+            String startDate, String endDate, List<String> stockList) {
+
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        LocalDate start = LocalDate.parse(startDate, pattern);
+        LocalDate end = LocalDate.parse(endDate, pattern);
+
+        log.info("OHLC查询开始|OHLC_query_start,range={}-{},stockCount={}", startDate, endDate, stockList.size());
+
+        // 1. 获取查询计划（分段）
+        List<com.hao.datacollector.core.query.QuerySegment> segments = tableRouter.route(start, end);
+
+        // 2. 执行并行查询
+        List<com.hao.datacollector.dto.quotation.DailyOhlcDTO> results = parallelQueryExecutor.executeParallel(
+                segments,
+                (segment, stocks) -> {
+                    String segmentStartDate = util.DateUtil.appendStartOfDayTime(
+                            segment.getStartDate().format(pattern));
+                    String segmentEndDate = util.DateUtil.appendEndOfDayTime(
+                            segment.getEndDate().format(pattern));
+                    return quotationMapper.selectDailyOhlcByStockListAndDate(
+                            segment.getTableType().getTableName(),
+                            segmentStartDate,
+                            segmentEndDate,
+                            stocks
+                    );
+                },
+                stockList
+        );
+
+        // 3. 转换为嵌套 Map<日期, Map<股票代码, OHLC>>
+        Map<String, Map<String, com.hao.datacollector.dto.quotation.DailyOhlcDTO>> resultMap = results.stream()
+                .filter(dto -> dto != null && dto.getTradeDate() != null && dto.getWindCode() != null)
+                .collect(Collectors.groupingBy(
+                        dto -> dto.getTradeDate().format(pattern),
+                        LinkedHashMap::new,
+                        Collectors.toMap(
+                                com.hao.datacollector.dto.quotation.DailyOhlcDTO::getWindCode,
+                                dto -> dto,
+                                (existing, replacement) -> replacement, // 处理重复 key
+                                LinkedHashMap::new
+                        )
+                ));
+
+        log.info("OHLC查询完成|OHLC_query_done,dayCount={},totalRecords={}", resultMap.size(), results.size());
+        return resultMap;
+    }
+}

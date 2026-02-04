@@ -246,4 +246,63 @@
         FROM RankedData
         WHERE rn = 1
     </select>
+
+    <!-- 每日 OHLC 数据 ResultMap -->
+    <resultMap id="DailyOhlcDataMap" type="com.hao.datacollector.dto.quotation.DailyOhlcDTO">
+        <result property="windCode" column="wind_code"/>
+        <result property="tradeDate" column="trade_date"/>
+        <result property="highPrice" column="high_price"/>
+        <result property="lowPrice" column="low_price"/>
+        <result property="closePrice" column="close_price"/>
+    </resultMap>
+
+    <!-- 查询每日最高价、最低价、收盘价 -->
+    <!-- 使用窗口函数获取每日最后一条记录的最新价作为收盘价 -->
+    <select id="selectDailyOhlcByStockListAndDate" resultMap="DailyOhlcDataMap">
+        WITH DailyStats AS (
+            SELECT
+                wind_code,
+                DATE(trade_date) as trade_date,
+                MAX(latest_price) as high_price,
+                MIN(latest_price) as low_price
+            FROM ${tableName}
+            WHERE trade_date <![CDATA[>=]]> #{startDate}
+              AND trade_date <![CDATA[<=]]> #{endDate}
+            <if test="windCodeList != null and windCodeList.size() > 0">
+                AND wind_code IN
+                <foreach collection="windCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            GROUP BY wind_code, DATE(trade_date)
+        ),
+        LastPrice AS (
+            SELECT
+                wind_code,
+                DATE(trade_date) as trade_date,
+                latest_price as close_price,
+                ROW_NUMBER() OVER (PARTITION BY wind_code, DATE(trade_date) ORDER BY trade_date DESC) as rn
+            FROM ${tableName}
+            WHERE trade_date <![CDATA[>=]]> #{startDate}
+              AND trade_date <![CDATA[<=]]> #{endDate}
+              AND TIME(trade_date) >= '14:50:00'
+            <if test="windCodeList != null and windCodeList.size() > 0">
+                AND wind_code IN
+                <foreach collection="windCodeList" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+        )
+        SELECT
+            ds.wind_code,
+            ds.trade_date,
+            ds.high_price,
+            ds.low_price,
+            lp.close_price
+        FROM DailyStats ds
+        LEFT JOIN LastPrice lp ON ds.wind_code = lp.wind_code
+            AND ds.trade_date = lp.trade_date
+            AND lp.rn = 1
+        ORDER BY ds.trade_date ASC, ds.wind_code ASC
+    </select>
 </mapper>

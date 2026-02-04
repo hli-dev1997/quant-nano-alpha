@@ -1,6 +1,7 @@
 package com.hao.datacollector.web.controller;
 
 import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
+import com.hao.datacollector.dto.quotation.DailyOhlcDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.service.QuotationService;
@@ -123,6 +124,18 @@ public class QuotationController {
     ) {
         return quotationService.getDailyClosePriceByDateList(stockList, dateList);
     }
+
+    @Operation(summary = "获取指定股票列表的每日OHLC数据",
+            description = "根据时间区间获取每只股票每日的最高价、最低价、收盘价（使用 TableRouter + ParallelQueryExecutor 跨表查询）")
+    @GetMapping("/get_daily_ohlc")
+    public Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(
+            @Parameter(description = "起始日期，格式yyyyMMdd", required = true)
+            @RequestParam String startDate,
+            @Parameter(description = "结束日期，格式yyyyMMdd", required = true)
+            @RequestParam String endDate,
+            @Parameter(description = "股票列表", required = true)
+            @RequestParam List<String> stockList
+    ) {
+        return quotationService.getDailyOhlcByStockList(startDate, endDate, stockList);
+    }
 }
-
-

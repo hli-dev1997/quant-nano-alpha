@@ -1,6 +1,7 @@
 package com.hao.datacollector.service;
 
 import com.hao.datacollector.dto.quotation.DailyHighLowDTO;
+import com.hao.datacollector.dto.quotation.DailyOhlcDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 
@@ -144,4 +145,17 @@ public interface QuotationService {
      * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为当日收盘价对应的完整分时数据
      */
     Map<String, Map<String, HistoryTrendDTO>> getDailyClosePriceByDateList(List<String> stockList, List<String> dateList);
+
+    /**
+     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价
+     * <p>
+     * 使用 TableRouter + ParallelQueryExecutor 实现跨表查询。
+     *
+     * @param startDate 起始日期 (yyyyMMdd)
+     * @param endDate   结束日期 (yyyyMMdd)
+     * @param stockList 股票代码列表
+     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为每日 OHLC 数据
+     */
+    Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(String startDate, String endDate, List<String> stockList);
 }
+

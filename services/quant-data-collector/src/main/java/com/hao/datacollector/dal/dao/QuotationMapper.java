@@ -1,5 +1,6 @@
 package com.hao.datacollector.dal.dao;
 
+import com.hao.datacollector.dto.quotation.DailyOhlcDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendDTO;
 import com.hao.datacollector.dto.quotation.HistoryTrendIndexDTO;
 import com.hao.datacollector.dto.table.quotation.QuotationStockBaseDTO;
@@ -148,4 +149,23 @@ public interface QuotationMapper {
             @Param("tradeDate") String tradeDate,
             @Param("indexCodeList") List<String> indexCodeList
     );
+
+    /**
+     * 查询指定时间区间内的每日最高价、最低价、收盘价
+     * <p>
+     * 使用窗口函数计算每只股票每日的 OHLC 数据。
+     *
+     * @param tableName 表名（动态拼接）
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param stockList 股票代码集合
+     * @return 每日 OHLC 数据列表
+     */
+    List<DailyOhlcDTO> selectDailyOhlcByStockListAndDate(
+            @Param("tableName") String tableName,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("windCodeList") List<String> stockList
+    );
 }
+
