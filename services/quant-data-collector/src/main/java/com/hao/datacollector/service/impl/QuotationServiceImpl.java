@@ -1026,17 +1026,18 @@ public class QuotationServiceImpl implements QuotationService {
     private com.hao.datacollector.core.query.ParallelQueryExecutor parallelQueryExecutor;
 
     /**
-     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价
+     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价（时间序列格式）
      * <p>
      * 使用 TableRouter + ParallelQueryExecutor 实现跨表查询。
+     * 返回格式适合策略计算，外层按股票分组，内层按日期排序。
      *
      * @param startDate 起始日期 (yyyyMMdd)
      * @param endDate   结束日期 (yyyyMMdd)
      * @param stockList 股票代码列表
-     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为每日 OHLC 数据
+     * @return Map，key 为股票代码，value 为按日期升序排列的 OHLC 数据列表
      */
     @Override
-    public Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(
+    public Map<String, List<DailyOhlcDTO>> getDailyOhlcByStockList(
             String startDate, String endDate, List<String> stockList) {
 
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
@@ -1049,12 +1050,12 @@ public class QuotationServiceImpl implements QuotationService {
         List<com.hao.datacollector.core.query.QuerySegment> segments = tableRouter.route(start, end);
 
         // 2. 执行并行查询
-        List<com.hao.datacollector.dto.quotation.DailyOhlcDTO> results = parallelQueryExecutor.executeParallel(
+        List<DailyOhlcDTO> results = parallelQueryExecutor.executeParallel(
                 segments,
                 (segment, stocks) -> {
-                    String segmentStartDate = util.DateUtil.appendStartOfDayTime(
+                    String segmentStartDate = DateUtil.appendStartOfDayTime(
                             segment.getStartDate().format(pattern));
-                    String segmentEndDate = util.DateUtil.appendEndOfDayTime(
+                    String segmentEndDate = DateUtil.appendEndOfDayTime(
                             segment.getEndDate().format(pattern));
                     return quotationMapper.selectDailyOhlcByStockListAndDate(
                             segment.getTableType().getTableName(),
@@ -1066,21 +1067,21 @@ public class QuotationServiceImpl implements QuotationService {
                 stockList
         );
 
-        // 3. 转换为嵌套 Map<日期, Map<股票代码, OHLC>>
-        Map<String, Map<String, com.hao.datacollector.dto.quotation.DailyOhlcDTO>> resultMap = results.stream()
+        // 3. 按股票代码分组（适合策略计算）
+        Map<String, List<DailyOhlcDTO>> resultMap = results.stream()
                 .filter(dto -> dto != null && dto.getTradeDate() != null && dto.getWindCode() != null)
                 .collect(Collectors.groupingBy(
-                        dto -> dto.getTradeDate().format(pattern),
+                        DailyOhlcDTO::getWindCode,
                         LinkedHashMap::new,
-                        Collectors.toMap(
-                                com.hao.datacollector.dto.quotation.DailyOhlcDTO::getWindCode,
-                                dto -> dto,
-                                (existing, replacement) -> replacement, // 处理重复 key
-                                LinkedHashMap::new
-                        )
+                        Collectors.toList()
                 ));
 
-        log.info("OHLC查询完成|OHLC_query_done,dayCount={},totalRecords={}", resultMap.size(), results.size());
+        // 4. 对每只股票的数据按日期升序排序（策略计算必须按时间顺序）
+        resultMap.values().forEach(list ->
+                list.sort(Comparator.comparing(DailyOhlcDTO::getTradeDate)));
+
+        log.info("OHLC查询完成|OHLC_query_done,stockCount={},totalRecords={}", resultMap.size(), results.size());
         return resultMap;
     }
 }
+

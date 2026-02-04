@@ -147,15 +147,17 @@ public interface QuotationService {
     Map<String, Map<String, HistoryTrendDTO>> getDailyClosePriceByDateList(List<String> stockList, List<String> dateList);
 
     /**
-     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价
+     * 获取指定时间区间内每只股票每日的最高价、最低价、收盘价（时间序列格式）
      * <p>
      * 使用 TableRouter + ParallelQueryExecutor 实现跨表查询。
+     * 返回格式适合策略计算，外层按股票分组，内层按日期排序。
      *
      * @param startDate 起始日期 (yyyyMMdd)
      * @param endDate   结束日期 (yyyyMMdd)
      * @param stockList 股票代码列表
-     * @return 嵌套 Map，外层 key 为日期，内层 key 为股票代码，value 为每日 OHLC 数据
+     * @return Map，key 为股票代码，value 为按日期升序排列的 OHLC 数据列表
      */
-    Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(String startDate, String endDate, List<String> stockList);
+    Map<String, List<DailyOhlcDTO>> getDailyOhlcByStockList(String startDate, String endDate, List<String> stockList);
 }
+
 

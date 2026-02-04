@@ -125,10 +125,10 @@ public class QuotationController {
         return quotationService.getDailyClosePriceByDateList(stockList, dateList);
     }
 
-    @Operation(summary = "获取指定股票列表的每日OHLC数据",
-            description = "根据时间区间获取每只股票每日的最高价、最低价、收盘价（使用 TableRouter + ParallelQueryExecutor 跨表查询）")
+    @Operation(summary = "获取指定股票列表的每日OHLC数据（时间序列格式）",
+            description = "根据时间区间获取每只股票每日的最高价、最低价、收盘价。返回格式适合策略计算，按股票分组并按日期升序排列。")
     @GetMapping("/get_daily_ohlc")
-    public Map<String, Map<String, DailyOhlcDTO>> getDailyOhlcByStockList(
+    public Map<String, List<DailyOhlcDTO>> getDailyOhlcByStockList(
             @Parameter(description = "起始日期，格式yyyyMMdd", required = true)
             @RequestParam String startDate,
             @Parameter(description = "结束日期，格式yyyyMMdd", required = true)
@@ -139,3 +139,4 @@ public class QuotationController {
         return quotationService.getDailyOhlcByStockList(startDate, endDate, stockList);
     }
 }
+
