@@ -1,5 +1,6 @@
 package com.hao.datacollector.web.handler;
 
+import constants.NumberFormatConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -57,7 +58,7 @@ public class JVMMonitor {
             logger.error("[JVM_MONITOR]堆内存使用高={}/{}MB({})%",
                     heapUsed / 1024 / 1024,
                     heapMax / 1024 / 1024,
-                    String.format("%.2f", heapRate * 100));
+                    String.format(NumberFormatConstants.DECIMAL_2, heapRate * 100));
         }
 
         // 非堆内存
@@ -69,7 +70,7 @@ public class JVMMonitor {
             logger.warn("[JVM_MONITOR]非堆内存使用高:{}/{}_MB({})%",
                     nonHeapUsed / 1024 / 1024,
                     nonHeapMax / 1024 / 1024,
-                    String.format("%.2f", nonHeapRate * 100));
+                    String.format(NumberFormatConstants.DECIMAL_2, nonHeapRate * 100));
         }
 
         // 线程栈数目

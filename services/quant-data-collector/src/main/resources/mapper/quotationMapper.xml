@@ -285,7 +285,6 @@
             FROM ${tableName}
             WHERE trade_date <![CDATA[>=]]> #{startDate}
               AND trade_date <![CDATA[<=]]> #{endDate}
-              AND TIME(trade_date) >= '14:50:00'
             <if test="windCodeList != null and windCodeList.size() > 0">
                 AND wind_code IN
                 <foreach collection="windCodeList" item="code" open="(" separator="," close=")">

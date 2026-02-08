@@ -41,7 +41,7 @@ class AbnormalServiceImplTest {
     public void getHomePage() {
         // 实现思路：循环交易日执行转档并记录结果
         //2021，2024已转，20250826(未完整)
-        List<String> tradeDateList = DateUtil.formatLocalDateList(DateCache.CurrentYearTradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        List<String> tradeDateList = DateUtil.formatLocalDateList(DateCache.Year2025TradeDateList, DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
         for (String tradeDate : tradeDateList) {
             IndexSourceParam indexSourceParam = new IndexSourceParam();
             indexSourceParam.setTradeDate(tradeDate);
@@ -58,8 +58,8 @@ class AbnormalServiceImplTest {
         }
 
 
-        Boolean sourceListOfSeats = abnormalService.transferListOfSeats(3, 0, 1, 10000, 1, -1);
-
-        Boolean result = abnormalService.transferActiveRank(3, 0, 10000, 1, -1);
+//        Boolean sourceListOfSeats = abnormalService.transferListOfSeats(3, 0, 1, 10000, 1, -1);
+//
+//        Boolean result = abnormalService.transferActiveRank(3, 0, 10000, 1, -1);
     }
 }

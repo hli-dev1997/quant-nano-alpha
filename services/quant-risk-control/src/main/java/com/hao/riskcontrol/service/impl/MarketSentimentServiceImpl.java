@@ -7,6 +7,7 @@ import com.hao.riskcontrol.common.enums.market.ScoreZone;
 import com.hao.riskcontrol.dto.quotation.IndexQuotationDTO;
 import dto.risk.MarketSentimentDTO;
 import com.hao.riskcontrol.service.MarketSentimentService;
+import constants.NumberFormatConstants;
 import constants.RedisKeyConstants;
 import enums.market.RiskMarketIndexEnum;
 import lombok.RequiredArgsConstructor;
@@ -133,9 +134,9 @@ public class MarketSentimentServiceImpl implements MarketSentimentService {
         }
         log.info("[TRACE-05] 价格缓存更新|Price_cached,windCode={},base={},current={},change={}%,currentMapSize={},firstMapSize={}",
                 windCode,
-                basePrice != null ? String.format("%.2f", basePrice) : "N/A",
-                String.format("%.2f", latestPrice),
-                String.format("%.2f", changePercent),
+                basePrice != null ? String.format(NumberFormatConstants.DECIMAL_2, basePrice) : "N/A",
+                String.format(NumberFormatConstants.DECIMAL_2, latestPrice),
+                String.format(NumberFormatConstants.DECIMAL_2, changePercent),
                 currentPriceMap.size(),
                 firstPriceMap.size());
     }

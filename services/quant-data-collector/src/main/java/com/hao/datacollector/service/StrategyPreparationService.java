@@ -80,4 +80,32 @@ public interface StrategyPreparationService {
      * @return 预热成功返回处理的股票数量
      */
     int prepareMovingAverageData(LocalDate tradeDate, List<String> stockCodes);
+
+    // ==================== DMI 趋向指标策略 ====================
+
+    /**
+     * 预热 DMI 趋向指标策略所需的历史数据（全量股票）
+     * <p>
+     * DMI（Directional Movement Index）动向指数用于判断行情趋势强度。
+     * 需要前60个交易日的 OHLC（最高价、最低价、收盘价）数据。
+     * <p>
+     * 实现逻辑：
+     * 1. 获取前60个交易日的日期列表。
+     * 2. 调用 getDailyOhlcByStockList 批量查询 OHLC 数据。
+     * 3. 按股票代码组织为 List&lt;DailyOhlcDTO&gt; 结构。
+     * 4. 以 DMI:PREHEAT: 前缀存入 Redis Hash。
+     *
+     * @param tradeDate 当前交易日
+     * @return 预热成功返回处理的股票数量
+     */
+    int prepareDmiData(LocalDate tradeDate);
+
+    /**
+     * 预热 DMI 趋向指标策略所需的历史数据（指定股票列表）
+     *
+     * @param tradeDate  当前交易日
+     * @param stockCodes 股票代码列表（null或空时使用全量）
+     * @return 预热成功返回处理的股票数量
+     */
+    int prepareDmiData(LocalDate tradeDate, List<String> stockCodes);
 }

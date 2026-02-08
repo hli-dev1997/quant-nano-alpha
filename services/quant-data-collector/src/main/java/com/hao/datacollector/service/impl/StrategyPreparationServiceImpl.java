@@ -516,4 +516,192 @@ public class StrategyPreparationServiceImpl implements StrategyPreparationServic
 
         return hashMap.size();
     }
+
+    // ==================== DMI 趋向指标策略预热 ====================
+
+    /**
+     * DMI趋向指标策略 Redis 配置
+     */
+    private static final StrategyRedisKeyEnum DMI_CONFIG = StrategyRedisKeyEnum.DMI_PREHEAT;
+
+    @Override
+    public int prepareDmiData(LocalDate tradeDate) {
+        return prepareDmiData(tradeDate, null);
+    }
+
+    /**
+     * 预热 DMI 趋向指标策略所需的历史数据
+     * <p>
+     * 实现逻辑：
+     * 1. 校验交易日有效性。
+     * 2. 获取前60个交易日列表（从枚举配置获取）。
+     * 3. 调用 getDailyOhlcByStockList 获取 OHLC 数据。
+     * 4. 存入 Redis Hash，Key 格式：DMI:PREHEAT:{yyyyMMdd}。
+     *
+     * @param tradeDate  当前交易日
+     * @param stockCodes 股票代码列表（null或空时使用全量）
+     * @return 预热成功的股票数量
+     */
+    @Override
+    public int prepareDmiData(LocalDate tradeDate, List<String> stockCodes) {
+        // Step 1: 校验交易日有效性
+        validateTradeDate(tradeDate);
+
+        int requiredDays = DMI_CONFIG.getHistoryDays();  // 60
+        int bufferDays = 20;  // 额外查询天数，用于补齐停牌日
+        
+        // Step 2: 获取前 N + buffer 个交易日列表
+        List<LocalDate> tradeDates = getLastNTradeDates(tradeDate, requiredDays + bufferDays);
+        log.info("DMI预热_获取交易日列表|DMI_preheat_get_trade_dates,tradeDate={},dateCount={},buffer={}",
+                tradeDate, tradeDates.size(), bufferDays);
+
+        // Step 3: 准备目标股票列表
+        List<String> targetStockCodes = (stockCodes != null && !stockCodes.isEmpty())
+                ? stockCodes
+                : StockCache.allWindCode;
+        log.info("DMI预热_目标股票|DMI_preheat_target_stocks,count={},source={}",
+                targetStockCodes.size(), (stockCodes != null && !stockCodes.isEmpty()) ? "params" : "StockCache");
+
+        // Step 4: 构造查询日期范围
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT);
+        // tradeDates 按时间倒序（0=昨日），getLast() 为最早日期
+        String startDate = tradeDates.getLast().format(dateFormatter);
+        String endDate = tradeDates.getFirst().format(dateFormatter);
+
+        // Step 5: 调用 getDailyOhlcByStockList 获取 OHLC 数据
+        Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> ohlcData =
+                quotationService.getDailyOhlcByStockList(startDate, endDate, targetStockCodes);
+
+        log.info("DMI预热_查询历史数据|DMI_preheat_query_history,startDate={},endDate={},stockCount={}",
+                startDate, endDate, ohlcData.size());
+
+        if (ohlcData.isEmpty()) {
+            log.warn("DMI预热_历史数据为空|DMI_preheat_no_data,tradeDate={}", tradeDate);
+            return 0;
+        }
+
+        // Step 6: 补齐停牌日数据，确保每只股票恰好 requiredDays 天
+        // tradeDates 的前 requiredDays 个日期是我们需要的目标日期
+        List<LocalDate> targetDates = tradeDates.subList(0, requiredDays);
+        Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> filledData = 
+                fillMissingDates(ohlcData, targetDates);
+
+        // Step 7: 存入 Redis Hash
+        int savedCount = saveToRedisForDmi(tradeDate, filledData);
+
+        log.info("DMI预热完成|DMI_preheat_complete,tradeDate={},stockCount={},savedCount={}",
+                tradeDate, filledData.size(), savedCount);
+
+        return savedCount;
+    }
+
+    /**
+     * 补齐停牌日缺失的 OHLC 数据
+     * <p>
+     * 对于停牌日，使用上一个有效交易日的收盘价作为 OHLC 四个值。
+     *
+     * @param ohlcData    原始 OHLC 数据（可能有缺失）
+     * @param targetDates 目标交易日列表（倒序，0=最新）
+     * @return 补齐后的数据，每只股票恰好有 targetDates.size() 天
+     */
+    private Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> fillMissingDates(
+            Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> ohlcData,
+            List<LocalDate> targetDates) {
+        
+        Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> result = new HashMap<>();
+        int filledCount = 0;
+        
+        for (Map.Entry<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> entry : ohlcData.entrySet()) {
+            String windCode = entry.getKey();
+            List<com.hao.datacollector.dto.quotation.DailyOhlcDTO> originalList = entry.getValue();
+            
+            // 构建日期到 OHLC 的映射（原始数据通常是升序）
+            Map<LocalDate, com.hao.datacollector.dto.quotation.DailyOhlcDTO> dateMap = new HashMap<>();
+            for (com.hao.datacollector.dto.quotation.DailyOhlcDTO dto : originalList) {
+                dateMap.put(dto.getTradeDate(), dto);
+            }
+            
+            List<com.hao.datacollector.dto.quotation.DailyOhlcDTO> filledList = new ArrayList<>(targetDates.size());
+            com.hao.datacollector.dto.quotation.DailyOhlcDTO lastValidOhlc = null;
+            
+            // 从最旧到最新遍历（反向 targetDates）
+            for (int i = targetDates.size() - 1; i >= 0; i--) {
+                LocalDate date = targetDates.get(i);
+                com.hao.datacollector.dto.quotation.DailyOhlcDTO ohlc = dateMap.get(date);
+                
+                if (ohlc != null) {
+                    // 有数据，直接使用
+                    filledList.add(ohlc);
+                    lastValidOhlc = ohlc;
+                } else if (lastValidOhlc != null) {
+                    // 停牌日，用上一个有效日的收盘价补齐
+                    com.hao.datacollector.dto.quotation.DailyOhlcDTO filledOhlc = 
+                            new com.hao.datacollector.dto.quotation.DailyOhlcDTO();
+                    filledOhlc.setWindCode(windCode);
+                    filledOhlc.setTradeDate(date);
+                    // DailyOhlcDTO 只有 H/L/C 没有 Open，用收盘价填充
+                    filledOhlc.setHighPrice(lastValidOhlc.getClosePrice());
+                    filledOhlc.setLowPrice(lastValidOhlc.getClosePrice());
+                    filledOhlc.setClosePrice(lastValidOhlc.getClosePrice());
+                    filledList.add(filledOhlc);
+                    filledCount++;
+                }
+                // 如果 lastValidOhlc 也是 null，说明这只股票在查询范围内没有任何数据，跳过
+            }
+            
+            // 只保留恰好 targetDates.size() 天的股票
+            if (filledList.size() == targetDates.size()) {
+                // filledList 目前是升序（从旧到新），需要反转为倒序
+                java.util.Collections.reverse(filledList);
+                result.put(windCode, filledList);
+            } else {
+                log.debug("DMI预热_数据不足跳过|DMI_preheat_skip_insufficient,code={},actual={},required={}",
+                        windCode, filledList.size(), targetDates.size());
+            }
+        }
+        
+        if (filledCount > 0) {
+            log.info("DMI预热_停牌日补齐|DMI_preheat_filled_gaps,totalFilledDays={}", filledCount);
+        }
+        
+        return result;
+    }
+
+    /**
+     * 保存 DMI 趋向指标数据到 Redis Hash
+     * <p>
+     * 存储顺序：倒序（0=最新，size-1=最旧），策略模块可直接使用。
+     *
+     * @param tradeDate 交易日
+     * @param ohlcData  股票 OHLC 数据（Map<股票代码, List<DailyOhlcDTO>>，升序）
+     * @return 保存的股票数量
+     */
+    private int saveToRedisForDmi(LocalDate tradeDate,
+                                   Map<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> ohlcData) {
+        String dateSuffix = tradeDate.format(DateTimeFormatter.ofPattern(DateTimeFormatConstants.EIGHT_DIGIT_DATE_FORMAT));
+        String redisKey = DMI_CONFIG.buildKey(dateSuffix);
+
+        Map<String, String> hashMap = new HashMap<>(ohlcData.size());
+
+        for (Map.Entry<String, List<com.hao.datacollector.dto.quotation.DailyOhlcDTO>> entry : ohlcData.entrySet()) {
+            // 反转为倒序（0=最新），策略模块可直接使用
+            List<com.hao.datacollector.dto.quotation.DailyOhlcDTO> reversedList = 
+                    new java.util.ArrayList<>(entry.getValue());
+            java.util.Collections.reverse(reversedList);
+            
+            String jsonValue = JsonUtil.toJson(reversedList);
+            hashMap.put(entry.getKey(), jsonValue);
+        }
+
+        if (!hashMap.isEmpty()) {
+            stringRedisTemplate.opsForHash().putAll(redisKey, hashMap);
+            stringRedisTemplate.expire(redisKey, DMI_CONFIG.getTtlHours(), TimeUnit.HOURS);
+
+            log.info("DMI预热_Redis写入完成|DMI_preheat_redis_saved,key={},fieldCount={},order=DESC(0=latest)",
+                    redisKey, hashMap.size());
+        }
+
+        return hashMap.size();
+    }
 }
+

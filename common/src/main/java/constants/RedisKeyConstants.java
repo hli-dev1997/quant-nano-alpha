@@ -88,6 +88,19 @@ public class RedisKeyConstants {
      */
     public static final String MA_PREHEAT_PREFIX = "MA:PREHEAT:";
 
+    /**
+     * DMI趋向指标策略预热数据 Key 前缀
+     * <p>
+     * Key格式: DMI:PREHEAT:{yyyyMMdd}
+     * Value类型: Hash
+     * - Field: windCode (股票代码)
+     * - Value: JSON数组，存储前60个交易日的 DailyOhlcDTO（最高价、最低价、收盘价）
+     * 过期时间: 24小时
+     * <p>
+     * 说明：用于计算 +DI、-DI 和 ADX 指标
+     */
+    public static final String DMI_PREHEAT_PREFIX = "DMI:PREHEAT:";
+
     // ==================== 信号中心 Redis Key ====================
 
     /**

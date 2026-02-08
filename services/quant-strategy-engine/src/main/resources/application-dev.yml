@@ -23,3 +23,9 @@ spring:
   config:
     import:
       - nacos:application-dev.yml
+
+# 日志配置
+logging:
+  level:
+    # DMI 策略日志（调试误差时可改为 TRACE）
+    com.hao.strategyengine.core.stream.strategy.impl.dmi: INFO
