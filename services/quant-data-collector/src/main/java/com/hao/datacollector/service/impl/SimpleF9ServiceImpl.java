@@ -7,7 +7,7 @@ import com.hao.datacollector.common.utils.HttpUtil;
 import com.hao.datacollector.dal.dao.SimpleF9Mapper;
 import com.hao.datacollector.dto.f9.*;
 import com.hao.datacollector.dto.param.f9.F9Param;
-import com.hao.datacollector.dto.table.f9.InsertCompanyProfileDTO;
+import com.hao.datacollector.dto.table.f9.*;
 import com.hao.datacollector.properties.DataCollectorProperties;
 import com.hao.datacollector.service.SimpleF9Service;
 import com.hao.datacollector.web.vo.result.ResultVO;
@@ -375,6 +375,7 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
         return List.of();
     }
 
+
     /**
      * 转档公司简介信息
      *
@@ -412,7 +413,24 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertInformationDataJob(F9Param f9Param) {
-        return null;
+        List<InformationOceanDTO> informationList = getInformationSource(f9Param.getLan(), f9Param.getWindCode());
+        if (informationList == null || informationList.isEmpty()) {
+            return false;
+        }
+        List<InsertInformationDTO> insertList = new ArrayList<>(informationList.size());
+        for (InformationOceanDTO dto : informationList) {
+            InsertInformationDTO insertDTO = new InsertInformationDTO();
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertDTO.setInfoId(dto.getId());
+            insertDTO.setDate(dto.getDate());
+            insertDTO.setSiteName(dto.getSiteName());
+            insertDTO.setTitle(dto.getTitle());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertInformation(insertList);
+        log.info("日志记录|Log_message,insertInformationDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -423,7 +441,19 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertKeyStatisticsDataJob(F9Param f9Param) {
-        return null;
+        KeyStatisticsDTO source = getKeyStatisticsSource(f9Param.getLan(), f9Param.getWindCode());
+        if (source == null) {
+            return false;
+        }
+        InsertKeyStatisticsDTO insertDTO = new InsertKeyStatisticsDTO();
+        BeanUtils.copyProperties(source, insertDTO);
+        insertDTO.setWindCode(f9Param.getWindCode());
+        insertDTO.setLan(f9Param.getLan());
+        List<InsertKeyStatisticsDTO> insertList = new ArrayList<>(1);
+        insertList.add(insertDTO);
+        int count = simpleF9Mapper.batchInsertKeyStatistics(insertList);
+        log.info("日志记录|Log_message,insertKeyStatisticsDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -434,7 +464,19 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertCompanyInfoDataJob(F9Param f9Param) {
-        return null;
+        CompanyInfo source = getCompanyInfoSource(f9Param.getLan(), f9Param.getWindCode());
+        if (source == null) {
+            return false;
+        }
+        InsertCompanyInfoDTO insertDTO = new InsertCompanyInfoDTO();
+        BeanUtils.copyProperties(source, insertDTO);
+        insertDTO.setWindCode(f9Param.getWindCode());
+        insertDTO.setLan(f9Param.getLan());
+        List<InsertCompanyInfoDTO> insertList = new ArrayList<>(1);
+        insertList.add(insertDTO);
+        int count = simpleF9Mapper.batchInsertCompanyInfo(insertList);
+        log.info("日志记录|Log_message,insertCompanyInfoDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -445,7 +487,21 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertNoticeDataJob(F9Param f9Param) {
-        return null;
+        List<NoticeDTO> noticeList = getNoticeSource(f9Param.getLan(), f9Param.getWindCode());
+        if (noticeList == null || noticeList.isEmpty()) {
+            return false;
+        }
+        List<InsertNoticeDTO> insertList = new ArrayList<>(noticeList.size());
+        for (NoticeDTO dto : noticeList) {
+            InsertNoticeDTO insertDTO = new InsertNoticeDTO();
+            BeanUtils.copyProperties(dto, insertDTO);
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertNotice(insertList);
+        log.info("日志记录|Log_message,insertNoticeDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -456,7 +512,21 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertGreatEventDataJob(F9Param f9Param) {
-        return null;
+        List<GreatEventDTO> greatEventList = getGreatEventSource(f9Param.getLan(), f9Param.getWindCode());
+        if (greatEventList == null || greatEventList.isEmpty()) {
+            return false;
+        }
+        List<InsertGreatEventDTO> insertList = new ArrayList<>(greatEventList.size());
+        for (GreatEventDTO dto : greatEventList) {
+            InsertGreatEventDTO insertDTO = new InsertGreatEventDTO();
+            BeanUtils.copyProperties(dto, insertDTO);
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertGreatEvent(insertList);
+        log.info("日志记录|Log_message,insertGreatEventDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -467,7 +537,19 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertProfitForecastDataJob(F9Param f9Param) {
-        return null;
+        ProfitForecastDTO source = getProfitForecastSource(f9Param.getLan(), f9Param.getWindCode());
+        if (source == null) {
+            return false;
+        }
+        InsertProfitForecastDTO insertDTO = new InsertProfitForecastDTO();
+        BeanUtils.copyProperties(source, insertDTO);
+        insertDTO.setWindCode(f9Param.getWindCode());
+        insertDTO.setLan(f9Param.getLan());
+        List<InsertProfitForecastDTO> insertList = new ArrayList<>(1);
+        insertList.add(insertDTO);
+        int count = simpleF9Mapper.batchInsertProfitForecast(insertList);
+        log.info("日志记录|Log_message,insertProfitForecastDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -478,7 +560,19 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertMarketPerformanceDataJob(F9Param f9Param) {
-        return null;
+        MarketPerformanceDTO source = getMarketPerformanceSource(f9Param.getLan(), f9Param.getWindCode());
+        if (source == null || source.getMarketDTO() == null) {
+            return false;
+        }
+        InsertMarketPerformanceDTO insertDTO = new InsertMarketPerformanceDTO();
+        BeanUtils.copyProperties(source.getMarketDTO(), insertDTO);
+        insertDTO.setWindCode(f9Param.getWindCode());
+        insertDTO.setLan(f9Param.getLan());
+        List<InsertMarketPerformanceDTO> insertList = new ArrayList<>(1);
+        insertList.add(insertDTO);
+        int count = simpleF9Mapper.batchInsertMarketPerformance(insertList);
+        log.info("日志记录|Log_message,insertMarketPerformanceDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -489,7 +583,21 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertPeBandDataJob(F9Param f9Param) {
-        return null;
+        List<PeBandVO> peBandList = getPeBandSource(f9Param.getLan(), f9Param.getWindCode());
+        if (peBandList == null || peBandList.isEmpty()) {
+            return false;
+        }
+        List<InsertPeBandDTO> insertList = new ArrayList<>(peBandList.size());
+        for (PeBandVO vo : peBandList) {
+            InsertPeBandDTO insertDTO = new InsertPeBandDTO();
+            BeanUtils.copyProperties(vo, insertDTO);
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertPeBand(insertList);
+        log.info("日志记录|Log_message,insertPeBandDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -500,7 +608,25 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertSecurityMarginDataJob(F9Param f9Param) {
-        return null;
+        List<ValuationIndexDTO> valuationList = getSecurityMarginSource(f9Param.getLan(), f9Param.getWindCode());
+        if (valuationList == null || valuationList.isEmpty()) {
+            return false;
+        }
+        List<InsertValuationIndexDTO> insertList = new ArrayList<>(valuationList.size());
+        for (ValuationIndexDTO dto : valuationList) {
+            InsertValuationIndexDTO insertDTO = new InsertValuationIndexDTO();
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertDTO.setName(dto.getName());
+            insertDTO.setNowValue(dto.getNow());
+            insertDTO.setIndustry(dto.getIndustry());
+            insertDTO.setNowForward(dto.getNow2024E());
+            insertDTO.setIndustryForward(dto.getIndustry2024E());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertValuationIndex(insertList);
+        log.info("日志记录|Log_message,insertSecurityMarginDataJob.count={}", count);
+        return count >= 0;
     }
 
     /**
@@ -511,6 +637,20 @@ public class SimpleF9ServiceImpl implements SimpleF9Service {
      */
     @Override
     public Boolean insertFinancialSummaryDataJob(F9Param f9Param) {
-        return null;
+        List<QuickViewGrowthDTO> growthList = getFinancialSummarySource(f9Param.getLan(), f9Param.getWindCode());
+        if (growthList == null || growthList.isEmpty()) {
+            return false;
+        }
+        List<InsertFinancialSummaryDTO> insertList = new ArrayList<>(growthList.size());
+        for (QuickViewGrowthDTO dto : growthList) {
+            InsertFinancialSummaryDTO insertDTO = new InsertFinancialSummaryDTO();
+            BeanUtils.copyProperties(dto, insertDTO);
+            insertDTO.setWindCode(f9Param.getWindCode());
+            insertDTO.setLan(f9Param.getLan());
+            insertList.add(insertDTO);
+        }
+        int count = simpleF9Mapper.batchInsertFinancialSummary(insertList);
+        log.info("日志记录|Log_message,insertFinancialSummaryDataJob.count={}", count);
+        return count >= 0;
     }
 }

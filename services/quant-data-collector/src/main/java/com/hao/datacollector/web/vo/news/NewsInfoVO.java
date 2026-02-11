@@ -1,6 +1,7 @@
 package com.hao.datacollector.web.vo.news;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ import java.time.LocalDate;
  */
 @Data
 @Schema(name = "新闻数据传输对象")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NewsInfoVO {
 
     @JSONField(format = "yyyy-MM-dd'T'HH:mm:ss'Z'")

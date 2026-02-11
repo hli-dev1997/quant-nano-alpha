@@ -83,8 +83,14 @@ public class NewsServiceImpl implements NewsService {
         }
         // Wind 返回的数组中，下标 3 为具体数据，先取出再解析
         Map<String, Object> dataMap = JsonUtil.toMap(JsonUtil.toJson(jsonArray.get(3)), String.class, Object.class);
-        List<Map<String, Object>> newsListMap = JsonUtil.toType(JsonUtil.toJson(dataMap.get("value")), new TypeReference<List<Map<String, Object>>>() {});
-        List<NewsInfoVO> newInfoVOList = JsonUtil.toList(JsonUtil.toJson(newsListMap.get(0).get("news")), NewsInfoVO.class);
+        // Wind API 的 value 字段可能是已序列化的 JSON 字符串，直接使用即可，避免 toJson 二次序列化导致双引号包裹
+        Object valueObj = dataMap.get("value");
+        String valueJson = (valueObj instanceof String) ? (String) valueObj : JsonUtil.toJson(valueObj);
+        List<Map<String, Object>> newsListMap = JsonUtil.toType(valueJson, new TypeReference<List<Map<String, Object>>>() {});
+        // 同理，news 字段也可能是已序列化的 JSON 字符串
+        Object newsObj = newsListMap.get(0).get("news");
+        String newsJson = (newsObj instanceof String) ? (String) newsObj : JsonUtil.toJson(newsObj);
+        List<NewsInfoVO> newInfoVOList = JsonUtil.toList(newsJson, NewsInfoVO.class);
 
         if (newInfoVOList.isEmpty()) {
             boolean insertAbnormalResult = baseDataMapper.insertAbnormalStock(windCode);

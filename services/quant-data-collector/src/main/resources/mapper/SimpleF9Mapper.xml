@@ -4,42 +4,278 @@
     <!-- 批量插入更新方案 (如果需要处理多条数据) -->
     <insert id="batchInsertCompanyProfileDataJob" parameterType="java.util.List">
         INSERT INTO tb_f9_company_profile (
-        wind_code,
-        lan,
-        cpy_intro,
-        rating,
-        score,
-        ranking3,
-        industry_level3_count,
-        status,
-        create_time,
-        update_time
+        wind_code, lan, cpy_intro, rating, score, ranking3, industry_level3_count, status, create_time, update_time
         ) VALUES
         <foreach collection="param" item="item" separator=",">
             (
-            #{item.windCode},
-            #{item.lan},
-            #{item.cpyIntro},
-            #{item.rating},
-            #{item.score},
-            #{item.ranking3},
-            #{item.industryLevel3Count},
-            1,
-            NOW(),
-            NOW()
+            #{item.windCode}, #{item.lan}, #{item.cpyIntro}, #{item.rating}, #{item.score},
+            #{item.ranking3}, #{item.industryLevel3Count}, 1, NOW(), NOW()
             )
         </foreach>
         ON DUPLICATE KEY UPDATE
-        cpy_intro = VALUES(cpy_intro),
-        rating = VALUES(rating),
-        score = VALUES(score),
-        ranking3 = VALUES(ranking3),
-        industry_level3_count = VALUES(industry_level3_count),
-        status = VALUES(status),
-        update_time = NOW()
+        cpy_intro = VALUES(cpy_intro), rating = VALUES(rating), score = VALUES(score),
+        ranking3 = VALUES(ranking3), industry_level3_count = VALUES(industry_level3_count),
+        status = VALUES(status), update_time = NOW()
     </insert>
 
     <select id="getInsertFinancialSummaryData" resultType="string">
-        SELECT DISTINCT wind_code FROM tb_f9_company_profile;
+        SELECT DISTINCT wind_code FROM tb_f9_company_profile WHERE DATE(update_time) = #{today};
     </select>
+
+    <!-- ==================== 资讯信息 ==================== -->
+    <insert id="batchInsertInformation" parameterType="java.util.List">
+        INSERT INTO tb_f9_information (
+        wind_code, lan, info_id, date, site_name, title, status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.infoId}, #{item.date}, #{item.siteName},
+            #{item.title}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        date = VALUES(date), site_name = VALUES(site_name), title = VALUES(title),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedInformationWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_information WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 关键统计 ==================== -->
+    <insert id="batchInsertKeyStatistics" parameterType="java.util.List">
+        INSERT INTO tb_f9_key_statistics (
+        wind_code, lan, total_value, pe_t, pe, pb, ps, ttm, beta,
+        general_capital, bps, eps, forecast_eps, gross_revenue, retained_profits, target_price,
+        status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.totalValue}, #{item.peT}, #{item.pe},
+            #{item.pb}, #{item.ps}, #{item.ttm}, #{item.beta}, #{item.generalCapital},
+            #{item.bps}, #{item.eps}, #{item.forecastEps}, #{item.grossRevenue},
+            #{item.retainedProfits}, #{item.targetPrice}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        total_value = VALUES(total_value), pe_t = VALUES(pe_t), pe = VALUES(pe),
+        pb = VALUES(pb), ps = VALUES(ps), ttm = VALUES(ttm), beta = VALUES(beta),
+        general_capital = VALUES(general_capital), bps = VALUES(bps), eps = VALUES(eps),
+        forecast_eps = VALUES(forecast_eps), gross_revenue = VALUES(gross_revenue),
+        retained_profits = VALUES(retained_profits), target_price = VALUES(target_price),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedKeyStatisticsWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_key_statistics WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 公司信息 ==================== -->
+    <insert id="batchInsertCompanyInfo" parameterType="java.util.List">
+        INSERT INTO tb_f9_company_info (
+        wind_code, lan, cpy_name, wind_industry, incepton_date, ipo_listed_date,
+        registeredcapital, currencys, registered_address, office_address,
+        employee_numbers, chairman, generalmanager, holder_controller,
+        holder_name, holder_pct, web_site, status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.cpyName}, #{item.windIndustry},
+            #{item.inceptonDate}, #{item.ipoListedDate}, #{item.registeredcapital},
+            #{item.currencys}, #{item.registeredAddress}, #{item.officeAddress},
+            #{item.employeeNumbers}, #{item.chairman}, #{item.generalmanager},
+            #{item.holderController}, #{item.holderName}, #{item.holderPct},
+            #{item.webSite}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        cpy_name = VALUES(cpy_name), wind_industry = VALUES(wind_industry),
+        incepton_date = VALUES(incepton_date), ipo_listed_date = VALUES(ipo_listed_date),
+        registeredcapital = VALUES(registeredcapital), currencys = VALUES(currencys),
+        registered_address = VALUES(registered_address), office_address = VALUES(office_address),
+        employee_numbers = VALUES(employee_numbers), chairman = VALUES(chairman),
+        generalmanager = VALUES(generalmanager), holder_controller = VALUES(holder_controller),
+        holder_name = VALUES(holder_name), holder_pct = VALUES(holder_pct),
+        web_site = VALUES(web_site), status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedCompanyInfoWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_company_info WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 公告 ==================== -->
+    <insert id="batchInsertNotice" parameterType="java.util.List">
+        INSERT INTO tb_f9_notice (
+        wind_code, lan, date, title, status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.date}, #{item.title}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedNoticeWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_notice WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 大事 ==================== -->
+    <insert id="batchInsertGreatEvent" parameterType="java.util.List">
+        INSERT INTO tb_f9_great_event (
+        wind_code, lan, occureddate, description, status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.occureddate}, #{item.description}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        description = VALUES(description), status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedGreatEventWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_great_event WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 盈利预测 ==================== -->
+    <insert id="batchInsertProfitForecast" parameterType="java.util.List">
+        INSERT INTO tb_f9_profit_forecast (
+        wind_code, lan, buy_num, add_grade_num, neutral_num, lose_num, sell_num,
+        eps, profit_growth_rate, count, add_num, reduce_num,
+        rate_change7, rate_change30, rate_change90, rate_change180,
+        newest, newest_num, last_month, last_month_num, target_price, upside_space,
+        status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.buyNum}, #{item.addGradeNum},
+            #{item.neutralNum}, #{item.loseNum}, #{item.sellNum},
+            #{item.eps}, #{item.profitGrowthRate}, #{item.count}, #{item.addNum}, #{item.reduceNum},
+            #{item.rateChange7}, #{item.rateChange30}, #{item.rateChange90}, #{item.rateChange180},
+            #{item.newest}, #{item.newestNum}, #{item.lastMonth}, #{item.lastMonthNum},
+            #{item.targetPrice}, #{item.upsideSpace}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        buy_num = VALUES(buy_num), add_grade_num = VALUES(add_grade_num),
+        neutral_num = VALUES(neutral_num), lose_num = VALUES(lose_num), sell_num = VALUES(sell_num),
+        eps = VALUES(eps), profit_growth_rate = VALUES(profit_growth_rate),
+        count = VALUES(count), add_num = VALUES(add_num), reduce_num = VALUES(reduce_num),
+        rate_change7 = VALUES(rate_change7), rate_change30 = VALUES(rate_change30),
+        rate_change90 = VALUES(rate_change90), rate_change180 = VALUES(rate_change180),
+        newest = VALUES(newest), newest_num = VALUES(newest_num),
+        last_month = VALUES(last_month), last_month_num = VALUES(last_month_num),
+        target_price = VALUES(target_price), upside_space = VALUES(upside_space),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedProfitForecastWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_profit_forecast WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 市场表现 ==================== -->
+    <insert id="batchInsertMarketPerformance" parameterType="java.util.List">
+        INSERT INTO tb_f9_market_performance (
+        wind_code, lan, wind_name, value, unit, limit_amount, limit_price,
+        top_amount, low_amount, to_this_day_price_limit, one_month_price_limit,
+        three_month_price_limit, one_year_price_limit, finance_amount,
+        start_time, end_time, average_daily, status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.windName}, #{item.value}, #{item.unit},
+            #{item.limitAmount}, #{item.limitPrice}, #{item.topAmount}, #{item.lowAmount},
+            #{item.toThisDayPriceLimit}, #{item.oneMonthPriceLimit},
+            #{item.threeMonthPriceLimit}, #{item.oneYearPriceLimit}, #{item.financeAmount},
+            #{item.startTime}, #{item.endTime}, #{item.averageDaily}, 1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        wind_name = VALUES(wind_name), value = VALUES(value), unit = VALUES(unit),
+        limit_amount = VALUES(limit_amount), limit_price = VALUES(limit_price),
+        top_amount = VALUES(top_amount), low_amount = VALUES(low_amount),
+        to_this_day_price_limit = VALUES(to_this_day_price_limit),
+        one_month_price_limit = VALUES(one_month_price_limit),
+        three_month_price_limit = VALUES(three_month_price_limit),
+        one_year_price_limit = VALUES(one_year_price_limit),
+        finance_amount = VALUES(finance_amount), start_time = VALUES(start_time),
+        end_time = VALUES(end_time), average_daily = VALUES(average_daily),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedMarketPerformanceWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_market_performance WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== PE_BAND ==================== -->
+    <insert id="batchInsertPeBand" parameterType="java.util.List">
+        INSERT INTO tb_f9_pe_band (
+        wind_code, lan, date, close_price, indicator_value, adjustment_factor, dr_share_ratio,
+        status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.date}, #{item.closePrice},
+            #{item.indicatorValue}, #{item.adjustmentFactor}, #{item.drShareRatio},
+            1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        close_price = VALUES(close_price), indicator_value = VALUES(indicator_value),
+        adjustment_factor = VALUES(adjustment_factor), dr_share_ratio = VALUES(dr_share_ratio),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedPeBandWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_pe_band WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 估值指标 ==================== -->
+    <insert id="batchInsertValuationIndex" parameterType="java.util.List">
+        INSERT INTO tb_f9_valuation_index (
+        wind_code, lan, name, now_value, industry, now_forward, industry_forward,
+        status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.name}, #{item.nowValue},
+            #{item.industry}, #{item.nowForward}, #{item.industryForward},
+            1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        now_value = VALUES(now_value), industry = VALUES(industry),
+        now_forward = VALUES(now_forward), industry_forward = VALUES(industry_forward),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedValuationIndexWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_valuation_index WHERE DATE(update_time) = #{today};
+    </select>
+
+    <!-- ==================== 成长能力 ==================== -->
+    <insert id="batchInsertFinancialSummary" parameterType="java.util.List">
+        INSERT INTO tb_f9_financial_summary (
+        wind_code, lan, name, income, netprofit, ebit, ebitda, asset, freecash,
+        status, create_time, update_time
+        ) VALUES
+        <foreach collection="param" item="item" separator=",">
+            (
+            #{item.windCode}, #{item.lan}, #{item.name}, #{item.income},
+            #{item.netprofit}, #{item.ebit}, #{item.ebitda}, #{item.asset}, #{item.freecash},
+            1, NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        income = VALUES(income), netprofit = VALUES(netprofit), ebit = VALUES(ebit),
+        ebitda = VALUES(ebitda), asset = VALUES(asset), freecash = VALUES(freecash),
+        status = VALUES(status), update_time = NOW()
+    </insert>
+
+    <select id="getInsertedFinancialSummaryWindCodes" resultType="string">
+        SELECT DISTINCT wind_code FROM tb_f9_financial_summary WHERE DATE(update_time) = #{today};
+    </select>
+
 </mapper>
